@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registrar Ponto - Ponto Eletrônico</title>
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="favicon.png">
+    <link rel="shortcut icon" type="image/png" href="favicon.png">
+    <link rel="apple-touch-icon" href="favicon.png">
+    <!-- Styles -->
+    <link rel="stylesheet" href="css/styles.css">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Supabase -->
+    <!-- jsPDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <!-- SheetJS -->
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
+</head>
+<body>
+    <!-- Notificações -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <section id="dashboard-layout" class="view active">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <i class="fa-solid fa-clock brand-icon-default"></i>
+                <img class="brand-logo" src="" style="display:none; height: 32px; border-radius: 4px; margin-right: 10px;">
+                <span class="brand">Ponto Eletrônico</span>
+                <button id="btn-close-sidebar" class="btn-icon mobile-only"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="user-info">
+                <div class="avatar"><i class="fa-solid fa-user"></i></div>
+                <div class="details">
+                    <span id="sidebar-user-name">Usuário</span>
+                    <small id="sidebar-user-role">Cargo</small>
+                </div>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="index.html" class="nav-item"><i class="fa-solid fa-chart-pie"></i> Dashboard</a>
+                <a href="registrar_ponto.html" class="nav-item active"><i class="fa-solid fa-fingerprint"></i> Registrar Ponto</a>
+                <a href="relatorios.html" class="nav-item"><i class="fa-solid fa-file-invoice"></i> Meus Relatórios</a>
+                <a href="funcionarios.html" class="nav-item admin-only"><i class="fa-solid fa-users"></i> Funcionários</a>
+                <a href="admin.html" class="nav-item admin-only"><i class="fa-solid fa-shield-halved"></i> Painel Admin</a>
+                <a href="configuracoes.html" class="nav-item"><i class="fa-solid fa-gear"></i> Configurações</a>
+                <a href="perfil.html" class="nav-item"><i class="fa-solid fa-user-pen"></i> Perfil</a>
+            </nav>
+            <div class="sidebar-footer">
+                <a href="#" id="btn-logout" class="nav-item text-danger"><i class="fa-solid fa-arrow-right-from-bracket"></i> Sair</a>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <header class="topbar">
+                <button id="btn-toggle-sidebar" class="btn-icon"><i class="fa-solid fa-bars"></i></button>
+                <div class="topbar-right">
+                    <div class="theme-switch-wrapper">
+                        <i class="fa-solid fa-sun"></i>
+                        <label class="theme-switch" for="checkbox-theme">
+                            <input type="checkbox" id="checkbox-theme" />
+                            <div class="slider round"></div>
+                        </label>
+                        <i class="fa-solid fa-moon"></i>
+                    </div>
+                </div>
+            </header>
+
+            <div class="content-wrapper">
+                <!-- CONTENT: Registrar Ponto -->
+                <div id="registro-content" class="page-content active">
+                    <div class="page-header">
+                        <h2>Registrar Ponto</h2>
+                        <div class="realtime-clock" id="realtime-clock">00:00:00</div>
+                    </div>
+
+                    <div class="panel">
+                        <div class="panel-body">
+                            <div class="config-jornada-section mb-20">
+                                <h4>Configuração da Jornada do Dia</h4>
+                                <div class="form-row mt-10">
+                                    <div class="form-group">
+                                        <label>Data</label>
+                                        <input type="date" id="ponto-data" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Tipo de Jornada</label>
+                                        <select id="ponto-jornada">
+                                            <option value="8h">Jornada 8 Horas</option>
+                                            <option value="7h20">Jornada 07:20 Horas Corridas</option>
+                                            <option value="7h20flex">Jornada 7h20 Flexível</option>
+                                            <option value="4h">Jornada 4 Horas Corridas</option>
+                                            <option value="extra">Jornada Horas Extras Corridas</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group" id="container-tipo-extra">
+                                        <label>Tipo Hora Extra</label>
+                                        <select id="ponto-tipo-extra">
+                                            <option value="50">Hora Extra 50%</option>
+                                            <option value="100">Hora Extra 100%</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="ponto-actions">
+                                <div class="time-block">
+                                    <label>Entrada</label>
+                                    <input type="time" id="ponto-entrada" class="time-input">
+                                    <button class="btn btn-primary" id="btn-reg-entrada">Registrar Entrada</button>
+                                </div>
+
+                                <!-- Bloco de Pausa Simples (Jornadas 8h e 7h20 Corridas) -->
+                                <div id="bloco-pausa-simples">
+                                    <div class="time-block">
+                                        <label>Início da Pausa</label>
+                                        <input type="time" id="ponto-pausa" class="time-input">
+                                        <button class="btn btn-warning" id="btn-reg-pausa">Registrar Pausa</button>
+                                    </div>
+                                    <div class="time-block">
+                                        <label>Retorno da Pausa</label>
+                                        <input type="time" id="ponto-retorno" class="time-input">
+                                        <button class="btn btn-info" id="btn-reg-retorno">Registrar Retorno</button>
+                                    </div>
+                                </div>
+
+                                <!-- Bloco de Pausas Flexíveis (Jornada 7h20 Flexível) -->
+                                <div id="bloco-pausas-flexiveis" style="display:none; width:100%;">
+                                    <div id="pausas-flexiveis-container">
+                                        <!-- Pares de pausa/retorno inseridos dinamicamente -->
+                                    </div>
+                                    <div style="display:flex; flex-wrap: wrap; gap:10px; margin-top:10px; width: 100%;">
+                                        <button class="btn btn-outline" id="btn-add-pausa" type="button" style="flex: 1 1 140px; padding: 0.75rem; border-radius: 8px; font-weight: 500;">
+                                            <i class="fa-solid fa-plus"></i> Adicionar Pausa
+                                        </button>
+                                        <button class="btn btn-danger" id="btn-remove-pausa" type="button" style="flex: 1 1 140px; background-color: var(--danger-color); color: white; border: none; padding: 0.75rem; border-radius: 8px; font-weight: 500; cursor: pointer;">
+                                            <i class="fa-solid fa-trash"></i> Excluir Pausa
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div class="time-block">
+                                    <label>Saída</label>
+                                    <input type="time" id="ponto-saida" class="time-input">
+                                    <button class="btn btn-danger" id="btn-reg-saida">Registrar Saída</button>
+                                </div>
+                            </div>
+                            <div class="form-actions mt-20">
+                                <button class="btn btn-success btn-block" id="btn-save-ponto"><i class="fa-solid fa-floppy-disk"></i> Salvar Registro do Dia</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Resultados do Dia -->
+                    <div class="cards-grid mt-20" id="resultados-dia-cards" style="display: none;">
+                        <!-- Populate via JS after calculation -->
+                    </div>
+                </div>
+            </div>
+        </main>
+    </section>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/supabase.js"></script>
+    <script src="js/db.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/timeTracker.js"></script>
+    <script src="js/reports.js"></script>
+    <script src="js/export.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
+

@@ -1,0 +1,29 @@
+﻿# Sistema operacional
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editores
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Logs
+*.log
+npm-debug.log*
+
+# Dependências (caso venha a usar npm no futuro)
+node_modules/
+
+# Variáveis de ambiente (nunca subir para o git!)
+.env
+.env.local
+.env.production
+
+# Build outputs
+dist/
+build/
+
+# Vercel
+.vercel/

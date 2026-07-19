@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Redefinir Senha - Ponto Eletrônico</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Supabase -->
+    <style>
+        .reset-card {
+            max-width: 420px;
+            margin: 80px auto;
+            padding: 40px;
+            background: var(--card-bg);
+            border-radius: 16px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.12);
+        }
+        .reset-icon { text-align: center; font-size: 3rem; margin-bottom: 20px; color: var(--primary-color); }
+        .reset-card h2 { text-align: center; margin-bottom: 8px; }
+        .reset-card .subtitle { text-align: center; color: var(--text-muted); margin-bottom: 28px; font-size: 0.9rem; }
+        .error-box { background: #fff0f0; border-left: 4px solid #dc3545; padding: 16px; border-radius: 8px; text-align: center; color: #dc3545; }
+        .error-box i { font-size: 2rem; margin-bottom: 8px; display: block; }
+    </style>
+</head>
+<body>
+    <div id="toast-container" class="toast-container"></div>
+
+    <div class="reset-card" id="reset-card">
+        <!-- Conteúdo injetado via JS -->
+        <div style="text-align:center; padding: 20px;">
+            <i class="fa-solid fa-spinner fa-spin" style="font-size:2rem; color: var(--primary-color);"></i>
+            <p style="margin-top:12px;">Validando link...</p>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/supabase.js"></script>
+    <script src="js/db.js"></script>
+    <script>
+        async function init() {
+            const card = document.getElementById('reset-card');
+
+            // Ouvir eventos de autenticação
+            _supabase.auth.onAuthStateChange(async (event, session) => {
+                if (event === 'PASSWORD_RECOVERY') {
+                    showResetForm(card);
+                } else if (event === 'SIGNED_IN' && window.location.hash.includes('type=recovery')) {
+                    showResetForm(card);
+                }
+            });
+
+            // Também verificar se já existe uma sessão
+            const { data: { session }, error } = await _supabase.auth.getSession();
+            if (session) {
+                showResetForm(card);
+            } else {
+                // Dar um pequeno tempo para o cliente Supabase processar o hash da URL
+                setTimeout(() => {
+                    if (!document.getElementById('reset-form')) {
+                        showError(card, 'Link de recuperação inválido ou expirado.');
+                    }
+                }, 2000);
+            }
+        }
+
+        function showResetForm(card) {
+            if (document.getElementById('reset-form')) return; // Já está exibindo
+            
+            card.innerHTML = `
+                <div class="reset-icon"><i class="fa-solid fa-lock-open"></i></div>
+                <h2>Nova Senha</h2>
+                <p class="subtitle">Crie uma nova senha para o seu acesso.</p>
+                <form id="reset-form">
+                    <div class="input-group" style="margin-bottom: 16px;">
+                        <i class="fa-solid fa-lock"></i>
+                        <input type="password" id="new-password" placeholder="Nova senha" required minlength="6">
+                    </div>
+                    <div class="input-group" style="margin-bottom: 24px;">
+                        <i class="fa-solid fa-lock"></i>
+                        <input type="password" id="confirm-password" placeholder="Confirmar nova senha" required minlength="6">
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-block">
+                        <i class="fa-solid fa-floppy-disk"></i> Salvar Nova Senha
+                    </button>
+                </form>
+            `;
+
+            document.getElementById('reset-form').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const newPass = document.getElementById('new-password').value;
+                const confirmPass = document.getElementById('confirm-password').value;
+
+                if (newPass !== confirmPass) {
+                    alert('As senhas não coincidem!');
+                    return;
+                }
+
+                const btn = e.target.querySelector('button[type="submit"]');
+                const originalBtnText = btn.innerHTML;
+                btn.disabled = true;
+                btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Salvando...';
+
+                // Atualizar a senha do usuário logado via Supabase
+                const { error } = await _supabase.auth.updateUser({ password: newPass });
+
+                if (error) {
+                    btn.disabled = false;
+                    btn.innerHTML = originalBtnText;
+                    alert('Erro ao redefinir a senha: ' + error.message);
+                    return;
+                }
+
+                // Deslogar o usuário após redefinir a senha para forçá-lo a fazer login com a nova senha
+                await _supabase.auth.signOut();
+
+                card.innerHTML = `
+                    <div style="text-align:center; padding: 20px;">
+                        <i class="fa-solid fa-circle-check" style="font-size:3rem; color:#28a745; margin-bottom:12px; display:block;"></i>
+                        <h2>Senha alterada!</h2>
+                        <p style="color:var(--text-muted); margin-bottom:24px;">Sua senha foi atualizada com sucesso.</p>
+                        <a href="login.html" class="btn btn-primary btn-block">Ir para o Login</a>
+                    </div>
+                `;
+            });
+        }
+
+        function showError(card, msg) {
+            card.innerHTML = `
+                <div class="error-box">
+                    <i class="fa-solid fa-circle-xmark"></i>
+                    <strong>${msg}</strong>
+                    <br><br>
+                    <a href="login.html" class="btn btn-outline" style="display:inline-block; margin-top:10px;">Voltar ao Login</a>
+                </div>
+            `;
+        }
+
+        // Iniciar
+        init();
+    </script>
+</body>
+</html>
+

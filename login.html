@@ -1,0 +1,177 @@
+﻿<!DOCTYPE html>
+<html lang="pt-BR" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Ponto Eletrônico</title>
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="favicon.png">
+    <link rel="shortcut icon" type="image/png" href="favicon.png">
+    <link rel="apple-touch-icon" href="favicon.png">
+    <!-- Styles -->
+    <link rel="stylesheet" href="css/styles.css">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Supabase -->
+    <!-- EmailJS -->
+    <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+    <style>
+        /* Modal Recuperar Senha */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+        .modal-overlay.active { display: flex; }
+        .modal-box {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 32px;
+            width: 100%;
+            max-width: 420px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            animation: slideUp 0.3s ease;
+        }
+        @keyframes slideUp {
+            from { transform: translateY(30px); opacity: 0; }
+            to   { transform: translateY(0);    opacity: 1; }
+        }
+        .modal-box h3 { margin-bottom: 8px; font-size: 1.25rem; }
+        .modal-box p  { margin-bottom: 20px; font-size: 0.9rem; color: var(--text-muted); }
+        .modal-close-row { display: flex; justify-content: flex-end; margin-bottom: 12px; }
+        .modal-close-row button { background: none; border: none; cursor: pointer; font-size: 1.2rem; color: var(--text-muted); }
+        .recovery-success { text-align: center; padding: 10px 0; }
+        .recovery-success i { font-size: 3rem; color: #28a745; margin-bottom: 12px; display: block; }
+    </style>
+</head>
+<body>
+    <!-- Notificações -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <!-- TELA DE LOGIN -->
+    <section id="login-view" class="view active">
+        <div class="login-container">
+            <div class="login-card">
+                <div class="logo-container">
+                    <img src="" id="login-logo" alt="Logo da Empresa" style="display: none; width: 100%; aspect-ratio: 1 / 1; border-radius: 50%; object-fit: cover; object-position: center 20%; margin-bottom: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+                    <i class="fa-solid fa-clock login-default-icon"></i>
+                </div>
+                <h2 class="brand">Ponto Eletrônico</h2>
+                <form id="login-form">
+                    <div class="input-group">
+                        <i class="fa-solid fa-envelope"></i>
+                        <input type="email" id="login-email" placeholder="E-mail" required>
+                    </div>
+                    <div class="input-group">
+                        <i class="fa-solid fa-lock"></i>
+                        <input type="password" id="login-password" placeholder="Senha" required>
+                        <i class="fa-solid fa-eye toggle-password" data-target="login-password" title="Mostrar/Ocultar Senha"></i>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-block">Entrar</button>
+                </form>
+                <div class="login-links">
+                    <a href="#" id="link-forgot-password">Esqueci minha senha</a>
+                    <button class="btn btn-outline btn-block mt-10" id="btn-show-register">Criar Conta</button>
+                </div>
+                <p style="text-align: center; margin-top: 20px; font-size: 0.78rem; color: var(--text-muted);">
+                    &copy; Copyright todos os direitos reservados a <strong>Fcode.Tech</strong>
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- TELA DE CADASTRO (Registro de Usuário) -->
+    <section id="register-view" class="view">
+        <div class="login-container">
+            <div class="login-card register-card">
+                <h2>Criar Conta</h2>
+                <form id="register-form">
+                    <div class="input-group">
+                        <i class="fa-solid fa-user"></i>
+                        <input type="text" id="reg-name" placeholder="Nome Completo" required>
+                    </div>
+                    <div class="input-group">
+                        <i class="fa-solid fa-id-card"></i>
+                        <input type="text" id="reg-cpf" placeholder="CPF" required>
+                    </div>
+                    <div class="input-group">
+                        <i class="fa-solid fa-hashtag"></i>
+                        <input type="text" id="reg-matricula" placeholder="Matrícula" required>
+                    </div>
+                    <div class="input-group">
+                        <i class="fa-solid fa-envelope"></i>
+                        <input type="email" id="reg-email" placeholder="E-mail" required>
+                    </div>
+                    <div class="input-group">
+                        <i class="fa-solid fa-phone"></i>
+                        <input type="text" id="reg-phone" placeholder="Telefone" required>
+                    </div>
+                    <div class="input-group">
+                        <i class="fa-solid fa-lock"></i>
+                        <input type="password" id="reg-password" placeholder="Senha" required>
+                        <i class="fa-solid fa-eye toggle-password" data-target="reg-password" title="Mostrar/Ocultar Senha"></i>
+                    </div>
+                    <div class="input-group">
+                        <i class="fa-solid fa-lock"></i>
+                        <input type="password" id="reg-confirm-password" placeholder="Confirmar Senha" required>
+                        <i class="fa-solid fa-eye toggle-password" data-target="reg-confirm-password" title="Mostrar/Ocultar Senha"></i>
+                    </div>
+                    <div class="input-group">
+                        <i class="fa-solid fa-user-tag"></i>
+                        <select id="reg-role" required>
+                            <option value="funcionario">Funcionário</option>
+                            <option value="admin">Administrador</option>
+                        </select>
+                    </div>
+                    <p id="reg-role-hint" style="display: none; font-size: 0.8rem; color: #d32f2f; margin-top: -10px; margin-bottom: 15px;">Já existe um administrador. Novos cadastros serão apenas Funcionários.</p>
+                    <button type="submit" class="btn btn-primary btn-block">Salvar Cadastro</button>
+                </form>
+                <button class="btn btn-text btn-block mt-10" id="btn-back-login">Voltar ao Login</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- MODAL: Recuperar Senha -->
+    <div class="modal-overlay" id="modal-forgot-password">
+        <div class="modal-box">
+            <!-- Passo 1: Digitar e-mail -->
+            <div id="forgot-step-1">
+                <div class="modal-close-row">
+                    <button id="btn-close-forgot"><i class="fa-solid fa-xmark"></i></button>
+                </div>
+                <h3><i class="fa-solid fa-key"></i> Recuperar Senha</h3>
+                <p>Digite o e-mail cadastrado. Enviaremos um link para você criar uma nova senha.</p>
+                <form id="forgot-form">
+                    <div class="input-group" style="margin-bottom: 16px;">
+                        <i class="fa-solid fa-envelope"></i>
+                        <input type="email" id="forgot-email" placeholder="Seu e-mail cadastrado" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-block" id="btn-send-recovery">
+                        <i class="fa-solid fa-paper-plane"></i> Enviar Link de Recuperação
+                    </button>
+                </form>
+            </div>
+            <!-- Passo 2: Sucesso -->
+            <div id="forgot-step-2" style="display: none;">
+                <div class="recovery-success">
+                    <i class="fa-solid fa-circle-check"></i>
+                    <h3>E-mail enviado!</h3>
+                    <p id="forgot-success-msg">Verifique sua caixa de entrada e clique no link para redefinir sua senha.</p>
+                    <button class="btn btn-primary btn-block mt-10" id="btn-close-forgot-success">Fechar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/supabase.js"></script>
+    <script src="js/db.js"></script>
+    <script src="js/auth.js"></script>
+</body>
+</html>
+

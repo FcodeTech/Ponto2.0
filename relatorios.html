@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Relatórios - Ponto Eletrônico</title>
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="favicon.png">
+    <link rel="shortcut icon" type="image/png" href="favicon.png">
+    <link rel="apple-touch-icon" href="favicon.png">
+    <!-- Styles -->
+    <link rel="stylesheet" href="css/styles.css">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Supabase -->
+    <!-- jsPDF & AutoTable -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+    <!-- SheetJS -->
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
+</head>
+<body>
+    <!-- Notificações -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <section id="dashboard-layout" class="view active">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <i class="fa-solid fa-clock brand-icon-default"></i>
+                <img class="brand-logo" src="" style="display:none; height: 32px; border-radius: 4px; margin-right: 10px;">
+                <span class="brand">Ponto Eletrônico</span>
+                <button id="btn-close-sidebar" class="btn-icon mobile-only"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="user-info">
+                <div class="avatar"><i class="fa-solid fa-user"></i></div>
+                <div class="details">
+                    <span id="sidebar-user-name">Usuário</span>
+                    <small id="sidebar-user-role">Cargo</small>
+                </div>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="index.html" class="nav-item"><i class="fa-solid fa-chart-pie"></i> Dashboard</a>
+                <a href="registrar_ponto.html" class="nav-item"><i class="fa-solid fa-fingerprint"></i> Registrar Ponto</a>
+                <a href="relatorios.html" class="nav-item active"><i class="fa-solid fa-file-invoice"></i> Meus Relatórios</a>
+                <a href="funcionarios.html" class="nav-item admin-only"><i class="fa-solid fa-users"></i> Funcionários</a>
+                <a href="admin.html" class="nav-item admin-only"><i class="fa-solid fa-shield-halved"></i> Painel Admin</a>
+                <a href="configuracoes.html" class="nav-item"><i class="fa-solid fa-gear"></i> Configurações</a>
+                <a href="perfil.html" class="nav-item"><i class="fa-solid fa-user-pen"></i> Perfil</a>
+            </nav>
+            <div class="sidebar-footer">
+                <a href="#" id="btn-logout" class="nav-item text-danger"><i class="fa-solid fa-arrow-right-from-bracket"></i> Sair</a>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <header class="topbar">
+                <button id="btn-toggle-sidebar" class="btn-icon"><i class="fa-solid fa-bars"></i></button>
+                <div class="topbar-right">
+                    <div class="theme-switch-wrapper">
+                        <i class="fa-solid fa-sun"></i>
+                        <label class="theme-switch" for="checkbox-theme">
+                            <input type="checkbox" id="checkbox-theme" />
+                            <div class="slider round"></div>
+                        </label>
+                        <i class="fa-solid fa-moon"></i>
+                    </div>
+                </div>
+            </header>
+
+            <div class="content-wrapper">
+                <!-- CONTENT: Relatórios -->
+                <div id="relatorios-content" class="page-content active">
+                    <div style="max-width: 1000px; margin: 0 auto; width: 100%;">
+                        <div class="page-header" style="flex-wrap: wrap; gap: 15px;">
+                            <h2>Relatórios</h2>
+                            <div class="export-actions" style="display: flex; gap: 10px; flex-wrap: wrap; flex: 1; justify-content: flex-end;">
+                                <button class="btn btn-export btn-pdf" id="btn-export-pdf"><i class="fa-solid fa-file-pdf"></i> Exportar PDF</button>
+                                <button class="btn btn-export btn-excel" id="btn-export-excel"><i class="fa-solid fa-file-excel"></i> Exportar Excel</button>
+                                <button class="btn btn-danger admin-only" id="btn-clear-all-records"><i class="fa-solid fa-trash-can"></i> Limpar Todos</button>
+                            </div>
+                        </div>
+
+                        <!-- Card de Dados do Funcionário na tela -->
+                        <div id="rel-employee-info" class="panel mb-20" style="display: none;"></div>
+
+                        <!-- Cards de totais do relatório movidos para cima -->
+                        <div class="mb-20" id="relatorio-totais-cards" style="display: flex; flex-direction: column; gap: 15px;">
+                            <div class="stat-card" style="width: 100%;">
+                                <div class="card-icon bg-info"><i class="fa-solid fa-business-time"></i></div>
+                                <div class="card-info">
+                                    <h3>Total Horas Trabalhadas</h3>
+                                    <span class="value" id="rel-tot-horas">00:00</span>
+                                </div>
+                            </div>
+                            <div class="mobile-stack" style="display: flex; gap: 15px; width: 100%;">
+                                <div class="stat-card" style="flex: 1;">
+                                    <div class="card-icon bg-warning"><i class="fa-solid fa-clock-rotate-left"></i></div>
+                                    <div class="card-info">
+                                        <h3>Extras 50%</h3>
+                                        <span class="value" id="rel-tot-extras-50">00:00</span>
+                                    </div>
+                                </div>
+                                <div class="stat-card" style="flex: 1;">
+                                    <div class="card-icon bg-danger"><i class="fa-solid fa-clock-rotate-left"></i></div>
+                                    <div class="card-info">
+                                        <h3>Extras 100%</h3>
+                                        <span class="value" id="rel-tot-extras-100">00:00</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="stat-card" id="rel-card-inss" style="width: 100%; display: none;">
+                                <div class="card-icon bg-danger"><i class="fa-solid fa-percent"></i></div>
+                                <div class="card-info">
+                                    <h3>Desconto INSS</h3>
+                                    <span class="value" id="rel-tot-inss" style="color: var(--danger-color, #dc3545);">R$ 0,00</span>
+                                    <small style="display: block; margin-top: 5px; color: var(--text-muted); font-size: 0.85em;">Base (Salário + Extras): <strong id="rel-salario-bruto">R$ 0,00</strong></small>
+                                </div>
+                            </div>
+                            <div class="stat-card highlight-card" style="width: 100%;">
+                                <div class="card-icon"><i class="fa-solid fa-money-bill-trend-up"></i></div>
+                                <div class="card-info">
+                                    <h3>Total a Receber (Estimado)</h3>
+                                    <span class="value" id="rel-tot-receber">R$ 0,00</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="panel">
+                            <div class="panel-header filters-header" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; align-items: flex-end;">
+                                <div id="filter-employee-group" class="filter-group" style="margin-bottom: 0;">
+                                    <label>Funcionário</label>
+                                    <select id="filter-employee" style="width: 100%;">
+                                        <option value="all">Todos</option>
+                                        <!-- Populated via JS -->
+                                    </select>
+                                </div>
+                                <div class="filter-group" style="margin-bottom: 0;">
+                                    <label>Mês</label>
+                                    <input type="month" id="filter-month" style="width: 100%;">
+                                </div>
+                                <div class="filter-group" style="margin-bottom: 0;">
+                                    <label>Data Inicial</label>
+                                    <input type="date" id="filter-date-start" style="width: 100%;">
+                                </div>
+                                <div class="filter-group" style="margin-bottom: 0;">
+                                    <label>Data Final</label>
+                                    <input type="date" id="filter-date-end" style="width: 100%;">
+                                </div>
+                                <button class="btn btn-primary btn-block" style="height: 42px; display: flex; align-items: center; justify-content: center; margin: 0;" id="btn-apply-filters"><i class="fa-solid fa-filter"></i> Filtrar</button>
+                            </div>
+                            <div class="panel-body">
+                                <div class="table-responsive">
+                                    <table class="data-table" id="reports-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Nome</th>
+                                                <th>Data</th>
+                                                <th>Entrada</th>
+                                                <th>Pausa</th>
+                                                <th>Retorno</th>
+                                                <th>Saída</th>
+                                                <th>Horas Trab.</th>
+                                                <th>Extras 50%</th>
+                                                <th>Extras 100%</th>
+                                                <th style="width: 100px; text-align: center;">Ações</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="reports-table-body">
+                                            <!-- Preenchido via JS -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <div class="pagination" id="reports-pagination">
+                                    <!-- Preenchido via JS -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </section>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/supabase.js"></script>
+    <script src="js/db.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/timeTracker.js"></script>
+    <script src="js/reports.js"></script>
+    <script src="js/export.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/admin.js"></script>
+</body>
+</html>
+

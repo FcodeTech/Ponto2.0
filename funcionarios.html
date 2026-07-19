@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Funcionários - Ponto Eletrônico</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Supabase -->
+    <style>
+        .employee-form-container { display: none; }
+        .employee-form-container.active { display: block; }
+        .employee-list-container.hidden { display: none; }
+        
+        .color-selector { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 5px; }
+        .color-option {
+            width: 30px; height: 30px; border-radius: 50%; cursor: pointer;
+            border: 2px solid transparent; transition: 0.2s;
+        }
+        .color-option:hover { transform: scale(1.1); }
+        .color-option.selected { border-color: var(--text-color); box-shadow: 0 0 0 2px var(--bg-color), 0 0 0 4px var(--text-color); }
+    </style>
+</head>
+<body>
+    <div id="toast-container" class="toast-container"></div>
+
+    <section id="dashboard-layout" class="view active">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <i class="fa-solid fa-clock brand-icon-default"></i>
+                <img class="brand-logo" src="" style="display:none; height: 32px; border-radius: 4px; margin-right: 10px;">
+                <span class="brand">Ponto Eletrônico</span>
+                <button id="btn-close-sidebar" class="btn-icon mobile-only"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="user-info">
+                <div class="avatar"><i class="fa-solid fa-user"></i></div>
+                <div class="details">
+                    <span id="sidebar-user-name">Usuário</span>
+                    <small id="sidebar-user-role">Cargo</small>
+                </div>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="index.html" class="nav-item"><i class="fa-solid fa-chart-pie"></i> Dashboard</a>
+                <a href="registrar_ponto.html" class="nav-item"><i class="fa-solid fa-fingerprint"></i> Registrar Ponto</a>
+                <a href="relatorios.html" class="nav-item"><i class="fa-solid fa-file-invoice"></i> Meus Relatórios</a>
+                <a href="funcionarios.html" class="nav-item admin-only active"><i class="fa-solid fa-users"></i> Funcionários</a>
+                <a href="admin.html" class="nav-item admin-only"><i class="fa-solid fa-shield-halved"></i> Painel Admin</a>
+                <a href="configuracoes.html" class="nav-item"><i class="fa-solid fa-gear"></i> Configurações</a>
+                <a href="perfil.html" class="nav-item"><i class="fa-solid fa-user-pen"></i> Perfil</a>
+            </nav>
+            <div class="sidebar-footer">
+                <a href="#" id="btn-logout" class="nav-item text-danger"><i class="fa-solid fa-arrow-right-from-bracket"></i> Sair</a>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="topbar">
+                <button id="btn-toggle-sidebar" class="btn-icon"><i class="fa-solid fa-bars"></i></button>
+                <div class="topbar-right">
+                    <div class="theme-switch-wrapper">
+                        <i class="fa-solid fa-sun"></i>
+                        <label class="theme-switch" for="checkbox-theme">
+                            <input type="checkbox" id="checkbox-theme" />
+                            <div class="slider round"></div>
+                        </label>
+                        <i class="fa-solid fa-moon"></i>
+                    </div>
+                </div>
+            </header>
+
+            <div class="content-wrapper">
+                <div id="funcionarios-content" class="page-content admin-only active">
+                    
+                    <!-- Container: Lista de Funcionários -->
+                    <div class="employee-list-container" id="employee-list-container">
+                        <div class="page-header" style="flex-wrap: wrap; gap: 15px;">
+                            <h2>Gerenciar Funcionários</h2>
+                            <button class="btn btn-primary" id="btn-new-employee"><i class="fa-solid fa-plus"></i> Novo Funcionário</button>
+                        </div>
+                        
+                        <div class="panel">
+                            <div class="panel-body">
+                                <div class="table-responsive">
+                                    <table class="data-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Matrícula</th>
+                                                <th>Nome</th>
+                                                <th>Cargo</th>
+                                                <th>Tipo</th>
+                                                <th>Ações</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="employees-table-body">
+                                            <!-- Preenchido via JS -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Container: Formulário de Funcionário -->
+                    <div class="employee-form-container" id="employee-form-container">
+                        <div class="page-header">
+                            <h2 id="form-employee-title">Adicionar Funcionário</h2>
+                            <button class="btn btn-secondary" id="btn-back-list"><i class="fa-solid fa-arrow-left"></i> Voltar</button>
+                        </div>
+                        
+                        <div class="panel" style="max-width: 800px; margin: 0 auto;">
+                            <div class="panel-body">
+                                <form id="employee-form">
+                                    <input type="hidden" id="emp-id">
+                                    
+                                    <h3><i class="fa-solid fa-id-card"></i> Dados Pessoais</h3>
+                                    <div class="form-row mt-10">
+                                        <div class="form-group">
+                                            <label>Nome Completo *</label>
+                                            <input type="text" id="emp-name" required>
+                                        </div>
+                                        <div class="form-group">
+                                            <label>E-mail *</label>
+                                            <input type="email" id="emp-email" required>
+                                        </div>
+                                    </div>
+                                    <div class="form-row mt-10">
+                                        <div class="form-group">
+                                            <label>CPF *</label>
+                                            <input type="text" id="emp-cpf" required>
+                                        </div>
+                                        <div class="form-group">
+                                            <label>Matrícula</label>
+                                            <input type="text" id="emp-matricula">
+                                        </div>
+                                    </div>
+                                    <div class="form-row mt-10">
+                                        <div class="form-group">
+                                            <label>Senha (P/ Login) *</label>
+                                            <div class="input-group" style="margin-bottom: 0;">
+                                                <i class="fa-solid fa-lock"></i>
+                                                <input type="password" id="emp-password" placeholder="Mínimo 6 caracteres">
+                                                <i class="fa-solid fa-eye toggle-password" data-target="emp-password" title="Mostrar/Ocultar Senha"></i>
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label>Nível de Acesso</label>
+                                            <select id="emp-role">
+                                                <option value="employee">Funcionário Padrão</option>
+                                                <option value="admin">Administrador</option>
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    <hr style="border:0; border-top:1px solid var(--border-color); margin: 25px 0;">
+
+                                    <h3><i class="fa-solid fa-money-bill"></i> Remuneração e Contrato</h3>
+                                    <div class="form-row mt-10">
+                                        <div class="form-group">
+                                            <label>Salário Base (R$)</label>
+                                            <input type="number" step="0.01" id="emp-salary">
+                                        </div>
+                                        <div class="form-group">
+                                            <label>Jornada de Trabalho</label>
+                                            <select id="emp-journey">
+                                                <option value="8h">Jornada 8 Horas</option>
+                                                <option value="7h20">Jornada 07:20 Horas Corridas</option>
+                                                <option value="4h">Jornada 4 Horas Corridas</option>
+                                                <option value="extra">Jornada Horas Extras Corridas</option>
+                                            </select>
+                                        </div>
+                                        <div class="form-group">
+                                            <label>Tipo de Hora Extra</label>
+                                            <select id="emp-overtime-type">
+                                                <option value="50">50%</option>
+                                                <option value="100">100%</option>
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    <hr style="border:0; border-top:1px solid var(--border-color); margin: 25px 0;">
+
+                                    <h3><i class="fa-solid fa-clock"></i> Jornada de Trabalho (Padrão)</h3>
+                                    <div class="form-row mt-10">
+                                        <div class="form-group">
+                                            <label>Entrada</label>
+                                            <input type="time" id="emp-journey-start" value="08:00">
+                                        </div>
+                                        <div class="form-group">
+                                            <label>Início Pausa</label>
+                                            <input type="time" id="emp-journey-pause-start" value="12:00">
+                                        </div>
+                                        <div class="form-group">
+                                            <label>Fim Pausa</label>
+                                            <input type="time" id="emp-journey-pause-end" value="13:00">
+                                        </div>
+                                        <div class="form-group">
+                                            <label>Saída</label>
+                                            <input type="time" id="emp-journey-end" value="17:00">
+                                        </div>
+                                    </div>
+
+                                    <hr style="border:0; border-top:1px solid var(--border-color); margin: 25px 0;">
+
+                                    <h3><i class="fa-solid fa-palette"></i> Personalização</h3>
+                                    <div class="form-group mt-10">
+                                        <label>Cor do Perfil</label>
+                                        <div class="color-selector" id="emp-color-selector">
+                                            <div class="color-option selected" data-color="#0066cc" style="background-color: #0066cc;" title="Azul"></div>
+                                            <div class="color-option" data-color="#28a745" style="background-color: #28a745;" title="Verde"></div>
+                                            <div class="color-option" data-color="#dc3545" style="background-color: #dc3545;" title="Vermelho"></div>
+                                            <div class="color-option" data-color="#6f42c1" style="background-color: #6f42c1;" title="Roxo"></div>
+                                            <div class="color-option" data-color="#fd7e14" style="background-color: #fd7e14;" title="Laranja"></div>
+                                        </div>
+                                        <input type="hidden" id="emp-color" value="#0066cc">
+                                    </div>
+
+                                    <div class="form-actions mt-20" style="text-align: right;">
+                                        <button type="submit" class="btn btn-primary" style="padding: 10px 20px;"><i class="fa-solid fa-save"></i> Salvar Funcionário</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </main>
+    </section>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/supabase.js"></script>
+    <script src="js/db.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/funcionarios.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
+
