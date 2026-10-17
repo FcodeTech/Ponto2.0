@@ -34,27 +34,25 @@ document.addEventListener('DOMContentLoaded', async () => {
             document.title = document.title.replace(/PontoMax|Ponto Eletrônico/g, sysName);
             document.querySelectorAll('.brand').forEach(el => el.textContent = sysName);
 
-            if (settings.logoUrl) {
-                const logoUrl = settings.logoUrl;
+            const logoUrl = settings.logoUrl || 'favicon.png';
 
-                // Logo na tela de login
-                const loginLogoImg = document.getElementById('login-logo');
-                if (loginLogoImg) {
-                    loginLogoImg.src = logoUrl;
-                    loginLogoImg.style.display = 'block';
-                    const defaultIcon = document.querySelector('.login-default-icon');
-                    if (defaultIcon) defaultIcon.style.display = 'none';
-                }
-
-                // Logo nas sidebars (outras páginas)
-                document.querySelectorAll('.brand-logo').forEach(el => {
-                    el.src = logoUrl;
-                    el.style.display = 'inline-block';
-                });
-                document.querySelectorAll('.brand-icon-default').forEach(el => {
-                    el.style.display = 'none';
-                });
+            // Logo na tela de login
+            const loginLogoImg = document.getElementById('login-logo');
+            if (loginLogoImg) {
+                loginLogoImg.src = logoUrl;
+                loginLogoImg.style.display = 'block';
+                const defaultIcon = document.querySelector('.login-default-icon');
+                if (defaultIcon) defaultIcon.style.display = 'none';
             }
+
+            // Logo nas sidebars (outras páginas)
+            document.querySelectorAll('.brand-logo').forEach(el => {
+                el.src = logoUrl;
+                el.style.display = 'inline-block';
+            });
+            document.querySelectorAll('.brand-icon-default').forEach(el => {
+                el.style.display = 'none';
+            });
         }
     } catch(e) { console.error('Erro ao carregar settings:', e); }
 

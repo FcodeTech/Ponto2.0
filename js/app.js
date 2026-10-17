@@ -44,43 +44,34 @@ async function applyGlobalSettings() {
 
         // ── Logo ─────────────────────────────────────────────
         // Suporta URL do Supabase Storage e base64 (legado)
+        const logoUrl = settings.logoUrl || 'favicon.png';
+
+        // Tela de login
+        const loginLogoImg = document.getElementById('login-logo');
+        if (loginLogoImg) {
+            loginLogoImg.src = logoUrl;
+            loginLogoImg.style.display = 'block';
+            const defaultIcon = document.querySelector('.login-default-icon');
+            if (defaultIcon) defaultIcon.style.display = 'none';
+        }
+
+        // Sidebar (todas as páginas autenticadas)
+        document.querySelectorAll('.brand-logo').forEach(el => {
+            el.src = logoUrl;
+            el.style.display = 'inline-block';
+        });
+        document.querySelectorAll('.brand-icon-default').forEach(el => {
+            el.style.display = 'none';
+        });
+
+        // Preview na página de configurações
         if (settings.logoUrl) {
-            const logoUrl = settings.logoUrl;
-
-            // Tela de login
-            const loginLogoImg = document.getElementById('login-logo');
-            if (loginLogoImg) {
-                loginLogoImg.src = logoUrl;
-                loginLogoImg.style.display = 'block';
-                const defaultIcon = document.querySelector('.login-default-icon');
-                if (defaultIcon) defaultIcon.style.display = 'none';
-            }
-
-            // Sidebar (todas as páginas autenticadas)
-            document.querySelectorAll('.brand-logo').forEach(el => {
-                el.src = logoUrl;
-                el.style.display = 'inline-block';
-            });
-            document.querySelectorAll('.brand-icon-default').forEach(el => {
-                el.style.display = 'none';
-            });
-
-            // Preview na página de configurações
             const previewImg = document.getElementById('config-logo-preview');
             const previewContainer = document.getElementById('config-logo-preview-container');
             if (previewImg && previewContainer) {
-                previewImg.src = logoUrl;
+                previewImg.src = settings.logoUrl;
                 previewContainer.style.display = 'block';
             }
-        } else {
-            // Sem logo: mostrar ícone padrão
-            document.querySelectorAll('.brand-logo').forEach(el => {
-                el.src = '';
-                el.style.display = 'none';
-            });
-            document.querySelectorAll('.brand-icon-default').forEach(el => {
-                el.style.display = 'inline-block';
-            });
         }
 
         // ── Nome do Sistema ──────────────────────────────────
