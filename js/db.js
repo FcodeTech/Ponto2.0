@@ -7,6 +7,7 @@
 
 function _mapUserFromDB(row) {
     if (!row) return null;
+    const localAdmission = row.id ? localStorage.getItem('user_admission_date_' + row.id) : null;
     return {
         id:                 row.id,
         name:               row.name,
@@ -22,6 +23,7 @@ function _mapUserFromDB(row) {
         journeyPauseStart:  row.journey_pause_start,
         journeyPauseEnd:    row.journey_pause_end,
         journeyEnd:         row.journey_end,
+        admissionDate:      (row.admission_date !== undefined && row.admission_date !== null) ? row.admission_date : (localAdmission || null),
         profileColor:       row.profile_color,
         status:             row.status,
         createdAt:          row.created_at
@@ -43,6 +45,7 @@ function _mapUserToDB(data) {
     if (data.journeyPauseStart !== undefined) row.journey_pause_start= data.journeyPauseStart;
     if (data.journeyPauseEnd   !== undefined) row.journey_pause_end  = data.journeyPauseEnd;
     if (data.journeyEnd        !== undefined) row.journey_end        = data.journeyEnd;
+    if (data.admissionDate     !== undefined) row.admission_date     = data.admissionDate;
     if (data.profileColor      !== undefined) row.profile_color      = data.profileColor;
     if (data.status            !== undefined) row.status             = data.status;
     return row;
@@ -86,34 +89,39 @@ function _mapRecordToDB(data) {
 function _mapSettingsFromDB(row) {
     if (!row) return null;
     const localFgts = localStorage.getItem('ponto_fgts_calculation');
+    const local13 = localStorage.getItem('ponto_decimo_terceiro_calculation');
     return {
-        id:                  row.user_id,
-        userId:              row.user_id,
-        theme:               row.theme,
-        primaryColor:        row.primary_color,
-        logoUrl:             row.logo_url,
-        systemName:          row.system_name,
-        inssCalculation:     row.inss_calculation,
-        noturnoCalculation:  row.noturno_calculation,
-        fgtsCalculation:     row.fgts_calculation !== undefined && row.fgts_calculation !== null
-                                ? !!row.fgts_calculation
-                                : (localFgts === 'true'),
-        resetTokens:         row.reset_tokens,
-        filters:             row.filters || {}
+        id:                         row.user_id,
+        userId:                     row.user_id,
+        theme:                      row.theme,
+        primaryColor:               row.primary_color,
+        logoUrl:                    row.logo_url,
+        systemName:                 row.system_name,
+        inssCalculation:            row.inss_calculation,
+        noturnoCalculation:         row.noturno_calculation,
+        fgtsCalculation:            row.fgts_calculation !== undefined && row.fgts_calculation !== null
+                                        ? !!row.fgts_calculation
+                                        : (localFgts === 'true'),
+        decimoTerceiroCalculation:  row.decimo_terceiro_calculation !== undefined && row.decimo_terceiro_calculation !== null
+                                        ? !!row.decimo_terceiro_calculation
+                                        : (local13 === 'true'),
+        resetTokens:                row.reset_tokens,
+        filters:                    row.filters || {}
     };
 }
 
 function _mapSettingsToDB(data) {
     const row = {};
-    if (data.theme              !== undefined) row.theme               = data.theme;
-    if (data.primaryColor       !== undefined) row.primary_color       = data.primaryColor;
-    if (data.logoUrl            !== undefined) row.logo_url            = data.logoUrl;
-    if (data.systemName         !== undefined) row.system_name         = data.systemName;
-    if (data.inssCalculation    !== undefined) row.inss_calculation    = data.inssCalculation;
-    if (data.noturnoCalculation !== undefined) row.noturno_calculation = data.noturnoCalculation;
-    if (data.fgtsCalculation    !== undefined) row.fgts_calculation    = data.fgtsCalculation;
-    if (data.resetTokens        !== undefined) row.reset_tokens        = data.resetTokens;
-    if (data.filters            !== undefined) row.filters             = data.filters;
+    if (data.theme                      !== undefined) row.theme                       = data.theme;
+    if (data.primaryColor               !== undefined) row.primary_color               = data.primaryColor;
+    if (data.logoUrl                    !== undefined) row.logo_url                    = data.logoUrl;
+    if (data.systemName                 !== undefined) row.system_name                 = data.systemName;
+    if (data.inssCalculation            !== undefined) row.inss_calculation            = data.inssCalculation;
+    if (data.noturnoCalculation         !== undefined) row.noturno_calculation         = data.noturnoCalculation;
+    if (data.fgtsCalculation            !== undefined) row.fgts_calculation            = data.fgtsCalculation;
+    if (data.decimoTerceiroCalculation  !== undefined) row.decimo_terceiro_calculation  = data.decimoTerceiroCalculation;
+    if (data.resetTokens                !== undefined) row.reset_tokens                = data.resetTokens;
+    if (data.filters                    !== undefined) row.filters                     = data.filters;
     return row;
 }
 
@@ -206,11 +214,33 @@ const db = {
                 if (pwdError) throw pwdError;
             }
 
+            if (data.admissionDate !== undefined) {
+                if (data.admissionDate) {
+                    localStorage.setItem('user_admission_date_' + id, data.admissionDate);
+                } else {
+                    localStorage.removeItem('user_admission_date_' + id);
+                }
+            }
+
             const row = _mapUserToDB(data);
             if (Object.keys(row).length > 0) {
-                const { error } = await _supabase
-                    .from('users').update(row).eq('id', String(id));
-                if (error) throw error;
+                try {
+                    const { error } = await _supabase
+                        .from('users').update(row).eq('id', String(id));
+                    if (error) throw error;
+                } catch (err) {
+                    if (err && err.message && (err.message.includes('admission_date') || err.code === '42703' || err.code === 'PGRST204')) {
+                        console.warn('[db.users] Coluna admission_date ainda não criada no Supabase. Salvo localmente.');
+                        delete row.admission_date;
+                        if (Object.keys(row).length > 0) {
+                            const { error: err2 } = await _supabase
+                                .from('users').update(row).eq('id', String(id));
+                            if (err2) throw err2;
+                        }
+                    } else {
+                        throw err;
+                    }
+                }
             }
         },
 
@@ -363,6 +393,9 @@ const db = {
             if (data.fgtsCalculation !== undefined) {
                 localStorage.setItem('ponto_fgts_calculation', String(data.fgtsCalculation));
             }
+            if (data.decimoTerceiroCalculation !== undefined) {
+                localStorage.setItem('ponto_decimo_terceiro_calculation', String(data.decimoTerceiroCalculation));
+            }
             let row = _mapSettingsToDB(data);
             
             try {
@@ -377,8 +410,8 @@ const db = {
                     if (insertError) throw insertError;
                 }
             } catch (err) {
-                if (err && err.message && (err.message.includes('fgts_calculation') || err.code === '42703' || err.code === 'PGRST204')) {
-                    console.warn('[db.settings] Coluna fgts_calculation ainda não criada no Supabase. Salvo localmente.');
+                if (err && err.message && (err.message.includes('decimo_terceiro_calculation') || err.message.includes('fgts_calculation') || err.code === '42703' || err.code === 'PGRST204')) {
+                    delete row.decimo_terceiro_calculation;
                     delete row.fgts_calculation;
                     const { data: updated2, error: err2 } = await _supabase
                         .from('settings').update(row).eq('user_id', userId).select();
@@ -403,6 +436,9 @@ const db = {
             if (data.fgtsCalculation !== undefined) {
                 localStorage.setItem('ponto_fgts_calculation', String(data.fgtsCalculation));
             }
+            if (data.decimoTerceiroCalculation !== undefined) {
+                localStorage.setItem('ponto_decimo_terceiro_calculation', String(data.decimoTerceiroCalculation));
+            }
             let row = _mapSettingsToDB(data);
             
             try {
@@ -417,7 +453,8 @@ const db = {
                     if (insertError) throw insertError;
                 }
             } catch (err) {
-                if (err && err.message && (err.message.includes('fgts_calculation') || err.code === '42703' || err.code === 'PGRST204')) {
+                if (err && err.message && (err.message.includes('decimo_terceiro_calculation') || err.message.includes('fgts_calculation') || err.code === '42703' || err.code === 'PGRST204')) {
+                    delete row.decimo_terceiro_calculation;
                     delete row.fgts_calculation;
                     const { data: updated2, error: err2 } = await _supabase
                         .from('settings').update(row).eq('user_id', userId).select();
@@ -501,4 +538,86 @@ window.calculateINSS = function(grossSalary) {
 window.calculateFGTS = function(grossSalary) {
     if (grossSalary <= 0) return 0;
     return Number((grossSalary * 0.08).toFixed(2));
+};
+
+/**
+ * Calcula o 13º salário proporcional de acordo com a CLT (Lei 4.090/1962 e Lei 4.749/1965).
+ * - A cada mês trabalhado com 15 dias ou mais = 1/12 avos.
+ * - Calcula a proporção até o mês consultado (provisão acumulada) e o total previsto para o ano todo.
+ * 
+ * @param {number} baseSalary - Salário base
+ * @param {string} admissionDateStr - Data de admissão ('YYYY-MM-DD')
+ * @param {string} refMonthStr - Mês de referência ('YYYY-MM')
+ */
+window.calculateDecimoTerceiro = function(baseSalary, admissionDateStr, refMonthStr) {
+    if (!baseSalary || baseSalary <= 0) {
+        return { avos: 0, valor: 0, totalAvosAno: 0, valorIntegralAno: 0, mesesEmpresa: 0, admissaoFormatada: '—' };
+    }
+
+    const now = new Date();
+    let refYear = now.getFullYear();
+    let refMonth = now.getMonth() + 1; // 1 a 12
+
+    if (refMonthStr && refMonthStr.includes('-')) {
+        const parts = refMonthStr.split('-');
+        refYear = parseInt(parts[0], 10) || refYear;
+        refMonth = parseInt(parts[1], 10) || refMonth;
+    }
+
+    let avos = 0;
+    let totalAvosAno = 12;
+    let mesesEmpresa = 0;
+    let admissaoFormatada = '—';
+
+    if (admissionDateStr && admissionDateStr.includes('-')) {
+        const parts = admissionDateStr.split('-');
+        const admYear = parseInt(parts[0], 10);
+        const admMonth = parseInt(parts[1], 10);
+        const admDay = parseInt(parts[2], 10);
+
+        admissaoFormatada = `${String(admDay).padStart(2, '0')}/${String(admMonth).padStart(2, '0')}/${admYear}`;
+
+        // Cálculo de meses totais de casa até o mês de referência
+        const diffMonths = ((refYear - admYear) * 12) + (refMonth - admMonth);
+        mesesEmpresa = Math.max(0, diffMonths + (admDay <= 15 ? 1 : 0));
+
+        if (admYear < refYear) {
+            // Admitido antes do ano consultado: todos os meses até refMonth contam
+            avos = Math.min(12, Math.max(0, refMonth));
+            totalAvosAno = 12;
+        } else if (admYear === refYear) {
+            // Admitido no mesmo ano
+            if (refMonth < admMonth) {
+                avos = 0;
+            } else if (refMonth === admMonth) {
+                // Se trabalhou 15 dias ou mais no mês de admissão
+                avos = (admDay <= 15) ? 1 : 0;
+            } else {
+                const admMonthCount = (admDay <= 15) ? 1 : 0;
+                avos = Math.min(12, Math.max(0, (refMonth - admMonth) + admMonthCount));
+            }
+            const admMonthCount = (admDay <= 15) ? 1 : 0;
+            totalAvosAno = Math.min(12, Math.max(0, (12 - admMonth) + admMonthCount));
+        } else {
+            // Data de admissão futura ao ano consultado
+            avos = 0;
+            totalAvosAno = 0;
+        }
+    } else {
+        // Sem data de admissão: assume proporcional ao mês do ano (ex: mês 7 = 7/12)
+        avos = Math.min(12, Math.max(1, refMonth));
+        totalAvosAno = 12;
+    }
+
+    const valorProporcional = Number(((baseSalary / 12) * avos).toFixed(2));
+    const valorIntegralAno = Number(((baseSalary / 12) * totalAvosAno).toFixed(2));
+
+    return {
+        avos,
+        valor: valorProporcional,
+        totalAvosAno,
+        valorIntegralAno,
+        mesesEmpresa,
+        admissaoFormatada
+    };
 };

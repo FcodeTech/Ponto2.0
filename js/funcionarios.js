@@ -197,6 +197,9 @@ async function editEmployee(id) {
         const otInput = document.getElementById('emp-overtime-type');
         if (otInput) otInput.value = emp.overtimeType || '50';
         
+        const admInput = document.getElementById('emp-admission-date');
+        if (admInput) admInput.value = emp.admissionDate || '';
+
         document.getElementById('emp-journey-start').value = emp.journeyStart || '08:00';
         document.getElementById('emp-journey-pause-start').value = emp.journeyPauseStart || '12:00';
         document.getElementById('emp-journey-pause-end').value = emp.journeyPauseEnd || '13:00';
@@ -229,6 +232,7 @@ async function saveEmployee() {
         baseSalary:       parseFloat(document.getElementById('emp-salary').value) || 0,
         hourType:         journeyEl ? journeyEl.value : '8h',
         overtimeType:     otEl ? otEl.value : '50',
+        admissionDate:    document.getElementById('emp-admission-date')?.value || null,
         journeyStart:     document.getElementById('emp-journey-start').value,
         journeyPauseStart:document.getElementById('emp-journey-pause-start').value,
         journeyPauseEnd:  document.getElementById('emp-journey-pause-end').value,

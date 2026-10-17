@@ -55,6 +55,9 @@
             const fgtsSwitch = document.getElementById('checkbox-fgts');
             if (fgtsSwitch) fgtsSwitch.checked = !!settings.fgtsCalculation;
 
+            const decimoSwitch = document.getElementById('checkbox-13');
+            if (decimoSwitch) decimoSwitch.checked = !!settings.decimoTerceiroCalculation;
+
         } catch (e) {
             console.error('[Configurações] Erro ao carregar settings:', e);
         }
@@ -199,6 +202,7 @@
                 const inssCalculation = document.getElementById('checkbox-inss')?.checked ?? false;
                 const noturnoCalculation = document.getElementById('checkbox-noturno')?.checked ?? false;
                 const fgtsCalculation = document.getElementById('checkbox-fgts')?.checked ?? false;
+                const decimoTerceiroCalculation = document.getElementById('checkbox-13')?.checked ?? false;
 
                 let logoUrl = _currentLogoUrl;
 
@@ -211,12 +215,13 @@
                 }
 
                 const newSettings = {
-                    primaryColor:       _selectedColor,
-                    logoUrl:            logoUrl,
-                    systemName:         sysName,
-                    inssCalculation:    inssCalculation,
-                    noturnoCalculation: noturnoCalculation,
-                    fgtsCalculation:    fgtsCalculation
+                    primaryColor:               _selectedColor,
+                    logoUrl:                    logoUrl,
+                    systemName:                 sysName,
+                    inssCalculation:            inssCalculation,
+                    noturnoCalculation:         noturnoCalculation,
+                    fgtsCalculation:            fgtsCalculation,
+                    decimoTerceiroCalculation:  decimoTerceiroCalculation
                 };
 
                 await db.settings.update('global', newSettings);

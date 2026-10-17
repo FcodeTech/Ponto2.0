@@ -104,6 +104,9 @@ async function applyGlobalSettings() {
         const fgtsSwitch = document.getElementById('checkbox-fgts');
         if (fgtsSwitch) fgtsSwitch.checked = !!settings.fgtsCalculation;
 
+        const decimoSwitch = document.getElementById('checkbox-13');
+        if (decimoSwitch) decimoSwitch.checked = !!settings.decimoTerceiroCalculation;
+
     } catch (e) {
         console.error('[applyGlobalSettings] Erro ao carregar settings:', e);
     }

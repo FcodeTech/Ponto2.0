@@ -35,9 +35,17 @@ async function calcFinanceiro(user, records) {
     }
 
     const valorFgts = isFgtsActive ? (typeof window.calculateFGTS === 'function' ? window.calculateFGTS(salarioBruto) : Number((salarioBruto * 0.08).toFixed(2))) : 0;
+    
+    const isDecimoActive = !!settings.decimoTerceiroCalculation;
+    const decimoInfo = (isDecimoActive && typeof window.calculateDecimoTerceiro === 'function')
+        ? window.calculateDecimoTerceiro(baseSalary, user.admissionDate)
+        : { avos: 0, valor: 0 };
+    const valor13 = decimoInfo.valor;
+    const avos13 = decimoInfo.avos;
+
     const salarioLiquido = salarioBruto - descontoInss;
 
-    return { salarioBruto, descontoInss, salarioLiquido, adicNoturno, totNoturnoMinutes, isInssActive, isNoturnoActive, isFgtsActive, valorFgts };
+    return { salarioBruto, descontoInss, salarioLiquido, adicNoturno, totNoturnoMinutes, isInssActive, isNoturnoActive, isFgtsActive, valorFgts, isDecimoActive, valor13, avos13 };
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -83,6 +91,9 @@ async function getReportDataArray(singleEmployeeMode, targetUserId) {
         }
         if (isFgtsActive) {
             rows.push(['FGTS (8% CLT - Depósito Empregador):', formatCurrency(valorFgts)]);
+        }
+        if (isDecimoActive) {
+            rows.push([`13º Salário (${avos13}/12 avos CLT):`, formatCurrency(valor13)]);
         }
         rows.push([]);
 
@@ -370,6 +381,17 @@ document.getElementById('btn-export-pdf')?.addEventListener('click', async () =>
                 doc.setFont("helvetica", "normal");
                 doc.setTextColor(16, 185, 129);
                 doc.text(`${formatCurrency(valorFgts)} (Depósito Empregador)`, 60, startY);
+                doc.setTextColor(textColor[0], textColor[1], textColor[2]);
+                startY += 7;
+            }
+
+            if (isDecimoActive) {
+                // ── 13º Salário ────────────────────────────────────────────
+                doc.setFont("helvetica", "bold");
+                doc.text("13º Salário (CLT):", 14, startY);
+                doc.setFont("helvetica", "normal");
+                doc.setTextColor(245, 158, 11);
+                doc.text(`${formatCurrency(valor13)} (${avos13}/12 avos)`, 60, startY);
                 doc.setTextColor(textColor[0], textColor[1], textColor[2]);
                 startY += 7;
             }

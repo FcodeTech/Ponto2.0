@@ -17,6 +17,7 @@ CREATE TABLE IF NOT EXISTS public.users (
     journey_pause_start TEXT DEFAULT '12:00',
     journey_pause_end TEXT DEFAULT '13:00',
     journey_end TEXT DEFAULT '17:00',
+    admission_date DATE,
     profile_color TEXT DEFAULT '#0066cc',
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc', now())
 );
@@ -48,6 +49,7 @@ CREATE TABLE IF NOT EXISTS public.settings (
     inss_calculation BOOLEAN DEFAULT false,
     noturno_calculation BOOLEAN DEFAULT false,
     fgts_calculation BOOLEAN DEFAULT false,
+    decimo_terceiro_calculation BOOLEAN DEFAULT false,
     reset_tokens TEXT
 );
 

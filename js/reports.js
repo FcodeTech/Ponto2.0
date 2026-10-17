@@ -205,6 +205,7 @@ async function updateReportTotals() {
     const isNoturnoActive = !!settings.noturnoCalculation;
     const isInssActive = !!settings.inssCalculation;
     const isFgtsActive = !!settings.fgtsCalculation;
+    const isDecimoActive = !!settings.decimoTerceiroCalculation;
 
     currentReportData.forEach(r => {
         const user = userMap[r.userId];
@@ -317,6 +318,30 @@ async function updateReportTotals() {
         if (relFgtsBruto) relFgtsBruto.textContent = formatCurrency(salarioBrutoReport);
     } else {
         if (relCardFgts) relCardFgts.style.display = 'none';
+    }
+
+    // Check se 13º Salário está ativo
+    const relCard13    = document.getElementById('rel-card-13');
+    const relTot13     = document.getElementById('rel-tot-13');
+    const rel13Avos    = document.getElementById('rel-13-avos');
+    const rel13Detalhe = document.getElementById('rel-13-detalhe');
+
+    if (isDecimoActive && singleEmployeeMode && currentReportData.length > 0) {
+        const u = userMap[targetUserId] || currentUser;
+        const filterMonth = document.getElementById('filter-month')?.value;
+        const decimoInfo = (typeof window.calculateDecimoTerceiro === 'function')
+            ? window.calculateDecimoTerceiro(u.baseSalary || 0, u.admissionDate, filterMonth)
+            : { avos: 0, valor: 0, admissaoFormatada: '—' };
+        if (relCard13) relCard13.style.display = 'flex';
+        if (relTot13)  relTot13.textContent = formatCurrency(decimoInfo.valor);
+        if (rel13Avos) rel13Avos.textContent = `${decimoInfo.avos}/12`;
+        if (rel13Detalhe) {
+            rel13Detalhe.textContent = (decimoInfo.admissaoFormatada !== '—')
+                ? `Adm: ${decimoInfo.admissaoFormatada} • Proporcional CLT`
+                : 'Provisão Proporcional CLT';
+        }
+    } else {
+        if (relCard13) relCard13.style.display = 'none';
     }
 
     document.getElementById('rel-tot-horas').textContent = minutesToTime(totalWorked);

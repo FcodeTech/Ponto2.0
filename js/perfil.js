@@ -79,6 +79,25 @@ function populateProfileView(user) {
     setText('info-journey-type', journeyMap[effectiveHourType] || effectiveHourType);
     setText('info-overtime',     (user.overtimeType || '50') + '%');
 
+    // Data de Admissão
+    let admText = '—';
+    if (user.admissionDate) {
+        const parts = user.admissionDate.split('-');
+        if (parts.length === 3) {
+            admText = `${parts[2]}/${parts[1]}/${parts[0]}`;
+            const now = new Date();
+            const adm = new Date(parts[0], parts[1] - 1, parts[2]);
+            const diffMonths = Math.max(0, (now.getFullYear() - adm.getFullYear()) * 12 + (now.getMonth() - adm.getMonth()));
+            const anos = Math.floor(diffMonths / 12);
+            const meses = diffMonths % 12;
+            let tempoStr = '';
+            if (anos > 0) tempoStr += `${anos} ano${anos > 1 ? 's' : ''}`;
+            if (meses > 0) tempoStr += `${tempoStr ? ' e ' : ''}${meses} m${meses > 1 ? 'eses' : 'ês'}`;
+            if (tempoStr) admText += ` (${tempoStr})`;
+        }
+    }
+    setText('info-admission-date', admText);
+
     // Horários da jornada
     setText('info-j-start',       user.journeyStart       || '08:00');
     setText('info-j-pause-start', user.journeyPauseStart  || '12:00');
@@ -97,6 +116,7 @@ function populateProfileForms(user) {
     const salaryInput = document.getElementById('profile-salario');
     const journeyInput = document.getElementById('profile-journey');
     const otInput     = document.getElementById('profile-overtime-type');
+    const admInput    = document.getElementById('profile-admission-date');
     const jStart      = document.getElementById('profile-journey-start');
     const jPauseStart = document.getElementById('profile-journey-pause-start');
     const jPauseEnd   = document.getElementById('profile-journey-pause-end');
@@ -109,6 +129,7 @@ function populateProfileForms(user) {
     if (salaryInput)  salaryInput.value = user.baseSalary || '';
     if (journeyInput) journeyInput.value = user.hourType || '8h';
     if (otInput)      otInput.value     = user.overtimeType || '50';
+    if (admInput)     admInput.value    = user.admissionDate || '';
     if (jStart)       jStart.value      = user.journeyStart || '08:00';
     if (jPauseStart)  jPauseStart.value = user.journeyPauseStart || '12:00';
     if (jPauseEnd)    jPauseEnd.value   = user.journeyPauseEnd || '13:00';
@@ -131,6 +152,7 @@ if (profileForm) {
         const salary    = parseFloat(document.getElementById('profile-salario').value) || 0;
         const hourType  = document.getElementById('profile-journey').value;
         const overtimeType = document.getElementById('profile-overtime-type').value;
+        const admissionDate = document.getElementById('profile-admission-date')?.value || null;
         const journeyStart = document.getElementById('profile-journey-start').value;
         const journeyPauseStart = document.getElementById('profile-journey-pause-start').value;
         const journeyPauseEnd = document.getElementById('profile-journey-pause-end').value;
@@ -153,7 +175,8 @@ if (profileForm) {
                 name, phone, email, 
                 baseSalary: salary, 
                 hourType, overtimeType, 
-                journeyStart, journeyPauseStart, journeyPauseEnd, journeyEnd 
+                journeyStart, journeyPauseStart, journeyPauseEnd, journeyEnd,
+                admissionDate
             });
 
             // Atualiza currentUser em memória
@@ -163,6 +186,7 @@ if (profileForm) {
             currentUser.baseSalary = salary;
             currentUser.hourType   = hourType;
             currentUser.overtimeType = overtimeType;
+            currentUser.admissionDate = admissionDate;
             currentUser.journeyStart = journeyStart;
             currentUser.journeyPauseStart = journeyPauseStart;
             currentUser.journeyPauseEnd = journeyPauseEnd;

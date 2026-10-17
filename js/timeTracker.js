@@ -644,12 +644,17 @@ window.updateDashboardStats = async function() {
 
         // Determinar o salário base para cálculo
         let targetSalary = currentUser.baseSalary || 0;
+        let targetEmployee = currentUser;
         if (currentUser.role === 'admin') {
             if (employeeId === 'all') {
                 targetSalary = 0;
+                targetEmployee = null;
             } else {
                 const emp = await db.users.get(employeeId);
-                if (emp) targetSalary = emp.baseSalary || 0;
+                if (emp) {
+                    targetSalary = emp.baseSalary || 0;
+                    targetEmployee = emp;
+                }
             }
         }
         dashSalario.textContent = formatCurrency(targetSalary);
@@ -761,6 +766,37 @@ window.updateDashboardStats = async function() {
             if (valFgtsBase) valFgtsBase.textContent = formatCurrency(salarioBruto);
         } else {
             if (cardFgts) cardFgts.style.display = 'none';
+        }
+
+        // ── Check 13º Salário (CLT) ──────────────────────────────────────────
+        const isDecimoActive = !!settings.decimoTerceiroCalculation;
+        const card13         = document.getElementById('card-decimo-terceiro');
+        const val13          = document.getElementById('dash-valor-13');
+        const val13Avos      = document.getElementById('dash-13-avos');
+        const val13Periodo   = document.getElementById('dash-13-periodo');
+        const val13Admissao  = document.getElementById('dash-13-admissao');
+
+        if (isDecimoActive && employeeId !== 'all') {
+            const admissionDate = targetEmployee ? targetEmployee.admissionDate : null;
+            const decimoInfo = (typeof window.calculateDecimoTerceiro === 'function')
+                ? window.calculateDecimoTerceiro(targetSalary, admissionDate, filterMonth)
+                : { avos: 0, valor: 0, totalAvosAno: 12, valorIntegralAno: 0, mesesEmpresa: 0, admissaoFormatada: '—' };
+
+            if (card13) card13.style.display = 'flex';
+            if (val13) val13.textContent = formatCurrency(decimoInfo.valor);
+            if (val13Avos) val13Avos.textContent = `${decimoInfo.avos}/12`;
+            if (val13Periodo) {
+                val13Periodo.textContent = (decimoInfo.avos === 12) ? 'Integral' : 'Proporcional';
+            }
+            if (val13Admissao) {
+                if (admissionDate) {
+                    val13Admissao.innerHTML = `Admissão: <strong>${decimoInfo.admissaoFormatada}</strong> &bull; Total anual: ${formatCurrency(decimoInfo.valorIntegralAno)}`;
+                } else {
+                    val13Admissao.textContent = `Prev. anual (12/12): ${formatCurrency(targetSalary)}`;
+                }
+            }
+        } else {
+            if (card13) card13.style.display = 'none';
         }
 
         document.getElementById('dash-valor-extras').textContent = formatCurrency(totalExtras);
