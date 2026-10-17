@@ -204,6 +204,7 @@ async function updateReportTotals() {
     const settings = (await db.settings.get('global')) || {};
     const isNoturnoActive = !!settings.noturnoCalculation;
     const isInssActive = !!settings.inssCalculation;
+    const isFgtsActive = !!settings.fgtsCalculation;
 
     currentReportData.forEach(r => {
         const user = userMap[r.userId];
@@ -272,8 +273,10 @@ async function updateReportTotals() {
         _ = valorNoturno; // referência para evitar lint
     }
 
+    // Remuneração bruta do mês antes dos descontos
+    const salarioBrutoReport = totalMoney;
+
     // Check se INSS está ativo (settings já lido acima)
-    
     let inssDiscount = 0;
     const relCardInss    = document.getElementById('rel-card-inss');
     const relTotInss     = document.getElementById('rel-tot-inss');
@@ -281,8 +284,10 @@ async function updateReportTotals() {
     const relInssNoturno = document.getElementById('rel-inss-noturno');
     
     if (isInssActive && singleEmployeeMode && currentReportData.length > 0) {
-        inssDiscount = window.calculateINSS(totalMoney);
-        if (relSalarioBruto) relSalarioBruto.textContent = formatCurrency(totalMoney);
+        inssDiscount = (typeof window.calculateINSS === 'function')
+            ? window.calculateINSS(salarioBrutoReport)
+            : 0;
+        if (relSalarioBruto) relSalarioBruto.textContent = formatCurrency(salarioBrutoReport);
         totalMoney -= inssDiscount;
         if (relCardInss) relCardInss.style.display = 'flex';
         if (relTotInss) relTotInss.textContent = `- ${formatCurrency(inssDiscount)}`;
@@ -296,6 +301,22 @@ async function updateReportTotals() {
     } else {
         if (relCardInss) relCardInss.style.display = 'none';
         if (relInssNoturno) relInssNoturno.style.display = 'none';
+    }
+
+    // Check se FGTS está ativo
+    const relCardFgts   = document.getElementById('rel-card-fgts');
+    const relTotFgts    = document.getElementById('rel-tot-fgts');
+    const relFgtsBruto  = document.getElementById('rel-fgts-bruto');
+
+    if (isFgtsActive && singleEmployeeMode && currentReportData.length > 0) {
+        const fgtsValor = (typeof window.calculateFGTS === 'function')
+            ? window.calculateFGTS(salarioBrutoReport)
+            : Number((salarioBrutoReport * 0.08).toFixed(2));
+        if (relCardFgts)  relCardFgts.style.display = 'flex';
+        if (relTotFgts)   relTotFgts.textContent = formatCurrency(fgtsValor);
+        if (relFgtsBruto) relFgtsBruto.textContent = formatCurrency(salarioBrutoReport);
+    } else {
+        if (relCardFgts) relCardFgts.style.display = 'none';
     }
 
     document.getElementById('rel-tot-horas').textContent = minutesToTime(totalWorked);

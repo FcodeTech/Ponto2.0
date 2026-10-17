@@ -85,6 +85,7 @@ function _mapRecordToDB(data) {
 
 function _mapSettingsFromDB(row) {
     if (!row) return null;
+    const localFgts = localStorage.getItem('ponto_fgts_calculation');
     return {
         id:                  row.user_id,
         userId:              row.user_id,
@@ -94,6 +95,9 @@ function _mapSettingsFromDB(row) {
         systemName:          row.system_name,
         inssCalculation:     row.inss_calculation,
         noturnoCalculation:  row.noturno_calculation,
+        fgtsCalculation:     row.fgts_calculation !== undefined && row.fgts_calculation !== null
+                                ? !!row.fgts_calculation
+                                : (localFgts === 'true'),
         resetTokens:         row.reset_tokens,
         filters:             row.filters || {}
     };
@@ -107,6 +111,7 @@ function _mapSettingsToDB(data) {
     if (data.systemName         !== undefined) row.system_name         = data.systemName;
     if (data.inssCalculation    !== undefined) row.inss_calculation    = data.inssCalculation;
     if (data.noturnoCalculation !== undefined) row.noturno_calculation = data.noturnoCalculation;
+    if (data.fgtsCalculation    !== undefined) row.fgts_calculation    = data.fgtsCalculation;
     if (data.resetTokens        !== undefined) row.reset_tokens        = data.resetTokens;
     if (data.filters            !== undefined) row.filters             = data.filters;
     return row;
@@ -355,17 +360,37 @@ const db = {
                 userId = await _getAuthUserId();
                 if (!userId) throw new Error('Usuário não autenticado');
             }
-            const row = _mapSettingsToDB(data);
+            if (data.fgtsCalculation !== undefined) {
+                localStorage.setItem('ponto_fgts_calculation', String(data.fgtsCalculation));
+            }
+            let row = _mapSettingsToDB(data);
             
-            const { data: updated, error: updateError } = await _supabase
-                .from('settings').update(row).eq('user_id', userId).select();
-            
-            if (updateError) throw updateError;
-            
-            if (!updated || updated.length === 0) {
-                const { error: insertError } = await _supabase
-                    .from('settings').insert({ user_id: userId, ...row });
-                if (insertError) throw insertError;
+            try {
+                const { data: updated, error: updateError } = await _supabase
+                    .from('settings').update(row).eq('user_id', userId).select();
+                
+                if (updateError) throw updateError;
+                
+                if (!updated || updated.length === 0) {
+                    const { error: insertError } = await _supabase
+                        .from('settings').insert({ user_id: userId, ...row });
+                    if (insertError) throw insertError;
+                }
+            } catch (err) {
+                if (err && err.message && (err.message.includes('fgts_calculation') || err.code === '42703' || err.code === 'PGRST204')) {
+                    console.warn('[db.settings] Coluna fgts_calculation ainda não criada no Supabase. Salvo localmente.');
+                    delete row.fgts_calculation;
+                    const { data: updated2, error: err2 } = await _supabase
+                        .from('settings').update(row).eq('user_id', userId).select();
+                    if (err2) throw err2;
+                    if (!updated2 || updated2.length === 0) {
+                        const { error: insertError2 } = await _supabase
+                            .from('settings').insert({ user_id: userId, ...row });
+                        if (insertError2) throw insertError2;
+                    }
+                } else {
+                    throw err;
+                }
             }
         },
 
@@ -375,17 +400,36 @@ const db = {
                 userId = await _getAuthUserId();
                 if (!userId) throw new Error('Usuário não autenticado');
             }
-            const row = _mapSettingsToDB(data);
+            if (data.fgtsCalculation !== undefined) {
+                localStorage.setItem('ponto_fgts_calculation', String(data.fgtsCalculation));
+            }
+            let row = _mapSettingsToDB(data);
             
-            const { data: updated, error: updateError } = await _supabase
-                .from('settings').update(row).eq('user_id', userId).select();
-            
-            if (updateError) throw updateError;
-            
-            if (!updated || updated.length === 0) {
-                const { error: insertError } = await _supabase
-                    .from('settings').insert({ user_id: userId, ...row });
-                if (insertError) throw insertError;
+            try {
+                const { data: updated, error: updateError } = await _supabase
+                    .from('settings').update(row).eq('user_id', userId).select();
+                
+                if (updateError) throw updateError;
+                
+                if (!updated || updated.length === 0) {
+                    const { error: insertError } = await _supabase
+                        .from('settings').insert({ user_id: userId, ...row });
+                    if (insertError) throw insertError;
+                }
+            } catch (err) {
+                if (err && err.message && (err.message.includes('fgts_calculation') || err.code === '42703' || err.code === 'PGRST204')) {
+                    delete row.fgts_calculation;
+                    const { data: updated2, error: err2 } = await _supabase
+                        .from('settings').update(row).eq('user_id', userId).select();
+                    if (err2) throw err2;
+                    if (!updated2 || updated2.length === 0) {
+                        const { error: insertError2 } = await _supabase
+                            .from('settings').insert({ user_id: userId, ...row });
+                        if (insertError2) throw insertError2;
+                    }
+                } else {
+                    throw err;
+                }
             }
         },
 
@@ -446,4 +490,15 @@ window.calculateINSS = function(grossSalary) {
         inss = (1621.00 * 0.075) + ((2902.84 - 1621.00) * 0.09) + ((4354.27 - 2902.84) * 0.12) + ((limit - 4354.27) * 0.14);
     }
     return Number(inss.toFixed(2));
+};
+
+/**
+ * Calcula o valor do FGTS mensal de acordo com a CLT (Art. 15 da Lei nº 8.036/1990).
+ * O FGTS é uma obrigação do empregador (8% sobre a remuneração mensal bruta:
+ * salário base + horas extras + adicionais).
+ * Não é descontado do salário líquido do trabalhador.
+ */
+window.calculateFGTS = function(grossSalary) {
+    if (grossSalary <= 0) return 0;
+    return Number((grossSalary * 0.08).toFixed(2));
 };

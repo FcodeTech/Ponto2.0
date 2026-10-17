@@ -12,6 +12,7 @@ async function calcFinanceiro(user, records) {
     const settings = (await db.settings.get('global')) || {};
     const isInssActive = !!settings.inssCalculation;
     const isNoturnoActive = !!settings.noturnoCalculation;
+    const isFgtsActive = !!settings.fgtsCalculation;
 
     const baseSalary = user.baseSalary || 0;
     const valorHora  = baseSalary / 220;
@@ -33,9 +34,10 @@ async function calcFinanceiro(user, records) {
         descontoInss = window.calculateINSS(salarioBruto);
     }
 
+    const valorFgts = isFgtsActive ? (typeof window.calculateFGTS === 'function' ? window.calculateFGTS(salarioBruto) : Number((salarioBruto * 0.08).toFixed(2))) : 0;
     const salarioLiquido = salarioBruto - descontoInss;
 
-    return { salarioBruto, descontoInss, salarioLiquido, adicNoturno, totNoturnoMinutes, isInssActive, isNoturnoActive };
+    return { salarioBruto, descontoInss, salarioLiquido, adicNoturno, totNoturnoMinutes, isInssActive, isNoturnoActive, isFgtsActive, valorFgts };
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -78,6 +80,9 @@ async function getReportDataArray(singleEmployeeMode, targetUserId) {
             rows.push(['Salário Líquido (após INSS):', formatCurrency(salarioLiquido)]);
         } else {
             rows.push(['Salário Líquido:',  formatCurrency(salarioLiquido)]);
+        }
+        if (isFgtsActive) {
+            rows.push(['FGTS (8% CLT - Depósito Empregador):', formatCurrency(valorFgts)]);
         }
         rows.push([]);
 
@@ -354,6 +359,17 @@ document.getElementById('btn-export-pdf')?.addEventListener('click', async () =>
                 doc.setFont("helvetica", "normal");
                 doc.setTextColor(redColor[0], redColor[1], redColor[2]);
                 doc.text(`- ${formatCurrency(descontoInss)}`, 60, startY);
+                doc.setTextColor(textColor[0], textColor[1], textColor[2]);
+                startY += 7;
+            }
+
+            if (isFgtsActive) {
+                // ── FGTS ───────────────────────────────────────────────────
+                doc.setFont("helvetica", "bold");
+                doc.text("FGTS (8% CLT):", 14, startY);
+                doc.setFont("helvetica", "normal");
+                doc.setTextColor(16, 185, 129);
+                doc.text(`${formatCurrency(valorFgts)} (Depósito Empregador)`, 60, startY);
                 doc.setTextColor(textColor[0], textColor[1], textColor[2]);
                 startY += 7;
             }

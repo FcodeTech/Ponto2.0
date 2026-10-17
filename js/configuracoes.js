@@ -52,6 +52,9 @@
             const noturnoSwitch = document.getElementById('checkbox-noturno');
             if (noturnoSwitch) noturnoSwitch.checked = !!settings.noturnoCalculation;
 
+            const fgtsSwitch = document.getElementById('checkbox-fgts');
+            if (fgtsSwitch) fgtsSwitch.checked = !!settings.fgtsCalculation;
+
         } catch (e) {
             console.error('[Configurações] Erro ao carregar settings:', e);
         }
@@ -195,6 +198,7 @@
                 const sysName = (document.getElementById('config-system-name')?.value || '').trim() || 'PontoMax';
                 const inssCalculation = document.getElementById('checkbox-inss')?.checked ?? false;
                 const noturnoCalculation = document.getElementById('checkbox-noturno')?.checked ?? false;
+                const fgtsCalculation = document.getElementById('checkbox-fgts')?.checked ?? false;
 
                 let logoUrl = _currentLogoUrl;
 
@@ -211,7 +215,8 @@
                     logoUrl:            logoUrl,
                     systemName:         sysName,
                     inssCalculation:    inssCalculation,
-                    noturnoCalculation: noturnoCalculation
+                    noturnoCalculation: noturnoCalculation,
+                    fgtsCalculation:    fgtsCalculation
                 };
 
                 await db.settings.update('global', newSettings);

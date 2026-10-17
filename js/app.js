@@ -101,6 +101,9 @@ async function applyGlobalSettings() {
         const noturnoSwitch = document.getElementById('checkbox-noturno');
         if (noturnoSwitch) noturnoSwitch.checked = !!settings.noturnoCalculation;
 
+        const fgtsSwitch = document.getElementById('checkbox-fgts');
+        if (fgtsSwitch) fgtsSwitch.checked = !!settings.fgtsCalculation;
+
     } catch (e) {
         console.error('[applyGlobalSettings] Erro ao carregar settings:', e);
     }

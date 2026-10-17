@@ -47,6 +47,7 @@ CREATE TABLE IF NOT EXISTS public.settings (
     system_name TEXT DEFAULT 'PontoMax',
     inss_calculation BOOLEAN DEFAULT false,
     noturno_calculation BOOLEAN DEFAULT false,
+    fgts_calculation BOOLEAN DEFAULT false,
     reset_tokens TEXT
 );
 

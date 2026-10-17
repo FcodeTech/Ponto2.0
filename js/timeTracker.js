@@ -719,6 +719,9 @@ window.updateDashboardStats = async function() {
             }
         }
 
+        // Remuneração bruta do mês (salário base + horas extras + adicional noturno)
+        const salarioBruto = totalReceber;
+
         // ── Check INSS ───────────────────────────────────────────────────────
         const isInssActive   = !!settings.inssCalculation;
         let inssDiscount     = 0;
@@ -728,8 +731,10 @@ window.updateDashboardStats = async function() {
         const valInssNoturno = document.getElementById('dash-inss-noturno');
 
         if (isInssActive && employeeId !== 'all') {
-            inssDiscount = window.calculateINSS(totalReceber);
-            if (valSalarioBruto) valSalarioBruto.textContent = formatCurrency(totalReceber);
+            inssDiscount = (typeof window.calculateINSS === 'function')
+                ? window.calculateINSS(salarioBruto)
+                : 0;
+            if (valSalarioBruto) valSalarioBruto.textContent = formatCurrency(salarioBruto);
             if (valInssNoturno) {
                 valInssNoturno.style.display = (isNoturnoActive && totalNoturnoMinutes > 0) ? 'block' : 'none';
                 valInssNoturno.innerHTML = `Adic. Noturno incl.: <strong>${formatCurrency(valorNoturno)}</strong>`;
@@ -739,6 +744,23 @@ window.updateDashboardStats = async function() {
             if (valInss)  valInss.textContent = `- ${formatCurrency(inssDiscount)}`;
         } else {
             if (cardInss) cardInss.style.display = 'none';
+        }
+
+        // ── Check FGTS (8% CLT) ──────────────────────────────────────────────
+        const isFgtsActive   = !!settings.fgtsCalculation;
+        const cardFgts       = document.getElementById('card-fgts');
+        const valFgts        = document.getElementById('dash-valor-fgts');
+        const valFgtsBase    = document.getElementById('dash-fgts-base');
+
+        if (isFgtsActive && employeeId !== 'all') {
+            const fgtsValor = (typeof window.calculateFGTS === 'function')
+                ? window.calculateFGTS(salarioBruto)
+                : Number((salarioBruto * 0.08).toFixed(2));
+            if (cardFgts) cardFgts.style.display = 'flex';
+            if (valFgts)  valFgts.textContent = formatCurrency(fgtsValor);
+            if (valFgtsBase) valFgtsBase.textContent = formatCurrency(salarioBruto);
+        } else {
+            if (cardFgts) cardFgts.style.display = 'none';
         }
 
         document.getElementById('dash-valor-extras').textContent = formatCurrency(totalExtras);
