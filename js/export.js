@@ -128,7 +128,7 @@ async function getReportDataArray(singleEmployeeMode, targetUserId) {
         rows.push(['Funcionário', 'Matrícula', 'Adic. Noturno', 'Salário Bruto', 'Desconto INSS', 'Salário Líquido']);
 
         for (const [uid, recs] of Object.entries(recordsByUser)) {
-            const u = userMap[parseInt(uid)] || { name: 'N/A', matricula: 'N/A', baseSalary: 0 };
+            const u = userMap[uid] || userMap[String(uid)] || { name: 'N/A', matricula: 'N/A', baseSalary: 0 };
             const { salarioBruto, descontoInss, salarioLiquido, adicNoturno } = await calcFinanceiro(u, recs);
             rows.push([
                 u.name,
@@ -180,7 +180,7 @@ document.getElementById('btn-export-excel')?.addEventListener('click', async () 
         if (currentUser.role !== 'admin') {
             targetUserId = currentUser.id;
         } else if (filterEl && filterEl.value !== 'all') {
-            targetUserId = parseInt(filterEl.value);
+            targetUserId = filterEl.value;
         }
         const singleEmployeeMode = (targetUserId !== null);
 
@@ -220,7 +220,7 @@ document.getElementById('btn-export-pdf')?.addEventListener('click', async () =>
         if (currentUser.role !== 'admin') {
             targetUserId = currentUser.id;
         } else if (filterEl && filterEl.value !== 'all') {
-            targetUserId = parseInt(filterEl.value);
+            targetUserId = filterEl.value;
         }
         const singleEmployeeMode = (targetUserId !== null);
 
@@ -437,7 +437,7 @@ document.getElementById('btn-export-pdf')?.addEventListener('click', async () =>
             const financBody = [];
 
             for (const [uid, recs] of Object.entries(recordsByUser)) {
-                const u = userMap[parseInt(uid)] || { name: 'N/A', matricula: '-', baseSalary: 0 };
+                const u = userMap[uid] || userMap[String(uid)] || { name: 'N/A', matricula: '-', baseSalary: 0 };
                 const { salarioBruto, descontoInss, salarioLiquido, adicNoturno } = await calcFinanceiro(u, recs);
                 financBody.push([
                     u.name || '-',

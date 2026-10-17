@@ -199,9 +199,9 @@ function renderBarChart(records) {
                     position: 'top',
                     labels: {
                         color:    c.tick,
-                        font:     { size: 12, weight: '500' },
-                        boxWidth: 14,
-                        padding:  18,
+                        font:     { size: 9.5, weight: '500' },
+                        boxWidth: 8,
+                        padding:  6,
                         usePointStyle: true,
                         pointStyle: 'rectRounded',
                     },
@@ -224,7 +224,7 @@ function renderBarChart(records) {
                 x: {
                     stacked: true,
                     grid:  { color: c.grid, drawBorder: false },
-                    ticks: { color: c.tick, maxRotation: 45, font: { size: 10 } },
+                    ticks: { color: c.tick, maxRotation: 45, font: { size: 8.5 } },
                 },
                 y: {
                     stacked:      true,
@@ -232,7 +232,7 @@ function renderBarChart(records) {
                     grid:  { color: c.grid, drawBorder: false },
                     ticks: {
                         color:    c.tick,
-                        font:     { size: 11 },
+                        font:     { size: 8.5 },
                         callback: v => `${v}h`,
                     },
                 },
@@ -298,9 +298,9 @@ function renderDonutChart(records) {
                     position: 'bottom',
                     labels: {
                         color:         c.tick,
-                        font:          { size: 11, weight: '500' },
-                        boxWidth:      12,
-                        padding:       14,
+                        font:          { size: 9, weight: '500' },
+                        boxWidth:      8,
+                        padding:       5,
                         usePointStyle: true,
                         pointStyle:    'circle',
                     },
@@ -321,6 +321,7 @@ function renderDonutChart(records) {
         plugins: [{
             id: 'centerText',
             afterDraw(chart) {
+                if (!chart.chartArea) return;
                 const { ctx, chartArea: { left, top, right, bottom } } = chart;
                 const cx  = (left + right) / 2;
                 const cy  = (top + bottom) / 2;
@@ -330,15 +331,15 @@ function renderDonutChart(records) {
 
                 ctx.save();
                 // Horas totais
-                ctx.font         = 'bold 18px Inter, sans-serif';
+                ctx.font         = 'bold 13px Inter, sans-serif';
                 ctx.fillStyle    = textCol;
                 ctx.textAlign    = 'center';
                 ctx.textBaseline = 'middle';
-                ctx.fillText(formatHM(grand), cx, cy - 10);
+                ctx.fillText(formatHM(grand), cx, cy - 6);
                 // Legenda
-                ctx.font      = '11px Inter, sans-serif';
+                ctx.font      = '8.5px Inter, sans-serif';
                 ctx.fillStyle = mutedCol;
-                ctx.fillText('Total', cx, cy + 12);
+                ctx.fillText('Total', cx, cy + 8);
                 ctx.restore();
             },
         }],
@@ -365,7 +366,7 @@ async function renderLineChart(userId) {
     try {
         let all = await db.timeRecords.toArray();
         if (userId && userId !== 'all') {
-            all = all.filter(r => r.userId === parseInt(userId));
+            all = all.filter(r => String(r.userId) === String(userId));
         }
 
         const horasTrab  = months.map(m => {
@@ -438,10 +439,10 @@ async function renderLineChart(userId) {
                         tension:            0.35,
                         pointBackgroundColor: c.emerald,
                         pointBorderColor:   '#fff',
-                        pointBorderWidth:   2,
-                        pointRadius:        5,
-                        pointHoverRadius:   8,
-                        borderWidth:        2,
+                        pointBorderWidth:   1.5,
+                        pointRadius:        2.5,
+                        pointHoverRadius:   5,
+                        borderWidth:        1.8,
                         borderDash:         [3, 3],
                         yAxisID:            'y2',
                     },
@@ -456,9 +457,9 @@ async function renderLineChart(userId) {
                         position: 'top',
                         labels: {
                             color:         c.tick,
-                            font:          { size: 12, weight: '500' },
-                            boxWidth:      14,
-                            padding:       18,
+                            font:          { size: 9, weight: '500' },
+                            boxWidth:      8,
+                            padding:       6,
                             usePointStyle: true,
                         },
                     },
@@ -478,7 +479,7 @@ async function renderLineChart(userId) {
                 scales: {
                     x: {
                         grid:  { color: c.grid, drawBorder: false },
-                        ticks: { color: c.tick, font: { size: 11 } },
+                        ticks: { color: c.tick, font: { size: 8.5 } },
                     },
                     y: {
                         position:    'left',
@@ -486,7 +487,7 @@ async function renderLineChart(userId) {
                         grid:        { color: c.grid, drawBorder: false },
                         ticks: {
                             color:    c.tick,
-                            font:     { size: 11 },
+                            font:     { size: 8.5 },
                             callback: v => `${v}h`,
                         },
                     },
@@ -496,7 +497,7 @@ async function renderLineChart(userId) {
                         grid:        { drawOnChartArea: false },
                         ticks: {
                             color:     c.emerald,
-                            font:      { size: 10 },
+                            font:      { size: 8 },
                             precision: 0,
                             callback:  v => `${v}d`,
                         },
@@ -556,22 +557,22 @@ function renderRadarChart(records) {
                     borderWidth:     2.5,
                     pointBackgroundColor: c.primary,
                     pointBorderColor:    '#fff',
-                    pointBorderWidth:    2,
-                    pointRadius:         5,
-                    pointHoverRadius:    8,
+                    pointBorderWidth:    1.5,
+                    pointRadius:         3,
+                    pointHoverRadius:    5,
                 },
                 {
                     label:           'Média de Extras',
                     data:            mediaExtra,
                     borderColor:     c.amber,
                     backgroundColor: rgba(c.amber, 0.12),
-                    borderWidth:     2,
+                    borderWidth:     1.8,
                     pointBackgroundColor: c.amber,
                     pointBorderColor:    '#fff',
-                    pointBorderWidth:    2,
-                    pointRadius:         4,
-                    pointHoverRadius:    7,
-                    borderDash:          [5, 3],
+                    pointBorderWidth:    1.5,
+                    pointRadius:         2.5,
+                    pointHoverRadius:    4.5,
+                    borderDash:          [4, 3],
                 },
             ],
         },
@@ -583,9 +584,9 @@ function renderRadarChart(records) {
                     position: 'top',
                     labels: {
                         color:         c.tick,
-                        font:          { size: 11, weight: '500' },
-                        boxWidth:      12,
-                        padding:       14,
+                        font:          { size: 9, weight: '500' },
+                        boxWidth:      8,
+                        padding:       5,
                         usePointStyle: true,
                     },
                 },
@@ -603,11 +604,11 @@ function renderRadarChart(records) {
                 r: {
                     angleLines:   { color: c.grid },
                     grid:         { color: c.grid },
-                    pointLabels:  { color: c.tick, font: { size: 12, weight: '600' } },
+                    pointLabels:  { color: c.tick, font: { size: 8.5, weight: '600' } },
                     ticks: {
                         color:           c.tick,
                         backdropColor:   'transparent',
-                        font:            { size: 10 },
+                        font:            { size: 8 },
                         callback:        v => `${v}h`,
                     },
                     beginAtZero: true,
@@ -640,7 +641,7 @@ async function renderFinanceChart(records, employeeId) {
 
     let targetSalary = 0;
     try {
-        const emp = await db.users.get(parseInt(employeeId));
+        const emp = await db.users.get(String(employeeId));
         if (emp) targetSalary = emp.baseSalary || 0;
     } catch (_) {}
 
@@ -699,7 +700,7 @@ async function renderFinanceChart(records, employeeId) {
                 backgroundColor: bgColors,
                 borderColor:     bdColors,
                 borderWidth:     1.5,
-                borderRadius:    8,
+                borderRadius:    6,
                 borderSkipped:   false,
             }],
         },
@@ -721,13 +722,13 @@ async function renderFinanceChart(records, employeeId) {
                     grid:  { color: c.grid, drawBorder: false },
                     ticks: {
                         color:    c.tick,
-                        font:     { size: 11 },
+                        font:     { size: 8.5 },
                         callback: v => fmtCurrency(v),
                     },
                 },
                 y: {
                     grid:  { display: false },
-                    ticks: { color: c.tick, font: { size: 12, weight: '600' } },
+                    ticks: { color: c.tick, font: { size: 9, weight: '600' } },
                 },
             },
         },
@@ -813,7 +814,8 @@ function renderSparklines(records) {
 // FUNÇÃO PRINCIPAL — renderizar todos os gráficos
 // ─────────────────────────────────────────────────────────────────────────────
 async function renderDashboardCharts() {
-    if (!window.currentUser) return;
+    const user = window.currentUser || (typeof currentUser !== 'undefined' ? currentUser : null);
+    if (!user) return;
     if (!document.getElementById('chart-horas-dia')) return;
     if (typeof Chart === 'undefined') {
         console.warn('[DashCharts] Chart.js não carregou ainda, tentando novamente...');
@@ -827,8 +829,8 @@ async function renderDashboardCharts() {
         const dateEnd     = document.getElementById('dash-filter-date-end')?.value;
         let   employeeId  = document.getElementById('dash-filter-employee')?.value || 'all';
 
-        if (window.currentUser.role !== 'admin') {
-            employeeId = window.currentUser.id.toString();
+        if (user.role !== 'admin') {
+            employeeId = String(user.id);
         }
 
         // Atualizar textos de período
@@ -849,7 +851,7 @@ async function renderDashboardCharts() {
         let records = await db.timeRecords.toArray();
 
         if (employeeId !== 'all') {
-            records = records.filter(r => r.userId === parseInt(employeeId));
+            records = records.filter(r => String(r.userId) === String(employeeId));
         }
         if (dateStart && dateEnd) {
             records = records.filter(r => r.date >= dateStart && r.date <= dateEnd);
@@ -884,8 +886,16 @@ async function renderDashboardCharts() {
         if (typeof original !== 'function' || original._chartsHooked) return;
 
         const hooked = async function (...args) {
-            await original.apply(this, args);
-            await renderDashboardCharts();
+            try {
+                await original.apply(this, args);
+            } catch (err) {
+                console.error('[DashCharts] Erro no updateDashboardStats original:', err);
+            }
+            try {
+                await renderDashboardCharts();
+            } catch (err) {
+                console.error('[DashCharts] Erro ao renderizar gráficos no hook:', err);
+            }
         };
         hooked._chartsHooked = true;
         window.updateDashboardStats = hooked;

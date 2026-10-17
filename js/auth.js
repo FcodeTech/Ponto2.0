@@ -68,6 +68,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (session) {
             // Buscar perfil do usuário na tabela users
             currentUser = await db.users.get(session.user.id);
+            window.currentUser = currentUser;
 
             if (currentUser) {
                 if (currentUser.role !== 'admin' && currentUser.status !== 'approved') {
@@ -261,6 +262,7 @@ if (loginForm) {
             }
 
             currentUser = await db.users.get(data.user.id);
+            window.currentUser = currentUser;
             if (currentUser && currentUser.role !== 'admin' && currentUser.status !== 'approved') {
                 await _supabase.auth.signOut();
                 showToast('Sua conta está aguardando aprovação do administrador.', 'error');
@@ -283,6 +285,7 @@ if (btnLogout) {
     btnLogout.addEventListener('click', async (e) => {
         e.preventDefault();
         currentUser = null;
+        window.currentUser = null;
         await _supabase.auth.signOut();
         window.location.href = 'login.html';
     });
