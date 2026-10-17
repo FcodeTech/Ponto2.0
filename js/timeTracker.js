@@ -786,13 +786,17 @@ window.updateDashboardStats = async function() {
             if (val13) val13.textContent = formatCurrency(decimoInfo.valor);
             if (val13Avos) val13Avos.textContent = `${decimoInfo.avos}/12`;
             if (val13Periodo) {
-                val13Periodo.textContent = (decimoInfo.avos === 12) ? 'Integral' : 'Proporcional';
+                val13Periodo.textContent = decimoInfo.isIntegral ? 'Integral' : 'Proporcional';
             }
             if (val13Admissao) {
-                if (admissionDate) {
-                    val13Admissao.innerHTML = `Admissão: <strong>${decimoInfo.admissaoFormatada}</strong> &bull; Total anual: ${formatCurrency(decimoInfo.valorIntegralAno)}`;
+                if (decimoInfo.admissaoFormatada !== '—') {
+                    if (decimoInfo.isIntegral) {
+                        val13Admissao.innerHTML = `Admissão: <strong>${decimoInfo.admissaoFormatada}</strong> &bull; 1ª parc. (50%): <strong>${formatCurrency(decimoInfo.primeiraParcela)}</strong>`;
+                    } else {
+                        val13Admissao.innerHTML = `Admissão: <strong>${decimoInfo.admissaoFormatada}</strong> &bull; Proporcional ano de admissão`;
+                    }
                 } else {
-                    val13Admissao.textContent = `Prev. anual (12/12): ${formatCurrency(targetSalary)}`;
+                    val13Admissao.innerHTML = `Total anual (12/12): <strong>${formatCurrency(targetSalary)}</strong>`;
                 }
             }
         } else {

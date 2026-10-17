@@ -541,9 +541,11 @@ window.calculateFGTS = function(grossSalary) {
 };
 
 /**
- * Calcula o 13º salário proporcional de acordo com a CLT (Lei 4.090/1962 e Lei 4.749/1965).
- * - A cada mês trabalhado com 15 dias ou mais = 1/12 avos.
- * - Calcula a proporção até o mês consultado (provisão acumulada) e o total previsto para o ano todo.
+ * Calcula o 13º salário de acordo com a CLT (Lei 4.090/1962 e Lei 4.749/1965).
+ * - Funcionários com mais de 1 ano de empresa (admitidos em anos anteriores) têm direito
+ *   ao 13º INTEGRAL (12/12 avos = salário integral).
+ * - Funcionários admitidos no próprio ano corrente recebem proporcional aos meses trabalhados
+ *   (a cada mês com 15 dias ou mais trabalhados = 1/12 avos).
  * 
  * @param {number} baseSalary - Salário base
  * @param {string} admissionDateStr - Data de admissão ('YYYY-MM-DD')
@@ -551,7 +553,19 @@ window.calculateFGTS = function(grossSalary) {
  */
 window.calculateDecimoTerceiro = function(baseSalary, admissionDateStr, refMonthStr) {
     if (!baseSalary || baseSalary <= 0) {
-        return { avos: 0, valor: 0, totalAvosAno: 0, valorIntegralAno: 0, mesesEmpresa: 0, admissaoFormatada: '—' };
+        return {
+            avos: 0,
+            valor: 0,
+            valorIntegralAno: 0,
+            valorProporcionalMes: 0,
+            avosAcumuladosMes: 0,
+            totalAvosAno: 12,
+            isIntegral: true,
+            mesesEmpresa: 0,
+            admissaoFormatada: '—',
+            primeiraParcela: 0,
+            segundaParcela: 0
+        };
     }
 
     const now = new Date();
@@ -564,10 +578,11 @@ window.calculateDecimoTerceiro = function(baseSalary, admissionDateStr, refMonth
         refMonth = parseInt(parts[1], 10) || refMonth;
     }
 
-    let avos = 0;
-    let totalAvosAno = 12;
+    let avosDireito = 12; // Avos totais devidos no ano
+    let avosAcumuladosMes = Math.min(12, Math.max(1, refMonth)); // Provisão até o mês filtrado
     let mesesEmpresa = 0;
     let admissaoFormatada = '—';
+    let isAdmitidoAnoAtual = false;
 
     if (admissionDateStr && admissionDateStr.includes('-')) {
         const parts = admissionDateStr.split('-');
@@ -577,47 +592,50 @@ window.calculateDecimoTerceiro = function(baseSalary, admissionDateStr, refMonth
 
         admissaoFormatada = `${String(admDay).padStart(2, '0')}/${String(admMonth).padStart(2, '0')}/${admYear}`;
 
-        // Cálculo de meses totais de casa até o mês de referência
+        // Cálculo de meses totais de casa
         const diffMonths = ((refYear - admYear) * 12) + (refMonth - admMonth);
         mesesEmpresa = Math.max(0, diffMonths + (admDay <= 15 ? 1 : 0));
 
         if (admYear < refYear) {
-            // Admitido antes do ano consultado: todos os meses até refMonth contam
-            avos = Math.min(12, Math.max(0, refMonth));
-            totalAvosAno = 12;
+            // Admitido antes do ano consultado (ex: admitido em 2020 e ano consultado 2026):
+            // O colaborador tem mais de 1 ano de empresa e trabalhou o ano todo -> 13º INTEGRAL (12/12)
+            avosDireito = 12;
+            avosAcumuladosMes = Math.min(12, Math.max(0, refMonth));
+            isAdmitidoAnoAtual = false;
         } else if (admYear === refYear) {
-            // Admitido no mesmo ano
-            if (refMonth < admMonth) {
-                avos = 0;
-            } else if (refMonth === admMonth) {
-                // Se trabalhou 15 dias ou mais no mês de admissão
-                avos = (admDay <= 15) ? 1 : 0;
-            } else {
-                const admMonthCount = (admDay <= 15) ? 1 : 0;
-                avos = Math.min(12, Math.max(0, (refMonth - admMonth) + admMonthCount));
-            }
+            // Admitido NO MESMO ANO: cálculo proporcional aos meses a partir da admissão
+            isAdmitidoAnoAtual = true;
             const admMonthCount = (admDay <= 15) ? 1 : 0;
-            totalAvosAno = Math.min(12, Math.max(0, (12 - admMonth) + admMonthCount));
+            avosDireito = Math.min(12, Math.max(0, (12 - admMonth) + admMonthCount));
+            if (refMonth < admMonth) {
+                avosAcumuladosMes = 0;
+            } else if (refMonth === admMonth) {
+                avosAcumuladosMes = admMonthCount;
+            } else {
+                avosAcumuladosMes = Math.min(avosDireito, Math.max(0, (refMonth - admMonth) + admMonthCount));
+            }
         } else {
             // Data de admissão futura ao ano consultado
-            avos = 0;
-            totalAvosAno = 0;
+            avosDireito = 0;
+            avosAcumuladosMes = 0;
         }
-    } else {
-        // Sem data de admissão: assume proporcional ao mês do ano (ex: mês 7 = 7/12)
-        avos = Math.min(12, Math.max(1, refMonth));
-        totalAvosAno = 12;
     }
 
-    const valorProporcional = Number(((baseSalary / 12) * avos).toFixed(2));
-    const valorIntegralAno = Number(((baseSalary / 12) * totalAvosAno).toFixed(2));
+    const valorDevidoAno = Number(((baseSalary / 12) * avosDireito).toFixed(2));
+    const valorProporcionalMes = Number(((baseSalary / 12) * avosAcumuladosMes).toFixed(2));
 
     return {
-        avos,
-        valor: valorProporcional,
-        totalAvosAno,
-        valorIntegralAno,
-        mesesEmpresa,
-        admissaoFormatada
+        avos: avosDireito,
+        valor: valorDevidoAno, // Valor principal: para funcionários com mais de 1 ano, é o 13º integral (12/12)
+        valorIntegralAno: valorDevidoAno,
+        valorProporcionalMes: valorProporcionalMes,
+        avosAcumuladosMes: avosAcumuladosMes,
+        totalAvosAno: avosDireito,
+        isIntegral: (avosDireito === 12),
+        isAdmitidoAnoAtual: isAdmitidoAnoAtual,
+        mesesEmpresa: mesesEmpresa,
+        admissaoFormatada: admissaoFormatada,
+        primeiraParcela: Number((valorDevidoAno * 0.5).toFixed(2)),
+        segundaParcela: Number((valorDevidoAno * 0.5).toFixed(2))
     };
 };
