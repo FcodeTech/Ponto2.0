@@ -655,22 +655,23 @@ window.calculateDecimoTerceiro = function(baseSalary, admissionDateStr, refMonth
 
 /**
  * Calcula o desconto do Imposto de Renda Retido na Fonte (IRRF) conforme
- * as novas regras de 2026 (Lei nº 15.270/2025).
+ * a Lei nº 15.270/2025 (novas regras de 2026) e Lei nº 15.191/2025 (tabela progressiva).
  * 
- * Regras principais de 2026:
- * 1. Isenção Total: Rendimentos brutos até R$ 5.000,00 possuem imposto R$ 0,00.
- * 2. Faixa de Transição (R$ 5.000,01 a R$ 7.350,00):
- *    - Calcula a base de cálculo tributável: Salário Bruto deduzido do INSS ou
- *      da dedução simplificada mensal (R$ 607,20), aplicando a dedução mais vantajosa.
- *    - Aplica a tabela progressiva oficial.
- *    - Aplica a Redução Adicional de 2026: Redução = 978,62 - (0,133145 * Salário Bruto).
- *    - Imposto devido = max(0, Imposto da Tabela - Redução).
- * 3. Acima de R$ 7.350,00:
- *    - Imposto calculado pela tabela progressiva integralmente.
+ * Regras Oficiais da Receita Federal:
+ * 1. Rendimentos até R$ 5.000,00:
+ *    - Isenção total garantida por lei (imposto final = R$ 0,00).
+ * 2. Rendimentos de R$ 5.000,01 até R$ 7.350,00 (Faixa de Transição):
+ *    - Aplica-se a tabela progressiva oficial sobre a base deduzida.
+ *    - Aplica-se o Redutor Decrescente da Lei nº 15.270/2025:
+ *      Redução = 978,62 - (0,133145 * Remuneração Bruta)
+ *    - Aplica-se a opção mais favorável ao trabalhador (dedução legal de INSS ou desconto simplificado de R$ 607,20).
+ *    - Imposto Final = max(0, Imposto da Tabela - Redução).
+ * 3. Rendimentos acima de R$ 7.350,00:
+ *    - Tabela progressiva integral sem redutor adicional.
  * 
- * @param {number} grossSalary - Rendimento mensal bruto (Salário base + Horas extras + Adicionais)
- * @param {number} [inssDiscount] - Valor do INSS já apurado no mês
- * @returns {object} Detalhamento completo do cálculo do IRRF
+ * @param {number} grossSalary - Remuneração bruta total mensal (Salário base + Horas extras + Adicionais)
+ * @param {number} [inssDiscount] - Valor da contribuição ao INSS retida no mês
+ * @returns {object} Detalhamento completo do cálculo do IRRF 2026
  */
 window.calculateIRRF = function(grossSalary, inssDiscount) {
     if (!grossSalary || grossSalary <= 0) {
@@ -678,73 +679,52 @@ window.calculateIRRF = function(grossSalary, inssDiscount) {
             valor: 0,
             baseCalculo: 0,
             salarioBruto: 0,
+            inss: 0,
             aliquotaNominal: 0,
             aliquotaEfetiva: 0,
             impostoTabela: 0,
             reducao2026: 0,
             deducaoUtilizada: 0,
+            tipoDeducao: 'Nenhuma',
             isIsento: true,
             regra: 'Isento'
         };
     }
 
-    // Regra 1: Isenção geral para salário bruto de até R$ 5.000,00
-    if (grossSalary <= 5000.00) {
-        return {
-            valor: 0,
-            baseCalculo: grossSalary,
-            salarioBruto: grossSalary,
-            aliquotaNominal: 0,
-            aliquotaEfetiva: 0,
-            impostoTabela: 0,
-            reducao2026: 0,
-            deducaoUtilizada: 0,
-            isIsento: true,
-            regra: 'Isento até R$ 5.000,00 (Lei 15.270/2026)'
-        };
-    }
-
-    // Determinar o INSS para dedução da base de cálculo
+    // 1. INSS oficial
     const inssVal = (typeof inssDiscount === 'number' && inssDiscount >= 0)
         ? inssDiscount
         : ((typeof window.calculateINSS === 'function') ? window.calculateINSS(grossSalary) : 0);
 
-    // Comparar dedução legal (INSS) com o desconto simplificado padrão (R$ 607,20)
-    // Conforme regra da Receita Federal, aplica-se o mais vantajoso ao trabalhador
-    const deducaoSimplificada = 607.20;
-    const deducaoUtilizada = Math.max(inssVal, deducaoSimplificada);
-    const baseCalculo = Math.max(0, grossSalary - deducaoUtilizada);
-
-    // Tabela Progressiva Padrão do IRRF:
-    // Faixa 1: Até 2.428,80 -> Isento
-    // Faixa 2: 2.428,81 até 2.826,65 -> 7,5% (dedução 182,16)
-    // Faixa 3: 2.826,66 até 3.751,05 -> 15%  (dedução 394,16)
-    // Faixa 4: 3.751,06 até 4.664,68 -> 22,5% (dedução 675,49)
-    // Faixa 5: Acima de 4.664,68     -> 27,5% (dedução 908,73)
-    let aliquota = 0;
-    let parcelaDeduzir = 0;
-
-    if (baseCalculo <= 2428.80) {
-        aliquota = 0;
-        parcelaDeduzir = 0;
-    } else if (baseCalculo <= 2826.65) {
-        aliquota = 0.075;
-        parcelaDeduzir = 182.16;
-    } else if (baseCalculo <= 3751.05) {
-        aliquota = 0.15;
-        parcelaDeduzir = 394.16;
-    } else if (baseCalculo <= 4664.68) {
-        aliquota = 0.225;
-        parcelaDeduzir = 675.49;
-    } else {
-        aliquota = 0.275;
-        parcelaDeduzir = 908.73;
+    // 2. Isenção total da Lei 15.270/2025 para remuneração de até R$ 5.000,00
+    if (grossSalary <= 5000.00) {
+        const baseINSS = Math.max(0, grossSalary - inssVal);
+        return {
+            valor: 0,
+            baseCalculo: Number(baseINSS.toFixed(2)),
+            salarioBruto: grossSalary,
+            inss: inssVal,
+            aliquotaNominal: 0,
+            aliquotaEfetiva: 0,
+            impostoTabela: 0,
+            reducao2026: 0,
+            deducaoUtilizada: inssVal,
+            tipoDeducao: 'Isenção Integral',
+            isIsento: true,
+            regra: 'Isento até R$ 5.000 (Lei 15.270/26)'
+        };
     }
 
-    const impostoTabela = Math.max(0, (baseCalculo * aliquota) - parcelaDeduzir);
+    // 3. Tabela Progressiva Oficial Mensal (Lei nº 15.191/2025)
+    function calcImpostoBruto(base) {
+        if (base <= 2428.80) return { imposto: 0, aliq: 0, deduc: 0 };
+        if (base <= 2826.65) return { imposto: Math.max(0, (base * 0.075) - 182.16), aliq: 7.5, deduc: 182.16 };
+        if (base <= 3751.05) return { imposto: Math.max(0, (base * 0.15) - 394.16), aliq: 15.0, deduc: 394.16 };
+        if (base <= 4664.68) return { imposto: Math.max(0, (base * 0.225) - 675.49), aliq: 22.5, deduc: 675.49 };
+        return { imposto: Math.max(0, (base * 0.275) - 908.73), aliq: 27.5, deduc: 908.73 };
+    }
 
-    // Regra 2: Faixa de Transição 2026 (R$ 5.000,01 a R$ 7.350,00)
-    // Fórmula do redutor de 2026: 978,62 - (0,133145 * Salário Bruto)
+    // 4. Redutor da Lei nº 15.270/2025 para a faixa de transição (R$ 5.000,01 a R$ 7.350,00)
     let reducao2026 = 0;
     let regraDesc = 'Tabela Progressiva 2026';
 
@@ -753,19 +733,47 @@ window.calculateIRRF = function(grossSalary, inssDiscount) {
         regraDesc = 'Faixa Transição 2026 (com Redutor)';
     }
 
-    const impostoFinal = Math.max(0, impostoTabela - reducao2026);
-    const impostoFinalArredondado = Number(impostoFinal.toFixed(2));
+    // 5. Comparar deduções legais: INSS real vs Desconto Simplificado (R$ 607,20)
+    // A Receita Federal assegura a aplicação do desconto mais vantajoso ao trabalhador
+    const baseINSS = Math.max(0, grossSalary - inssVal);
+    const impostoINSS = calcImpostoBruto(baseINSS);
+    const finalINSS = Math.max(0, impostoINSS.imposto - reducao2026);
+
+    const deducaoSimplificada = 607.20;
+    const baseSimp = Math.max(0, grossSalary - deducaoSimplificada);
+    const impostoSimp = calcImpostoBruto(baseSimp);
+    const finalSimp = Math.max(0, impostoSimp.imposto - reducao2026);
+
+    let baseFinal = baseINSS;
+    let deducaoFinal = inssVal;
+    let tipoDeducao = 'Dedução INSS';
+    let impostoTabela = impostoINSS.imposto;
+    let aliquotaNominal = impostoINSS.aliq;
+    let impostoFinal = finalINSS;
+
+    if (finalSimp < finalINSS) {
+        baseFinal = baseSimp;
+        deducaoFinal = deducaoSimplificada;
+        tipoDeducao = 'Desconto Simplificado';
+        impostoTabela = impostoSimp.imposto;
+        aliquotaNominal = impostoSimp.aliq;
+        impostoFinal = finalSimp;
+    }
+
+    const impostoArredondado = Number(impostoFinal.toFixed(2));
 
     return {
-        valor: impostoFinalArredondado,
-        baseCalculo: Number(baseCalculo.toFixed(2)),
+        valor: impostoArredondado,
+        baseCalculo: Number(baseFinal.toFixed(2)),
         salarioBruto: grossSalary,
-        aliquotaNominal: aliquota * 100,
-        aliquotaEfetiva: Number(((impostoFinalArredondado / grossSalary) * 100).toFixed(2)),
+        inss: inssVal,
+        aliquotaNominal: aliquotaNominal,
+        aliquotaEfetiva: Number(((impostoArredondado / grossSalary) * 100).toFixed(2)),
         impostoTabela: Number(impostoTabela.toFixed(2)),
         reducao2026: Number(reducao2026.toFixed(2)),
-        deducaoUtilizada: Number(deducaoUtilizada.toFixed(2)),
-        isIsento: impostoFinalArredondado <= 0,
+        deducaoUtilizada: Number(deducaoFinal.toFixed(2)),
+        tipoDeducao: tipoDeducao,
+        isIsento: impostoArredondado <= 0,
         regra: regraDesc
     };
 };

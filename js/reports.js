@@ -285,10 +285,12 @@ async function updateReportTotals() {
     const relSalarioBruto = document.getElementById('rel-salario-bruto');
     const relInssNoturno = document.getElementById('rel-inss-noturno');
     
+    const inssOficial = (typeof window.calculateINSS === 'function')
+        ? window.calculateINSS(salarioBrutoReport)
+        : 0;
+
     if (isInssActive && singleEmployeeMode && currentReportData.length > 0) {
-        inssDiscount = (typeof window.calculateINSS === 'function')
-            ? window.calculateINSS(salarioBrutoReport)
-            : 0;
+        inssDiscount = inssOficial;
         if (relSalarioBruto) relSalarioBruto.textContent = formatCurrency(salarioBrutoReport);
         totalMoney -= inssDiscount;
         if (relCardInss) relCardInss.style.display = 'flex';
@@ -314,8 +316,8 @@ async function updateReportTotals() {
 
     if (isIrrfActive && singleEmployeeMode && currentReportData.length > 0) {
         const irrfInfo = (typeof window.calculateIRRF === 'function')
-            ? window.calculateIRRF(salarioBrutoReport, inssDiscount)
-            : { valor: 0, isIsento: true, reducao2026: 0 };
+            ? window.calculateIRRF(salarioBrutoReport, inssOficial)
+            : { valor: 0, isIsento: true, reducao2026: 0, baseCalculo: salarioBrutoReport };
         irrfDiscount = irrfInfo.valor;
         totalMoney -= irrfDiscount;
         if (relCardIrrf) relCardIrrf.style.display = 'flex';
@@ -328,10 +330,16 @@ async function updateReportTotals() {
                 relTotIrrf.style.color = '#10b981';
             }
         }
-        if (relIrrfBruto) relIrrfBruto.textContent = formatCurrency(salarioBrutoReport);
+        if (relIrrfBruto) {
+            if (irrfInfo.isIsento) {
+                relIrrfBruto.textContent = formatCurrency(irrfInfo.salarioBruto);
+            } else {
+                relIrrfBruto.textContent = `${formatCurrency(irrfInfo.baseCalculo)} (${irrfInfo.tipoDeducao})`;
+            }
+        }
         if (relIrrfRegra) {
             if (irrfInfo.isIsento) {
-                relIrrfRegra.textContent = 'Isento até R$ 5.000';
+                relIrrfRegra.textContent = 'Isento até R$ 5.000 (Lei 15.270/26)';
             } else if (irrfInfo.reducao2026 > 0) {
                 relIrrfRegra.textContent = `Alíq. ${irrfInfo.aliquotaEfetiva}% (Redução 2026: - ${formatCurrency(irrfInfo.reducao2026)})`;
             } else {

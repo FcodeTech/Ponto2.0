@@ -735,10 +735,12 @@ window.updateDashboardStats = async function() {
         const valSalarioBruto = document.getElementById('dash-salario-bruto');
         const valInssNoturno = document.getElementById('dash-inss-noturno');
 
+        const inssOficial = (typeof window.calculateINSS === 'function')
+            ? window.calculateINSS(salarioBruto)
+            : 0;
+
         if (isInssActive && employeeId !== 'all') {
-            inssDiscount = (typeof window.calculateINSS === 'function')
-                ? window.calculateINSS(salarioBruto)
-                : 0;
+            inssDiscount = inssOficial;
             if (valSalarioBruto) valSalarioBruto.textContent = formatCurrency(salarioBruto);
             if (valInssNoturno) {
                 valInssNoturno.style.display = (isNoturnoActive && totalNoturnoMinutes > 0) ? 'block' : 'none';
@@ -761,7 +763,7 @@ window.updateDashboardStats = async function() {
 
         if (isIrrfActive && employeeId !== 'all') {
             const irrfInfo = (typeof window.calculateIRRF === 'function')
-                ? window.calculateIRRF(salarioBruto, inssDiscount)
+                ? window.calculateIRRF(salarioBruto, inssOficial)
                 : { valor: 0, isIsento: true, salarioBruto: salarioBruto, baseCalculo: salarioBruto, reducao2026: 0 };
             irrfDiscount = irrfInfo.valor;
             if (cardIrrf) cardIrrf.style.display = 'flex';
@@ -774,7 +776,13 @@ window.updateDashboardStats = async function() {
                     valIrrf.style.color = '#10b981';
                 }
             }
-            if (valIrrfBase) valIrrfBase.textContent = formatCurrency(salarioBruto);
+            if (valIrrfBase) {
+                if (irrfInfo.isIsento) {
+                    valIrrfBase.textContent = formatCurrency(irrfInfo.salarioBruto);
+                } else {
+                    valIrrfBase.innerHTML = `${formatCurrency(irrfInfo.baseCalculo)} <span style="font-weight: normal; font-size: 0.82em; opacity: 0.85;">(${irrfInfo.tipoDeducao})</span>`;
+                }
+            }
             if (valIrrfRegra) {
                 if (irrfInfo.isIsento) {
                     valIrrfRegra.innerHTML = '<span style="color: #10b981; font-weight: 600;"><i class="fa-solid fa-check"></i> Isento até R$ 5.000 (Lei 15.270/26)</span>';
