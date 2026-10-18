@@ -751,6 +751,44 @@ window.updateDashboardStats = async function() {
             if (cardInss) cardInss.style.display = 'none';
         }
 
+        // ── Check IRRF (2026) ────────────────────────────────────────────────
+        const isIrrfActive   = !!settings.irrfCalculation;
+        let irrfDiscount     = 0;
+        const cardIrrf       = document.getElementById('card-desconto-irrf');
+        const valIrrf        = document.getElementById('dash-desconto-irrf');
+        const valIrrfBase    = document.getElementById('dash-irrf-base');
+        const valIrrfRegra   = document.getElementById('dash-irrf-regra');
+
+        if (isIrrfActive && employeeId !== 'all') {
+            const irrfInfo = (typeof window.calculateIRRF === 'function')
+                ? window.calculateIRRF(salarioBruto, inssDiscount)
+                : { valor: 0, isIsento: true, salarioBruto: salarioBruto, baseCalculo: salarioBruto, reducao2026: 0 };
+            irrfDiscount = irrfInfo.valor;
+            if (cardIrrf) cardIrrf.style.display = 'flex';
+            if (valIrrf) {
+                if (irrfInfo.valor > 0) {
+                    valIrrf.textContent = `- ${formatCurrency(irrfInfo.valor)}`;
+                    valIrrf.style.color = 'var(--danger-color, #dc3545)';
+                } else {
+                    valIrrf.textContent = 'R$ 0,00';
+                    valIrrf.style.color = '#10b981';
+                }
+            }
+            if (valIrrfBase) valIrrfBase.textContent = formatCurrency(salarioBruto);
+            if (valIrrfRegra) {
+                if (irrfInfo.isIsento) {
+                    valIrrfRegra.innerHTML = '<span style="color: #10b981; font-weight: 600;"><i class="fa-solid fa-check"></i> Isento até R$ 5.000 (Lei 15.270/26)</span>';
+                } else if (irrfInfo.reducao2026 > 0) {
+                    valIrrfRegra.innerHTML = `Alíq. efetiva: <strong>${irrfInfo.aliquotaEfetiva}%</strong> &bull; Redução 2026: <strong>- ${formatCurrency(irrfInfo.reducao2026)}</strong>`;
+                } else {
+                    valIrrfRegra.innerHTML = `Base tributável: <strong>${formatCurrency(irrfInfo.baseCalculo)}</strong> (Alíq. ${irrfInfo.aliquotaNominal}%)`;
+                }
+            }
+            totalReceber -= irrfDiscount;
+        } else {
+            if (cardIrrf) cardIrrf.style.display = 'none';
+        }
+
         // ── Check FGTS (8% CLT) ──────────────────────────────────────────────
         const isFgtsActive   = !!settings.fgtsCalculation;
         const cardFgts       = document.getElementById('card-fgts');

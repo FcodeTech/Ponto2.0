@@ -656,15 +656,21 @@ async function renderFinanceChart(records, employeeId) {
 
     let valorNoturno = 0;
     let inssDiscount = 0;
+    let irrfDiscount = 0;
     try {
         const settings = await db.settings.get('global');
         if (settings?.noturnoCalculation) valorNoturno = (valorHora * 0.20) * (totalNot / 60);
+        const salarioBrutoGrafico = targetSalary + totalExtras + valorNoturno;
         if (settings?.inssCalculation && typeof window.calculateINSS === 'function') {
-            inssDiscount = window.calculateINSS(targetSalary + totalExtras + valorNoturno);
+            inssDiscount = window.calculateINSS(salarioBrutoGrafico);
+        }
+        if (settings?.irrfCalculation && typeof window.calculateIRRF === 'function') {
+            const irrfInfo = window.calculateIRRF(salarioBrutoGrafico, inssDiscount);
+            irrfDiscount = irrfInfo.valor;
         }
     } catch (_) {}
 
-    const totalLiquido = targetSalary + totalExtras + valorNoturno - inssDiscount;
+    const totalLiquido = targetSalary + totalExtras + valorNoturno - inssDiscount - irrfDiscount;
     const c = getThemeColors();
     if (DashCharts.financeiro) DashCharts.financeiro.destroy();
 
@@ -684,6 +690,12 @@ async function renderFinanceChart(records, employeeId) {
         dataValues.push(-inssDiscount);
         bgColors.push('rgba(107,114,128,0.55)');
         bdColors.push('#6b7280');
+    }
+    if (irrfDiscount > 0) {
+        dataLabels.push('(-) IRRF');
+        dataValues.push(-irrfDiscount);
+        bgColors.push('rgba(225,29,72,0.55)');
+        bdColors.push('#e11d48');
     }
     dataLabels.push('Total Líquido');
     dataValues.push(totalLiquido);

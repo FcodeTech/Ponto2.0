@@ -89,6 +89,9 @@ async function applyGlobalSettings() {
         const inssSwitch = document.getElementById('checkbox-inss');
         if (inssSwitch) inssSwitch.checked = !!settings.inssCalculation;
 
+        const irrfSwitch = document.getElementById('checkbox-irrf');
+        if (irrfSwitch) irrfSwitch.checked = !!settings.irrfCalculation;
+
         const noturnoSwitch = document.getElementById('checkbox-noturno');
         if (noturnoSwitch) noturnoSwitch.checked = !!settings.noturnoCalculation;
 

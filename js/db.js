@@ -90,6 +90,7 @@ function _mapSettingsFromDB(row) {
     if (!row) return null;
     const localFgts = localStorage.getItem('ponto_fgts_calculation');
     const local13 = localStorage.getItem('ponto_decimo_terceiro_calculation');
+    const localIrrf = localStorage.getItem('ponto_irrf_calculation');
     return {
         id:                         row.user_id,
         userId:                     row.user_id,
@@ -105,6 +106,9 @@ function _mapSettingsFromDB(row) {
         decimoTerceiroCalculation:  row.decimo_terceiro_calculation !== undefined && row.decimo_terceiro_calculation !== null
                                         ? !!row.decimo_terceiro_calculation
                                         : (local13 === 'true'),
+        irrfCalculation:            row.irrf_calculation !== undefined && row.irrf_calculation !== null
+                                        ? !!row.irrf_calculation
+                                        : (localIrrf === 'true'),
         resetTokens:                row.reset_tokens,
         filters:                    row.filters || {}
     };
@@ -120,6 +124,7 @@ function _mapSettingsToDB(data) {
     if (data.noturnoCalculation         !== undefined) row.noturno_calculation         = data.noturnoCalculation;
     if (data.fgtsCalculation            !== undefined) row.fgts_calculation            = data.fgtsCalculation;
     if (data.decimoTerceiroCalculation  !== undefined) row.decimo_terceiro_calculation  = data.decimoTerceiroCalculation;
+    if (data.irrfCalculation            !== undefined) row.irrf_calculation            = data.irrfCalculation;
     if (data.resetTokens                !== undefined) row.reset_tokens                = data.resetTokens;
     if (data.filters                    !== undefined) row.filters                     = data.filters;
     return row;
@@ -396,6 +401,9 @@ const db = {
             if (data.decimoTerceiroCalculation !== undefined) {
                 localStorage.setItem('ponto_decimo_terceiro_calculation', String(data.decimoTerceiroCalculation));
             }
+            if (data.irrfCalculation !== undefined) {
+                localStorage.setItem('ponto_irrf_calculation', String(data.irrfCalculation));
+            }
             let row = _mapSettingsToDB(data);
             
             try {
@@ -410,7 +418,8 @@ const db = {
                     if (insertError) throw insertError;
                 }
             } catch (err) {
-                if (err && err.message && (err.message.includes('decimo_terceiro_calculation') || err.message.includes('fgts_calculation') || err.code === '42703' || err.code === 'PGRST204')) {
+                if (err && err.message && (err.message.includes('irrf_calculation') || err.message.includes('decimo_terceiro_calculation') || err.message.includes('fgts_calculation') || err.code === '42703' || err.code === 'PGRST204')) {
+                    delete row.irrf_calculation;
                     delete row.decimo_terceiro_calculation;
                     delete row.fgts_calculation;
                     const { data: updated2, error: err2 } = await _supabase
@@ -439,6 +448,9 @@ const db = {
             if (data.decimoTerceiroCalculation !== undefined) {
                 localStorage.setItem('ponto_decimo_terceiro_calculation', String(data.decimoTerceiroCalculation));
             }
+            if (data.irrfCalculation !== undefined) {
+                localStorage.setItem('ponto_irrf_calculation', String(data.irrfCalculation));
+            }
             let row = _mapSettingsToDB(data);
             
             try {
@@ -453,7 +465,8 @@ const db = {
                     if (insertError) throw insertError;
                 }
             } catch (err) {
-                if (err && err.message && (err.message.includes('decimo_terceiro_calculation') || err.message.includes('fgts_calculation') || err.code === '42703' || err.code === 'PGRST204')) {
+                if (err && err.message && (err.message.includes('irrf_calculation') || err.message.includes('decimo_terceiro_calculation') || err.message.includes('fgts_calculation') || err.code === '42703' || err.code === 'PGRST204')) {
+                    delete row.irrf_calculation;
                     delete row.decimo_terceiro_calculation;
                     delete row.fgts_calculation;
                     const { data: updated2, error: err2 } = await _supabase
@@ -639,3 +652,121 @@ window.calculateDecimoTerceiro = function(baseSalary, admissionDateStr, refMonth
         segundaParcela: Number((valorDevidoAno * 0.5).toFixed(2))
     };
 };
+
+/**
+ * Calcula o desconto do Imposto de Renda Retido na Fonte (IRRF) conforme
+ * as novas regras de 2026 (Lei nº 15.270/2025).
+ * 
+ * Regras principais de 2026:
+ * 1. Isenção Total: Rendimentos brutos até R$ 5.000,00 possuem imposto R$ 0,00.
+ * 2. Faixa de Transição (R$ 5.000,01 a R$ 7.350,00):
+ *    - Calcula a base de cálculo tributável: Salário Bruto deduzido do INSS ou
+ *      da dedução simplificada mensal (R$ 607,20), aplicando a dedução mais vantajosa.
+ *    - Aplica a tabela progressiva oficial.
+ *    - Aplica a Redução Adicional de 2026: Redução = 978,62 - (0,133145 * Salário Bruto).
+ *    - Imposto devido = max(0, Imposto da Tabela - Redução).
+ * 3. Acima de R$ 7.350,00:
+ *    - Imposto calculado pela tabela progressiva integralmente.
+ * 
+ * @param {number} grossSalary - Rendimento mensal bruto (Salário base + Horas extras + Adicionais)
+ * @param {number} [inssDiscount] - Valor do INSS já apurado no mês
+ * @returns {object} Detalhamento completo do cálculo do IRRF
+ */
+window.calculateIRRF = function(grossSalary, inssDiscount) {
+    if (!grossSalary || grossSalary <= 0) {
+        return {
+            valor: 0,
+            baseCalculo: 0,
+            salarioBruto: 0,
+            aliquotaNominal: 0,
+            aliquotaEfetiva: 0,
+            impostoTabela: 0,
+            reducao2026: 0,
+            deducaoUtilizada: 0,
+            isIsento: true,
+            regra: 'Isento'
+        };
+    }
+
+    // Regra 1: Isenção geral para salário bruto de até R$ 5.000,00
+    if (grossSalary <= 5000.00) {
+        return {
+            valor: 0,
+            baseCalculo: grossSalary,
+            salarioBruto: grossSalary,
+            aliquotaNominal: 0,
+            aliquotaEfetiva: 0,
+            impostoTabela: 0,
+            reducao2026: 0,
+            deducaoUtilizada: 0,
+            isIsento: true,
+            regra: 'Isento até R$ 5.000,00 (Lei 15.270/2026)'
+        };
+    }
+
+    // Determinar o INSS para dedução da base de cálculo
+    const inssVal = (typeof inssDiscount === 'number' && inssDiscount >= 0)
+        ? inssDiscount
+        : ((typeof window.calculateINSS === 'function') ? window.calculateINSS(grossSalary) : 0);
+
+    // Comparar dedução legal (INSS) com o desconto simplificado padrão (R$ 607,20)
+    // Conforme regra da Receita Federal, aplica-se o mais vantajoso ao trabalhador
+    const deducaoSimplificada = 607.20;
+    const deducaoUtilizada = Math.max(inssVal, deducaoSimplificada);
+    const baseCalculo = Math.max(0, grossSalary - deducaoUtilizada);
+
+    // Tabela Progressiva Padrão do IRRF:
+    // Faixa 1: Até 2.428,80 -> Isento
+    // Faixa 2: 2.428,81 até 2.826,65 -> 7,5% (dedução 182,16)
+    // Faixa 3: 2.826,66 até 3.751,05 -> 15%  (dedução 394,16)
+    // Faixa 4: 3.751,06 até 4.664,68 -> 22,5% (dedução 675,49)
+    // Faixa 5: Acima de 4.664,68     -> 27,5% (dedução 908,73)
+    let aliquota = 0;
+    let parcelaDeduzir = 0;
+
+    if (baseCalculo <= 2428.80) {
+        aliquota = 0;
+        parcelaDeduzir = 0;
+    } else if (baseCalculo <= 2826.65) {
+        aliquota = 0.075;
+        parcelaDeduzir = 182.16;
+    } else if (baseCalculo <= 3751.05) {
+        aliquota = 0.15;
+        parcelaDeduzir = 394.16;
+    } else if (baseCalculo <= 4664.68) {
+        aliquota = 0.225;
+        parcelaDeduzir = 675.49;
+    } else {
+        aliquota = 0.275;
+        parcelaDeduzir = 908.73;
+    }
+
+    const impostoTabela = Math.max(0, (baseCalculo * aliquota) - parcelaDeduzir);
+
+    // Regra 2: Faixa de Transição 2026 (R$ 5.000,01 a R$ 7.350,00)
+    // Fórmula do redutor de 2026: 978,62 - (0,133145 * Salário Bruto)
+    let reducao2026 = 0;
+    let regraDesc = 'Tabela Progressiva 2026';
+
+    if (grossSalary <= 7350.00) {
+        reducao2026 = Math.max(0, 978.62 - (0.133145 * grossSalary));
+        regraDesc = 'Faixa Transição 2026 (com Redutor)';
+    }
+
+    const impostoFinal = Math.max(0, impostoTabela - reducao2026);
+    const impostoFinalArredondado = Number(impostoFinal.toFixed(2));
+
+    return {
+        valor: impostoFinalArredondado,
+        baseCalculo: Number(baseCalculo.toFixed(2)),
+        salarioBruto: grossSalary,
+        aliquotaNominal: aliquota * 100,
+        aliquotaEfetiva: Number(((impostoFinalArredondado / grossSalary) * 100).toFixed(2)),
+        impostoTabela: Number(impostoTabela.toFixed(2)),
+        reducao2026: Number(reducao2026.toFixed(2)),
+        deducaoUtilizada: Number(deducaoUtilizada.toFixed(2)),
+        isIsento: impostoFinalArredondado <= 0,
+        regra: regraDesc
+    };
+};
+

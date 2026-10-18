@@ -11,6 +11,7 @@
 async function calcFinanceiro(user, records) {
     const settings = (await db.settings.get('global')) || {};
     const isInssActive = !!settings.inssCalculation;
+    const isIrrfActive = !!settings.irrfCalculation;
     const isNoturnoActive = !!settings.noturnoCalculation;
     const isFgtsActive = !!settings.fgtsCalculation;
 
@@ -34,6 +35,12 @@ async function calcFinanceiro(user, records) {
         descontoInss = window.calculateINSS(salarioBruto);
     }
 
+    let descontoIrrf = 0;
+    if (isIrrfActive && window.calculateIRRF) {
+        const irrfInfo = window.calculateIRRF(salarioBruto, descontoInss);
+        descontoIrrf = irrfInfo.valor;
+    }
+
     const valorFgts = isFgtsActive ? (typeof window.calculateFGTS === 'function' ? window.calculateFGTS(salarioBruto) : Number((salarioBruto * 0.08).toFixed(2))) : 0;
     
     const isDecimoActive = !!settings.decimoTerceiroCalculation;
@@ -43,9 +50,9 @@ async function calcFinanceiro(user, records) {
     const valor13 = decimoInfo.valor;
     const avos13 = decimoInfo.avos;
 
-    const salarioLiquido = salarioBruto - descontoInss;
+    const salarioLiquido = salarioBruto - descontoInss - descontoIrrf;
 
-    return { salarioBruto, descontoInss, salarioLiquido, adicNoturno, totNoturnoMinutes, isInssActive, isNoturnoActive, isFgtsActive, valorFgts, isDecimoActive, valor13, avos13 };
+    return { salarioBruto, descontoInss, descontoIrrf, salarioLiquido, adicNoturno, totNoturnoMinutes, isInssActive, isIrrfActive, isNoturnoActive, isFgtsActive, valorFgts, isDecimoActive, valor13, avos13 };
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -66,7 +73,7 @@ async function getReportDataArray(singleEmployeeMode, targetUserId) {
             jornadaStr = `${u.journeyStart} às ${u.journeyEnd}`;
         }
 
-        const { salarioBruto, descontoInss, salarioLiquido, adicNoturno, totNoturnoMinutes, isInssActive, isNoturnoActive } =
+        const { salarioBruto, descontoInss, descontoIrrf, salarioLiquido, adicNoturno, totNoturnoMinutes, isInssActive, isIrrfActive, isNoturnoActive, isFgtsActive, valorFgts, isDecimoActive, valor13, avos13 } =
             await calcFinanceiro(u, data);
 
         rows.push(['RELATÓRIO DE PONTO ELETRÔNICO - INDIVIDUAL']);
@@ -85,10 +92,11 @@ async function getReportDataArray(singleEmployeeMode, targetUserId) {
         rows.push(['Salário Bruto:',  formatCurrency(salarioBruto)]);
         if (isInssActive) {
             rows.push(['Desconto INSS:',  `- ${formatCurrency(descontoInss)}`]);
-            rows.push(['Salário Líquido (após INSS):', formatCurrency(salarioLiquido)]);
-        } else {
-            rows.push(['Salário Líquido:',  formatCurrency(salarioLiquido)]);
         }
+        if (isIrrfActive) {
+            rows.push(['Desconto IRRF (2026):',  `- ${formatCurrency(descontoIrrf)}`]);
+        }
+        rows.push(['Salário Líquido:', formatCurrency(salarioLiquido)]);
         if (isFgtsActive) {
             rows.push(['FGTS (8% CLT - Depósito Empregador):', formatCurrency(valorFgts)]);
         }
@@ -124,20 +132,28 @@ async function getReportDataArray(singleEmployeeMode, targetUserId) {
             recordsByUser[r.userId].push(r);
         });
 
+        const sampleSettings = (await db.settings.get('global')) || {};
+        const showIrrfCol = !!sampleSettings.irrfCalculation;
+
+        const excelHeader = ['Funcionário', 'Matrícula', 'Adic. Noturno', 'Salário Bruto', 'Desconto INSS'];
+        if (showIrrfCol) excelHeader.push('Desconto IRRF (2026)');
+        excelHeader.push('Salário Líquido');
         rows.push(['── RESUMO FINANCEIRO POR FUNCIONÁRIO ──']);
-        rows.push(['Funcionário', 'Matrícula', 'Adic. Noturno', 'Salário Bruto', 'Desconto INSS', 'Salário Líquido']);
+        rows.push(excelHeader);
 
         for (const [uid, recs] of Object.entries(recordsByUser)) {
             const u = userMap[uid] || userMap[String(uid)] || { name: 'N/A', matricula: 'N/A', baseSalary: 0 };
-            const { salarioBruto, descontoInss, salarioLiquido, adicNoturno } = await calcFinanceiro(u, recs);
-            rows.push([
+            const { salarioBruto, descontoInss, descontoIrrf, salarioLiquido, adicNoturno } = await calcFinanceiro(u, recs);
+            const rowData = [
                 u.name,
                 u.matricula           || '-',
                 formatCurrency(adicNoturno),
                 formatCurrency(salarioBruto),
-                formatCurrency(descontoInss),
-                formatCurrency(salarioLiquido)
-            ]);
+                formatCurrency(descontoInss)
+            ];
+            if (showIrrfCol) rowData.push(formatCurrency(descontoIrrf));
+            rowData.push(formatCurrency(salarioLiquido));
+            rows.push(rowData);
         }
 
         rows.push([]);
@@ -291,7 +307,7 @@ document.getElementById('btn-export-pdf')?.addEventListener('click', async () =>
             writeField("Jornada", jornadaStr, startY); startY += 12;
 
             // ── Resumo Financeiro ─────────────────────────────────────────
-            const { salarioBruto, descontoInss, salarioLiquido, adicNoturno, totNoturnoMinutes, isInssActive, isNoturnoActive } =
+            const { salarioBruto, descontoInss, descontoIrrf, salarioLiquido, adicNoturno, totNoturnoMinutes, isInssActive, isIrrfActive, isNoturnoActive, isFgtsActive, valorFgts, isDecimoActive, valor13, avos13 } =
                 await calcFinanceiro(u, data);
 
             // Título da seção
@@ -374,6 +390,17 @@ document.getElementById('btn-export-pdf')?.addEventListener('click', async () =>
                 startY += 7;
             }
 
+            if (isIrrfActive) {
+                // ── Desconto IRRF (2026) ───────────────────────────────────
+                doc.setFont("helvetica", "bold");
+                doc.text("Desconto IRRF (2026):", 14, startY);
+                doc.setFont("helvetica", "normal");
+                doc.setTextColor(redColor[0], redColor[1], redColor[2]);
+                doc.text(`- ${formatCurrency(descontoIrrf)}`, 60, startY);
+                doc.setTextColor(textColor[0], textColor[1], textColor[2]);
+                startY += 7;
+            }
+
             if (isFgtsActive) {
                 // ── FGTS ───────────────────────────────────────────────────
                 doc.setFont("helvetica", "bold");
@@ -433,20 +460,29 @@ document.getElementById('btn-export-pdf')?.addEventListener('click', async () =>
                 recordsByUser[r.userId].push(r);
             });
 
-            const financHead = [['Funcionário', 'Matrícula', 'Adic. Noturno', 'Salário Bruto', 'Desc. INSS', 'Salário Líquido']];
+            const globalSet = (await db.settings.get('global')) || {};
+            const isIrrfOn = !!globalSet.irrfCalculation;
+
+            const tableHeaderCols = ['Funcionário', 'Matrícula', 'Adic. Noturno', 'Salário Bruto', 'Desc. INSS'];
+            if (isIrrfOn) tableHeaderCols.push('Desc. IRRF');
+            tableHeaderCols.push('Salário Líquido');
+
+            const financHead = [tableHeaderCols];
             const financBody = [];
 
             for (const [uid, recs] of Object.entries(recordsByUser)) {
                 const u = userMap[uid] || userMap[String(uid)] || { name: 'N/A', matricula: '-', baseSalary: 0 };
-                const { salarioBruto, descontoInss, salarioLiquido, adicNoturno } = await calcFinanceiro(u, recs);
-                financBody.push([
+                const { salarioBruto, descontoInss, descontoIrrf, salarioLiquido, adicNoturno } = await calcFinanceiro(u, recs);
+                const item = [
                     u.name || '-',
                     u.matricula || '-',
                     formatCurrency(adicNoturno),
                     formatCurrency(salarioBruto),
-                    formatCurrency(descontoInss),
-                    formatCurrency(salarioLiquido)
-                ]);
+                    formatCurrency(descontoInss)
+                ];
+                if (isIrrfOn) item.push(formatCurrency(descontoIrrf));
+                item.push(formatCurrency(salarioLiquido));
+                financBody.push(item);
             }
 
             doc.autoTable({

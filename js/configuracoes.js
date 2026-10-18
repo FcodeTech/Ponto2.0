@@ -49,6 +49,9 @@
             const inssSwitch = document.getElementById('checkbox-inss');
             if (inssSwitch) inssSwitch.checked = !!settings.inssCalculation;
 
+            const irrfSwitch = document.getElementById('checkbox-irrf');
+            if (irrfSwitch) irrfSwitch.checked = !!settings.irrfCalculation;
+
             const noturnoSwitch = document.getElementById('checkbox-noturno');
             if (noturnoSwitch) noturnoSwitch.checked = !!settings.noturnoCalculation;
 
@@ -200,6 +203,7 @@
             try {
                 const sysName = (document.getElementById('config-system-name')?.value || '').trim() || 'PontoMax';
                 const inssCalculation = document.getElementById('checkbox-inss')?.checked ?? false;
+                const irrfCalculation = document.getElementById('checkbox-irrf')?.checked ?? false;
                 const noturnoCalculation = document.getElementById('checkbox-noturno')?.checked ?? false;
                 const fgtsCalculation = document.getElementById('checkbox-fgts')?.checked ?? false;
                 const decimoTerceiroCalculation = document.getElementById('checkbox-13')?.checked ?? false;
@@ -219,6 +223,7 @@
                     logoUrl:                    logoUrl,
                     systemName:                 sysName,
                     inssCalculation:            inssCalculation,
+                    irrfCalculation:            irrfCalculation,
                     noturnoCalculation:         noturnoCalculation,
                     fgtsCalculation:            fgtsCalculation,
                     decimoTerceiroCalculation:  decimoTerceiroCalculation

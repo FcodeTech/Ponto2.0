@@ -204,6 +204,7 @@ async function updateReportTotals() {
     const settings = (await db.settings.get('global')) || {};
     const isNoturnoActive = !!settings.noturnoCalculation;
     const isInssActive = !!settings.inssCalculation;
+    const isIrrfActive = !!settings.irrfCalculation;
     const isFgtsActive = !!settings.fgtsCalculation;
     const isDecimoActive = !!settings.decimoTerceiroCalculation;
 
@@ -302,6 +303,43 @@ async function updateReportTotals() {
     } else {
         if (relCardInss) relCardInss.style.display = 'none';
         if (relInssNoturno) relInssNoturno.style.display = 'none';
+    }
+
+    // Check se IRRF está ativo
+    let irrfDiscount = 0;
+    const relCardIrrf = document.getElementById('rel-card-irrf');
+    const relTotIrrf = document.getElementById('rel-tot-irrf');
+    const relIrrfBruto = document.getElementById('rel-irrf-bruto');
+    const relIrrfRegra = document.getElementById('rel-irrf-regra');
+
+    if (isIrrfActive && singleEmployeeMode && currentReportData.length > 0) {
+        const irrfInfo = (typeof window.calculateIRRF === 'function')
+            ? window.calculateIRRF(salarioBrutoReport, inssDiscount)
+            : { valor: 0, isIsento: true, reducao2026: 0 };
+        irrfDiscount = irrfInfo.valor;
+        totalMoney -= irrfDiscount;
+        if (relCardIrrf) relCardIrrf.style.display = 'flex';
+        if (relTotIrrf) {
+            if (irrfDiscount > 0) {
+                relTotIrrf.textContent = `- ${formatCurrency(irrfDiscount)}`;
+                relTotIrrf.style.color = '#e11d48';
+            } else {
+                relTotIrrf.textContent = 'R$ 0,00';
+                relTotIrrf.style.color = '#10b981';
+            }
+        }
+        if (relIrrfBruto) relIrrfBruto.textContent = formatCurrency(salarioBrutoReport);
+        if (relIrrfRegra) {
+            if (irrfInfo.isIsento) {
+                relIrrfRegra.textContent = 'Isento até R$ 5.000';
+            } else if (irrfInfo.reducao2026 > 0) {
+                relIrrfRegra.textContent = `Alíq. ${irrfInfo.aliquotaEfetiva}% (Redução 2026: - ${formatCurrency(irrfInfo.reducao2026)})`;
+            } else {
+                relIrrfRegra.textContent = `Alíq. ${irrfInfo.aliquotaNominal}%`;
+            }
+        }
+    } else {
+        if (relCardIrrf) relCardIrrf.style.display = 'none';
     }
 
     // Check se FGTS está ativo
