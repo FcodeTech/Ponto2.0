@@ -382,9 +382,11 @@ async function updateReportTotals() {
         if (relTot13)  relTot13.textContent = formatCurrency(decimoInfo.valor);
         if (rel13Avos) rel13Avos.textContent = `${decimoInfo.avos}/12`;
         if (rel13Detalhe) {
-            rel13Detalhe.textContent = (decimoInfo.admissaoFormatada !== '—')
-                ? `Adm: ${decimoInfo.admissaoFormatada} • Proporcional CLT`
-                : 'Provisão Proporcional CLT';
+            if (decimoInfo.isCompetenciaIntegral) {
+                rel13Detalhe.textContent = `Integral (12/12) • 1ª: ${formatCurrency(decimoInfo.primeiraParcela)} • 2ª líq: ${formatCurrency(decimoInfo.segundaParcela)}`;
+            } else {
+                rel13Detalhe.textContent = `Provisão até o mês • Prev. anual: ${formatCurrency(decimoInfo.valorIntegralAno)} (1ª: ${formatCurrency(decimoInfo.primeiraParcela)} • 2ª líq: ${formatCurrency(decimoInfo.segundaParcela)})`;
+            }
         }
     } else {
         if (relCard13) relCard13.style.display = 'none';

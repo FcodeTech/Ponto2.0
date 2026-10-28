@@ -44,15 +44,16 @@ async function calcFinanceiro(user, records) {
     const valorFgts = isFgtsActive ? (typeof window.calculateFGTS === 'function' ? window.calculateFGTS(salarioBruto) : Number((salarioBruto * 0.08).toFixed(2))) : 0;
     
     const isDecimoActive = !!settings.decimoTerceiroCalculation;
+    const filterMonth = document.getElementById('filter-month')?.value || null;
     const decimoInfo = (isDecimoActive && typeof window.calculateDecimoTerceiro === 'function')
-        ? window.calculateDecimoTerceiro(baseSalary, user.admissionDate)
-        : { avos: 0, valor: 0 };
+        ? window.calculateDecimoTerceiro(baseSalary, user.admissionDate, filterMonth)
+        : { avos: 0, valor: 0, valorIntegralAno: 0, primeiraParcela: 0, segundaParcela: 0, inssDecimo: 0 };
     const valor13 = decimoInfo.valor;
     const avos13 = decimoInfo.avos;
 
     const salarioLiquido = salarioBruto - descontoInss - descontoIrrf;
 
-    return { salarioBruto, descontoInss, descontoIrrf, salarioLiquido, adicNoturno, totNoturnoMinutes, isInssActive, isIrrfActive, isNoturnoActive, isFgtsActive, valorFgts, isDecimoActive, valor13, avos13 };
+    return { salarioBruto, descontoInss, descontoIrrf, salarioLiquido, adicNoturno, totNoturnoMinutes, isInssActive, isIrrfActive, isNoturnoActive, isFgtsActive, valorFgts, isDecimoActive, valor13, avos13, decimoInfo };
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -73,7 +74,7 @@ async function getReportDataArray(singleEmployeeMode, targetUserId) {
             jornadaStr = `${u.journeyStart} às ${u.journeyEnd}`;
         }
 
-        const { salarioBruto, descontoInss, descontoIrrf, salarioLiquido, adicNoturno, totNoturnoMinutes, isInssActive, isIrrfActive, isNoturnoActive, isFgtsActive, valorFgts, isDecimoActive, valor13, avos13 } =
+        const { salarioBruto, descontoInss, descontoIrrf, salarioLiquido, adicNoturno, totNoturnoMinutes, isInssActive, isIrrfActive, isNoturnoActive, isFgtsActive, valorFgts, isDecimoActive, valor13, avos13, decimoInfo } =
             await calcFinanceiro(u, data);
 
         rows.push(['RELATÓRIO DE PONTO ELETRÔNICO - INDIVIDUAL']);
@@ -102,6 +103,10 @@ async function getReportDataArray(singleEmployeeMode, targetUserId) {
         }
         if (isDecimoActive) {
             rows.push([`13º Salário (${avos13}/12 avos CLT):`, formatCurrency(valor13)]);
+            if (decimoInfo && decimoInfo.primeiraParcela > 0) {
+                rows.push(['   1ª Parcela (50% até 30/nov):', formatCurrency(decimoInfo.primeiraParcela)]);
+                rows.push(['   2ª Parcela Líquida (até 20/dez):', formatCurrency(decimoInfo.segundaParcela)]);
+            }
         }
         rows.push([]);
 
@@ -307,7 +312,7 @@ document.getElementById('btn-export-pdf')?.addEventListener('click', async () =>
             writeField("Jornada", jornadaStr, startY); startY += 12;
 
             // ── Resumo Financeiro ─────────────────────────────────────────
-            const { salarioBruto, descontoInss, descontoIrrf, salarioLiquido, adicNoturno, totNoturnoMinutes, isInssActive, isIrrfActive, isNoturnoActive, isFgtsActive, valorFgts, isDecimoActive, valor13, avos13 } =
+            const { salarioBruto, descontoInss, descontoIrrf, salarioLiquido, adicNoturno, totNoturnoMinutes, isInssActive, isIrrfActive, isNoturnoActive, isFgtsActive, valorFgts, isDecimoActive, valor13, avos13, decimoInfo } =
                 await calcFinanceiro(u, data);
 
             // Título da seção
@@ -421,6 +426,15 @@ document.getElementById('btn-export-pdf')?.addEventListener('click', async () =>
                 doc.text(`${formatCurrency(valor13)} (${avos13}/12 avos)`, 60, startY);
                 doc.setTextColor(textColor[0], textColor[1], textColor[2]);
                 startY += 7;
+                if (decimoInfo && decimoInfo.primeiraParcela > 0) {
+                    doc.setFontSize(8);
+                    doc.setTextColor(110, 110, 110);
+                    const inssTxt = decimoInfo.inssDecimo > 0 ? ` (desc. INSS: -${formatCurrency(decimoInfo.inssDecimo)})` : '';
+                    doc.text(`1ª parc: ${formatCurrency(decimoInfo.primeiraParcela)} | 2ª parc. líq: ${formatCurrency(decimoInfo.segundaParcela)}${inssTxt}`, 16, startY - 2);
+                    doc.setFontSize(10);
+                    doc.setTextColor(textColor[0], textColor[1], textColor[2]);
+                    startY += 4;
+                }
             }
 
             // ── Salário Líquido (destaque) ─────────────────────────────────

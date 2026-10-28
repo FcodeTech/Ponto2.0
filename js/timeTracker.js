@@ -832,17 +832,15 @@ window.updateDashboardStats = async function() {
             if (val13) val13.textContent = formatCurrency(decimoInfo.valor);
             if (val13Avos) val13Avos.textContent = `${decimoInfo.avos}/12`;
             if (val13Periodo) {
-                val13Periodo.textContent = decimoInfo.isIntegral ? 'Integral' : 'Proporcional';
+                val13Periodo.textContent = decimoInfo.isCompetenciaIntegral ? 'Integral' : 'Proporcional CLT';
             }
             if (val13Admissao) {
-                if (decimoInfo.admissaoFormatada !== '—') {
-                    if (decimoInfo.isIntegral) {
-                        val13Admissao.innerHTML = `Admissão: <strong>${decimoInfo.admissaoFormatada}</strong> &bull; 1ª parc. (50%): <strong>${formatCurrency(decimoInfo.primeiraParcela)}</strong>`;
-                    } else {
-                        val13Admissao.innerHTML = `Admissão: <strong>${decimoInfo.admissaoFormatada}</strong> &bull; Proporcional ano de admissão`;
-                    }
+                const descInss13 = decimoInfo.inssDecimo > 0 ? ` &bull; Desc. INSS: -<strong>${formatCurrency(decimoInfo.inssDecimo)}</strong>` : '';
+                if (decimoInfo.isCompetenciaIntegral) {
+                    val13Admissao.innerHTML = `1ª parc. (50% até 30/nov): <strong>${formatCurrency(decimoInfo.primeiraParcela)}</strong> &bull; 2ª parc. líq. (até 20/dez): <strong>${formatCurrency(decimoInfo.segundaParcela)}</strong>${descInss13}`;
                 } else {
-                    val13Admissao.innerHTML = `Total anual (12/12): <strong>${formatCurrency(targetSalary)}</strong>`;
+                    const admLabel = decimoInfo.admissaoFormatada !== '—' ? `Adm: <strong>${decimoInfo.admissaoFormatada}</strong> &bull; ` : '';
+                    val13Admissao.innerHTML = `${admLabel}Prev. Anual (12/12): <strong>${formatCurrency(decimoInfo.valorIntegralAno)}</strong> &bull; 1ª parc: <strong>${formatCurrency(decimoInfo.primeiraParcela)}</strong> &bull; 2ª líq: <strong>${formatCurrency(decimoInfo.segundaParcela)}</strong>`;
                 }
             }
         } else {

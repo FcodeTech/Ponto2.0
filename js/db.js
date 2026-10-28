@@ -554,18 +554,33 @@ window.calculateFGTS = function(grossSalary) {
 };
 
 /**
- * Calcula o 13º salário de acordo com a CLT (Lei 4.090/1962 e Lei 4.749/1965).
- * - Funcionários com mais de 1 ano de empresa (admitidos em anos anteriores) têm direito
- *   ao 13º INTEGRAL (12/12 avos = salário integral).
- * - Funcionários admitidos no próprio ano corrente recebem proporcional aos meses trabalhados
- *   (a cada mês com 15 dias ou mais trabalhados = 1/12 avos).
+ * Calcula o 13º salário de acordo com a CLT (Lei nº 4.090/1962, Lei nº 4.749/1965 e Súmulas TST).
  * 
- * @param {number} baseSalary - Salário base
+ * Regras Oficiais da CLT:
+ * 1. Proporcionalidade dos Avos (Art. 1º, § 1º e § 2º da Lei 4.090/1962):
+ *    - A gratificação corresponde a 1/12 da remuneração devida por mês trabalhado no ano.
+ *    - Fração igual ou superior a 15 dias trabalhados no mês conta como 1 mês integral (1 avo).
+ *    - No decorrer do ano, na competência mensal consultada (ex: Outubro = mês 10), o funcionário
+ *      acumulou os avos decorridos até o respectivo mês (ex: 10/12 avos como provisão acumulada).
+ *    - Em Dezembro (ou na quitação final), atinge o total de avos do ano (12/12 Integral para vínculo regular).
+ * 
+ * 2. Parcelas Oficiais (Lei nº 4.749/1965):
+ *    - 1ª Parcela (Adiantamento): Paga entre 1º de fevereiro e 30 de novembro.
+ *      Equivale a 50% do valor total devido no ano, SEM incidência de descontos (INSS/IRRF).
+ *    - 2ª Parcela (Saldo final): Paga até 20 de dezembro.
+ *      Deduz a 1ª parcela adiantada e sofre incidência exclusiva de INSS e IRRF sobre o valor integral do 13º.
+ * 
+ * 3. Base Remuneratória (CLT Art. 457, Súmulas 45 e 60 do TST):
+ *    - Inclui o salário base somado às médias habituais de horas extras e adicionais.
+ * 
+ * @param {number} baseSalary - Salário base (ou remuneração)
  * @param {string} admissionDateStr - Data de admissão ('YYYY-MM-DD')
  * @param {string} refMonthStr - Mês de referência ('YYYY-MM')
+ * @param {number} [mediaExtras=0] - Média de adicionais/horas extras habituais
  */
-window.calculateDecimoTerceiro = function(baseSalary, admissionDateStr, refMonthStr) {
-    if (!baseSalary || baseSalary <= 0) {
+window.calculateDecimoTerceiro = function(baseSalary, admissionDateStr, refMonthStr, mediaExtras = 0) {
+    const remuneracaoBase = Number((Number(baseSalary || 0) + Number(mediaExtras || 0)).toFixed(2));
+    if (remuneracaoBase <= 0) {
         return {
             avos: 0,
             valor: 0,
@@ -574,10 +589,17 @@ window.calculateDecimoTerceiro = function(baseSalary, admissionDateStr, refMonth
             avosAcumuladosMes: 0,
             totalAvosAno: 12,
             isIntegral: true,
+            isCompetenciaIntegral: false,
             mesesEmpresa: 0,
             admissaoFormatada: '—',
             primeiraParcela: 0,
-            segundaParcela: 0
+            segundaParcelaBruta: 0,
+            inssDecimo: 0,
+            irrfDecimo: 0,
+            segundaParcela: 0,
+            remuneracaoBase: 0,
+            refMonth: 12,
+            refYear: new Date().getFullYear()
         };
     }
 
@@ -585,73 +607,114 @@ window.calculateDecimoTerceiro = function(baseSalary, admissionDateStr, refMonth
     let refYear = now.getFullYear();
     let refMonth = now.getMonth() + 1; // 1 a 12
 
-    if (refMonthStr && refMonthStr.includes('-')) {
+    if (refMonthStr && typeof refMonthStr === 'string' && refMonthStr.includes('-')) {
         const parts = refMonthStr.split('-');
         refYear = parseInt(parts[0], 10) || refYear;
         refMonth = parseInt(parts[1], 10) || refMonth;
     }
 
-    let avosDireito = 12; // Avos totais devidos no ano
     let avosAcumuladosMes = Math.min(12, Math.max(1, refMonth)); // Provisão até o mês filtrado
+    let totalAvosAno = 12; // Total de avos devidos no ano completo
     let mesesEmpresa = 0;
     let admissaoFormatada = '—';
     let isAdmitidoAnoAtual = false;
 
-    if (admissionDateStr && admissionDateStr.includes('-')) {
+    // Quantidade real de dias no mês
+    function _diasNoMes(ano, mes) {
+        return new Date(ano, mes, 0).getDate();
+    }
+
+    if (admissionDateStr && typeof admissionDateStr === 'string' && admissionDateStr.includes('-')) {
         const parts = admissionDateStr.split('-');
         const admYear = parseInt(parts[0], 10);
         const admMonth = parseInt(parts[1], 10);
         const admDay = parseInt(parts[2], 10);
 
-        admissaoFormatada = `${String(admDay).padStart(2, '0')}/${String(admMonth).padStart(2, '0')}/${admYear}`;
+        admissaoFormatada = String(admDay).padStart(2, '0') + '/' + String(admMonth).padStart(2, '0') + '/' + admYear;
 
-        // Cálculo de meses totais de casa
+        // Cálculo de meses totais de vínculo na empresa
         const diffMonths = ((refYear - admYear) * 12) + (refMonth - admMonth);
-        mesesEmpresa = Math.max(0, diffMonths + (admDay <= 15 ? 1 : 0));
+        const diasMesAdm = _diasNoMes(admYear, admMonth);
+        const diasTrabalhadosAdm = Math.max(0, diasMesAdm - admDay + 1);
+        const admMonthValido = (diasTrabalhadosAdm >= 15);
+
+        mesesEmpresa = Math.max(0, diffMonths + (admMonthValido ? 1 : 0));
 
         if (admYear < refYear) {
-            // Admitido antes do ano consultado (ex: admitido em 2020 e ano consultado 2026):
-            // O colaborador tem mais de 1 ano de empresa e trabalhou o ano todo -> 13º INTEGRAL (12/12)
-            avosDireito = 12;
+            // Admitido em ano anterior: em refYear trabalhou desde 1º de janeiro
+            totalAvosAno = 12;
             avosAcumuladosMes = Math.min(12, Math.max(0, refMonth));
             isAdmitidoAnoAtual = false;
         } else if (admYear === refYear) {
-            // Admitido NO MESMO ANO: cálculo proporcional aos meses a partir da admissão
+            // Admitido no próprio ano consultado
             isAdmitidoAnoAtual = true;
-            const admMonthCount = (admDay <= 15) ? 1 : 0;
-            avosDireito = Math.min(12, Math.max(0, (12 - admMonth) + admMonthCount));
+            const admMonthCount = admMonthValido ? 1 : 0;
+            totalAvosAno = Math.min(12, Math.max(0, (12 - admMonth) + admMonthCount));
+
             if (refMonth < admMonth) {
                 avosAcumuladosMes = 0;
             } else if (refMonth === admMonth) {
                 avosAcumuladosMes = admMonthCount;
             } else {
-                avosAcumuladosMes = Math.min(avosDireito, Math.max(0, (refMonth - admMonth) + admMonthCount));
+                avosAcumuladosMes = Math.min(totalAvosAno, Math.max(0, (refMonth - admMonth) + admMonthCount));
             }
         } else {
-            // Data de admissão futura ao ano consultado
-            avosDireito = 0;
+            // Data futura ao ano consultado
+            totalAvosAno = 0;
             avosAcumuladosMes = 0;
         }
     }
 
-    const valorDevidoAno = Number(((baseSalary / 12) * avosDireito).toFixed(2));
-    const valorProporcionalMes = Number(((baseSalary / 12) * avosAcumuladosMes).toFixed(2));
+    const valorDevidoAno = Number(((remuneracaoBase / 12) * totalAvosAno).toFixed(2));
+    const valorProporcionalMes = Number(((remuneracaoBase / 12) * avosAcumuladosMes).toFixed(2));
+
+    // 1ª Parcela (50% do total anual devido, paga entre fevereiro e 30 de novembro - SEM descontos de INSS/IRRF)
+    const primeiraParcela = Number((valorDevidoAno * 0.5).toFixed(2));
+
+    // 2ª Parcela Bruta (Quitação final até 20 de dezembro)
+    const segundaParcelaBruta = Number((valorDevidoAno - primeiraParcela).toFixed(2));
+
+    // Descontos oficiais de INSS e IRRF sobre o valor total anual do 13º (tributação exclusiva)
+    const inssDecimo = (typeof window.calculateINSS === 'function')
+        ? window.calculateINSS(valorDevidoAno)
+        : 0;
+
+    const irrfInfoDecimo = (typeof window.calculateIRRF === 'function')
+        ? window.calculateIRRF(valorDevidoAno, inssDecimo)
+        : { valor: 0 };
+    const irrfDecimo = irrfInfoDecimo ? (irrfInfoDecimo.valor || 0) : 0;
+
+    // 2ª Parcela Líquida final a receber (deduz adiantamento da 1ª parcela, INSS e IRRF)
+    const segundaParcelaLiquida = Math.max(0, Number((segundaParcelaBruta - inssDecimo - irrfDecimo).toFixed(2)));
+
+    // Se consultado em Dezembro, a competência é integral
+    const isCompetenciaIntegral = (avosAcumuladosMes === 12);
 
     return {
-        avos: avosDireito,
-        valor: valorDevidoAno, // Valor principal: para funcionários com mais de 1 ano, é o 13º integral (12/12)
+        // Avos e valores apurados para a competência consultada (provisão CLT)
+        avos: avosAcumuladosMes,
+        valor: isCompetenciaIntegral ? valorDevidoAno : valorProporcionalMes,
         valorIntegralAno: valorDevidoAno,
         valorProporcionalMes: valorProporcionalMes,
         avosAcumuladosMes: avosAcumuladosMes,
-        totalAvosAno: avosDireito,
-        isIntegral: (avosDireito === 12),
+        totalAvosAno: totalAvosAno,
+        isIntegral: (totalAvosAno === 12),
+        isCompetenciaIntegral: isCompetenciaIntegral,
         isAdmitidoAnoAtual: isAdmitidoAnoAtual,
         mesesEmpresa: mesesEmpresa,
         admissaoFormatada: admissaoFormatada,
-        primeiraParcela: Number((valorDevidoAno * 0.5).toFixed(2)),
-        segundaParcela: Number((valorDevidoAno * 0.5).toFixed(2))
+        primeiraParcela: primeiraParcela,
+        segundaParcelaBruta: segundaParcelaBruta,
+        inssDecimo: inssDecimo,
+        irrfDecimo: irrfDecimo,
+        segundaParcela: segundaParcelaLiquida,
+        remuneracaoBase: remuneracaoBase,
+        refMonth: refMonth,
+        refYear: refYear
     };
 };
+
+
 
 /**
  * Calcula o desconto do Imposto de Renda Retido na Fonte (IRRF) conforme
