@@ -396,19 +396,69 @@ async function updateReportTotals() {
         if (rel13Detalhe) {
             rel13Detalhe.textContent = decimoInfo.isCompetenciaIntegral ? 'Integral' : 'Proporcional CLT';
         }
+
+        const badgeRel13 = document.getElementById('rel-13-badge');
+        if (badgeRel13) {
+            if (decimoInfo.isCompetenciaIntegral) {
+                badgeRel13.style.background = 'rgba(16, 185, 129, 0.12)';
+                badgeRel13.style.color = '#059669';
+            } else {
+                badgeRel13.style.background = 'rgba(245, 158, 11, 0.12)';
+                badgeRel13.style.color = '#d97706';
+            }
+        }
+
+        const elExtrasRel = document.getElementById('rel-13-extras-info');
+        if (elExtrasRel) {
+            if (decimoInfo.mediaExtras > 0) {
+                elExtrasRel.style.display = 'block';
+                elExtrasRel.innerHTML = `
+                    <div style="display: flex; justify-content: space-between; align-items: center; color: var(--text-muted); font-size: 0.74rem;">
+                        <span>Salário Base:</span>
+                        <strong style="color: var(--text-color);">${formatCurrency(u.baseSalary || 0)}</strong>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; color: #d97706; font-size: 0.74rem; margin-top: 2px;">
+                        <span><i class="fa-solid fa-clock-rotate-left" style="font-size: 0.8em;"></i> Média Horas Extras:</span>
+                        <strong>+ ${formatCurrency(decimoInfo.mediaExtras)}</strong>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px dashed var(--border-color); margin-top: 4px; padding-top: 3px; font-size: 0.76rem; font-weight: 600;">
+                        <span style="color: var(--text-color);">Base de Cálculo:</span>
+                        <span style="color: #f59e0b;">${formatCurrency(decimoInfo.remuneracaoBase)}</span>
+                    </div>
+                `;
+            } else {
+                elExtrasRel.style.display = 'none';
+            }
+        }
+
+        const elParcelasRel = document.getElementById('rel-13-parcelas-grid');
+        if (elParcelasRel) {
+            elParcelasRel.innerHTML = `
+                <div>
+                    <span style="display: block; font-size: 0.67rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.03em; font-weight: 600;">1ª Parcela (50%)</span>
+                    <strong style="display: block; font-size: 0.83rem; color: var(--text-color); margin-top: 1px;">${formatCurrency(decimoInfo.primeiraParcela)}</strong>
+                    <span style="display: block; font-size: 0.67rem; color: var(--text-muted);">até 30/nov &bull; sem desc.</span>
+                </div>
+                <div>
+                    <span style="display: block; font-size: 0.67rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.03em; font-weight: 600;">2ª Parc. Líquida</span>
+                    <strong style="display: block; font-size: 0.83rem; color: #10b981; margin-top: 1px;">${formatCurrency(decimoInfo.segundaParcela)}</strong>
+                    <span style="display: block; font-size: 0.67rem; color: var(--text-muted);">até 20/dez &bull; líq. a pagar</span>
+                </div>
+            `;
+        }
+
         const elRodapeRel = document.getElementById('rel-13-rodape');
         if (elRodapeRel) {
-            const admTxt = decimoInfo.admissaoFormatada !== '—' ? `Adm: <strong>${decimoInfo.admissaoFormatada}</strong> &bull; ` : '';
-            elRodapeRel.innerHTML = `${admTxt}Prev. Anual (12/12): <strong>${formatCurrency(decimoInfo.valorIntegralAno)}</strong> &bull; 1ª parc: <strong>${formatCurrency(decimoInfo.primeiraParcela)}</strong> &bull; 2ª líq: <strong>${formatCurrency(decimoInfo.segundaParcela)}</strong>`;
-        }
-        const elBaseRel13 = document.getElementById('rel-13-base-info');
-        if (elBaseRel13) {
-            if (decimoInfo.mediaExtras > 0) {
-                elBaseRel13.style.display = 'block';
-                elBaseRel13.innerHTML = `<i class="fa-solid fa-circle-plus"></i> Base: Salário (${formatCurrency(decimoInfo.baseSalary)}) + Méd. Extras (+${formatCurrency(decimoInfo.mediaExtras)}) = ${formatCurrency(decimoInfo.remuneracaoBase)}`;
-            } else {
-                elBaseRel13.style.display = 'none';
-            }
+            const admTxt = decimoInfo.admissaoFormatada !== '—'
+                ? `<span><i class="fa-regular fa-calendar-check" style="font-size: 0.85em; opacity: 0.7;"></i> Adm: <strong>${decimoInfo.admissaoFormatada}</strong></span>`
+                : '<span>CLT Lei 4.090/62</span>';
+            const inssTxt = decimoInfo.inssDecimo > 0
+                ? ` <span style="font-size: 0.67rem; color: var(--danger-color, #dc3545);" title="Desconto INSS 13º">(INSS: -${formatCurrency(decimoInfo.inssDecimo)})</span>`
+                : '';
+            elRodapeRel.innerHTML = `
+                ${admTxt}
+                <span>Total Anual (12/12): <strong style="color: var(--text-color);">${formatCurrency(decimoInfo.valorIntegralAno)}</strong>${inssTxt}</span>
+            `;
         }
     } else {
         if (relCard13) relCard13.style.display = 'none';
@@ -445,21 +495,73 @@ async function updateReportTotals() {
         if (relCardFerias) relCardFerias.style.display = 'flex';
         if (relTotFerias)  relTotFerias.textContent = formatCurrency(feriasInfo.totalBruto);
         if (relFeriasAvos) relFeriasAvos.textContent = `${feriasInfo.avos}/12`;
-        if (relFeriasDetalhe) {
-            relFeriasDetalhe.textContent = `${feriasInfo.diasFerias} dias ${feriasInfo.isIntegral ? '• Integral' : '• Proporcional'}`;
+        const relFeriasDias = document.getElementById('rel-ferias-dias');
+        if (relFeriasDias) {
+            relFeriasDias.textContent = `${feriasInfo.diasFerias} dias ${feriasInfo.isIntegral ? '(Integral)' : '(Proporcional CLT)'}`;
         }
-        if (relFeriasRodape) {
-            const admTxt = feriasInfo.admissaoFormatada !== '—' ? `Adm: <strong>${feriasInfo.admissaoFormatada}</strong> &bull; ` : '';
-            relFeriasRodape.innerHTML = `${admTxt}Total 30d (12/12): <strong>${formatCurrency(feriasInfo.valorIntegralAno)}</strong> &bull; Férias: <strong>${formatCurrency(feriasInfo.valorFerias)}</strong> &bull; 1/3: <strong>+${formatCurrency(feriasInfo.tercoConstitucional)}</strong>`;
-        }
-        const elBaseRelFerias = document.getElementById('rel-ferias-base-info');
-        if (elBaseRelFerias) {
-            if (feriasInfo.mediaExtras > 0) {
-                elBaseRelFerias.style.display = 'block';
-                elBaseRelFerias.innerHTML = `<i class="fa-solid fa-circle-plus"></i> Base: Salário (${formatCurrency(feriasInfo.baseSalary)}) + Méd. Extras (+${formatCurrency(feriasInfo.mediaExtras)}) = ${formatCurrency(feriasInfo.remuneracaoBase)}`;
+
+        const badgeRelFerias = document.getElementById('rel-ferias-badge');
+        if (badgeRelFerias) {
+            if (feriasInfo.isIntegral) {
+                badgeRelFerias.style.background = 'rgba(6, 182, 212, 0.12)';
+                badgeRelFerias.style.color = '#0891b2';
             } else {
-                elBaseRelFerias.style.display = 'none';
+                badgeRelFerias.style.background = 'rgba(245, 158, 11, 0.12)';
+                badgeRelFerias.style.color = '#d97706';
             }
+        }
+
+        const elExtrasFeriasRel = document.getElementById('rel-ferias-extras-info');
+        if (elExtrasFeriasRel) {
+            if (feriasInfo.mediaExtras > 0) {
+                elExtrasFeriasRel.style.display = 'block';
+                elExtrasFeriasRel.innerHTML = `
+                    <div style="display: flex; justify-content: space-between; align-items: center; color: var(--text-muted); font-size: 0.74rem;">
+                        <span>Salário Base:</span>
+                        <strong style="color: var(--text-color);">${formatCurrency(u.baseSalary || 0)}</strong>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; color: #0891b2; font-size: 0.74rem; margin-top: 2px;">
+                        <span><i class="fa-solid fa-clock-rotate-left" style="font-size: 0.8em;"></i> Média Horas Extras:</span>
+                        <strong>+ ${formatCurrency(feriasInfo.mediaExtras)}</strong>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px dashed var(--border-color); margin-top: 4px; padding-top: 3px; font-size: 0.76rem; font-weight: 600;">
+                        <span style="color: var(--text-color);">Base de Cálculo:</span>
+                        <span style="color: #0891b2;">${formatCurrency(feriasInfo.remuneracaoBase)}</span>
+                    </div>
+                `;
+            } else {
+                elExtrasFeriasRel.style.display = 'none';
+            }
+        }
+
+        const elParcelasFeriasRel = document.getElementById('rel-ferias-parcelas-grid');
+        if (elParcelasFeriasRel) {
+            elParcelasFeriasRel.innerHTML = `
+                <div>
+                    <span style="display: block; font-size: 0.67rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.03em; font-weight: 600;">Férias (${feriasInfo.diasFerias} dias)</span>
+                    <strong style="display: block; font-size: 0.83rem; color: var(--text-color); margin-top: 1px;">${formatCurrency(feriasInfo.valorFerias)}</strong>
+                    <span style="display: block; font-size: 0.67rem; color: var(--text-muted);">remuneração base</span>
+                </div>
+                <div>
+                    <span style="display: block; font-size: 0.67rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.03em; font-weight: 600;">1/3 Constitucional</span>
+                    <strong style="display: block; font-size: 0.83rem; color: #0891b2; margin-top: 1px;">+ ${formatCurrency(feriasInfo.tercoConstitucional)}</strong>
+                    <span style="display: block; font-size: 0.67rem; color: var(--text-muted);">art. 7º, XVII CF/88</span>
+                </div>
+            `;
+        }
+
+        const elRodapeFeriasRel = document.getElementById('rel-ferias-rodape');
+        if (elRodapeFeriasRel) {
+            const admTxt = feriasInfo.admissaoFormatada !== '—'
+                ? `<span><i class="fa-regular fa-calendar-check" style="font-size: 0.85em; opacity: 0.7;"></i> Adm: <strong>${feriasInfo.admissaoFormatada}</strong></span>`
+                : '<span>CLT Art. 129 a 145</span>';
+            const inssTxt = feriasInfo.inssFerias > 0
+                ? ` <span style="font-size: 0.67rem; color: var(--danger-color, #dc3545);" title="Desconto INSS sobre Férias">(INSS: -${formatCurrency(feriasInfo.inssFerias)})</span>`
+                : '';
+            elRodapeFeriasRel.innerHTML = `
+                ${admTxt}
+                <span>Total 30d (12/12): <strong style="color: var(--text-color);">${formatCurrency(feriasInfo.valorIntegralAno)}</strong>${inssTxt}</span>
+            `;
         }
     } else {
         if (relCardFerias) relCardFerias.style.display = 'none';
