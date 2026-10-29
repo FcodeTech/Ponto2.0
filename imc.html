@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora de IMC - Ponto Eletrônico</title>
+    <!-- Favicon & Mobile App Shortcut Icons -->
+    <link rel="icon" type="image/png" href="favicon.png">
+    <link rel="shortcut icon" type="image/png" href="favicon.png">
+    <link rel="apple-touch-icon" href="apple-touch-icon.png">
+    <link rel="manifest" href="manifest.json">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Ponto">
+    <meta name="theme-color" content="#0066cc">
+    <!-- Styles -->
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/imc.css">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <!-- Notificações -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <section id="dashboard-layout" class="view active">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <i class="fa-solid fa-clock brand-icon-default"></i>
+                <img class="brand-logo" src="" style="display:none; height: 32px; border-radius: 4px; margin-right: 10px;">
+                <span class="brand">Ponto Eletrônico</span>
+                <button id="btn-close-sidebar" class="btn-icon mobile-only"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="user-info">
+                <div class="avatar"><i class="fa-solid fa-user"></i></div>
+                <div class="details">
+                    <span id="sidebar-user-name">Usuário</span>
+                    <small id="sidebar-user-role">Cargo</small>
+                </div>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="index.html" class="nav-item"><i class="fa-solid fa-chart-pie"></i> Dashboard</a>
+                <a href="registrar_ponto.html" class="nav-item"><i class="fa-solid fa-fingerprint"></i> Registrar Ponto</a>
+                <a href="relatorios.html" class="nav-item"><i class="fa-solid fa-file-invoice"></i> Meus Relatórios</a>
+                <a href="imc.html" class="nav-item active"><i class="fa-solid fa-weight-scale"></i> IMC</a>
+                <a href="funcionarios.html" class="nav-item admin-only"><i class="fa-solid fa-users"></i> Funcionários</a>
+                <a href="admin.html" class="nav-item admin-only"><i class="fa-solid fa-shield-halved"></i> Painel Admin</a>
+                <a href="configuracoes.html" class="nav-item"><i class="fa-solid fa-gear"></i> Configurações</a>
+                <a href="perfil.html" class="nav-item"><i class="fa-solid fa-user-pen"></i> Perfil</a>
+            </nav>
+            <div class="sidebar-footer">
+                <a href="#" id="btn-logout" class="nav-item text-danger"><i class="fa-solid fa-arrow-right-from-bracket"></i> Sair</a>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <header class="topbar">
+                <button id="btn-toggle-sidebar" class="btn-icon"><i class="fa-solid fa-bars"></i></button>
+                <div class="topbar-right">
+                    <div class="theme-switch-wrapper">
+                        <i class="fa-solid fa-sun"></i>
+                        <label class="theme-switch" for="checkbox-theme">
+                            <input type="checkbox" id="checkbox-theme" />
+                            <div class="slider round"></div>
+                        </label>
+                        <i class="fa-solid fa-moon"></i>
+                    </div>
+                </div>
+            </header>
+
+            <div class="content-wrapper">
+                <!-- CONTENT: IMC Screen -->
+                <div id="imc-content" class="page-content active">
+
+                    <!-- Banner Hero Central com Logo Oficial -->
+                    <div class="imc-hero-banner">
+                        <div class="imc-logo-wrapper">
+                            <img src="img/imc-logo.png" alt="Logo IMC" class="imc-central-logo">
+                        </div>
+                        <h1 class="imc-title">Calculadora de IMC & Composição Corporal</h1>
+                        <p class="imc-subtitle">Monitore sua saúde com precisão segundo os parâmetros oficiais da Organização Mundial da Saúde (OMS).</p>
+                    </div>
+
+                    <!-- Grid Principal: Inputs & Resultado Modernizado -->
+                    <div class="imc-grid-main">
+                        
+                        <!-- Coluna da Esquerda: Card de Entrada de Dados -->
+                        <div class="imc-card">
+                            <div class="imc-card-header">
+                                <h3 class="imc-card-title">
+                                    <i class="fa-solid fa-sliders"></i>
+                                    Seus Dados Corporais
+                                </h3>
+                                <span class="imc-unit-tag">OMS Adultos</span>
+                            </div>
+
+                            <!-- Seletor de Gênero -->
+                            <div class="imc-gender-selector">
+                                <button type="button" class="gender-btn active" data-gender="m">
+                                    <i class="fa-solid fa-mars"></i> Masculino
+                                </button>
+                                <button type="button" class="gender-btn" data-gender="f">
+                                    <i class="fa-solid fa-venus"></i> Feminino
+                                </button>
+                            </div>
+
+                            <!-- Input Altura -->
+                            <div class="imc-input-group">
+                                <div class="imc-input-label-row">
+                                    <label class="imc-input-label" for="imc-height">
+                                        <i class="fa-solid fa-arrows-up-down"></i> Altura
+                                    </label>
+                                    <span class="imc-unit-tag">Metros (ex: 1,70)</span>
+                                </div>
+                                <div class="imc-control-row">
+                                    <button type="button" class="imc-stepper-btn" id="btn-height-minus" title="Diminuir 1 cm"><i class="fa-solid fa-minus"></i></button>
+                                    <input type="number" id="imc-height" class="imc-numeric-input" value="1.70" step="0.01" min="1.00" max="2.30" placeholder="1,70">
+                                    <button type="button" class="imc-stepper-btn" id="btn-height-plus" title="Aumentar 1 cm"><i class="fa-solid fa-plus"></i></button>
+                                </div>
+                                <div class="imc-slider-container">
+                                    <input type="range" id="slider-height" class="imc-range-slider" min="1.00" max="2.30" step="0.01" value="1.70">
+                                </div>
+                            </div>
+
+                            <!-- Input Peso -->
+                            <div class="imc-input-group">
+                                <div class="imc-input-label-row">
+                                    <label class="imc-input-label" for="imc-weight">
+                                        <i class="fa-solid fa-weight-hanging"></i> Peso
+                                    </label>
+                                    <span class="imc-unit-tag">Quilogramas (kg)</span>
+                                </div>
+                                <div class="imc-control-row">
+                                    <button type="button" class="imc-stepper-btn" id="btn-weight-minus" title="Diminuir 0,5 kg"><i class="fa-solid fa-minus"></i></button>
+                                    <input type="number" id="imc-weight" class="imc-numeric-input" value="70.0" step="0.5" min="30" max="220" placeholder="70,0">
+                                    <button type="button" class="imc-stepper-btn" id="btn-weight-plus" title="Aumentar 0,5 kg"><i class="fa-solid fa-plus"></i></button>
+                                </div>
+                                <div class="imc-slider-container">
+                                    <input type="range" id="slider-weight" class="imc-range-slider" min="30" max="220" step="0.5" value="70.0">
+                                </div>
+                            </div>
+
+                            <!-- Input Idade -->
+                            <div class="imc-input-group">
+                                <div class="imc-input-label-row">
+                                    <label class="imc-input-label" for="imc-age">
+                                        <i class="fa-solid fa-calendar-days"></i> Idade
+                                    </label>
+                                    <span class="imc-unit-tag">Anos (10 a 100)</span>
+                                </div>
+                                <div class="imc-control-row">
+                                    <button type="button" class="imc-stepper-btn" id="btn-age-minus" title="Diminuir 1 ano"><i class="fa-solid fa-minus"></i></button>
+                                    <input type="number" id="imc-age" class="imc-numeric-input" value="28" min="10" max="100" placeholder="28">
+                                    <button type="button" class="imc-stepper-btn" id="btn-age-plus" title="Aumentar 1 ano"><i class="fa-solid fa-plus"></i></button>
+                                </div>
+                                <div class="imc-slider-container">
+                                    <input type="range" id="slider-age" class="imc-range-slider" min="10" max="100" step="1" value="28">
+                                </div>
+                            </div>
+
+                            <!-- Botões de Ação -->
+                            <div class="imc-actions-row">
+                                <button type="button" class="imc-btn-primary" id="btn-imc-calculate">
+                                    <i class="fa-solid fa-calculator"></i> Calcular IMC
+                                </button>
+                                <button type="button" class="imc-btn-secondary" id="btn-imc-save" title="Salvar no Histórico">
+                                    <i class="fa-solid fa-bookmark"></i> Salvar
+                                </button>
+                                <button type="button" class="imc-btn-secondary" id="btn-imc-reset" title="Restaurar padrão">
+                                    <i class="fa-solid fa-rotate-left"></i> Limpar
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Coluna da Direita: Card de Resultado Modernizado -->
+                        <div class="imc-result-card">
+                            <div class="imc-card-header">
+                                <h3 class="imc-card-title">
+                                    <i class="fa-solid fa-heart-pulse"></i>
+                                    Resultado do IMC
+                                </h3>
+                                <span class="imc-unit-tag">Diagnóstico Instantâneo</span>
+                            </div>
+
+                            <!-- Display do Valor Principal -->
+                            <div class="imc-display-box">
+                                <div class="imc-display-label">Índice de Massa Corporal</div>
+                                <div class="imc-value-large">
+                                    <span id="imc-display-value">24,22</span>
+                                    <span class="imc-value-unit">kg/m²</span>
+                                </div>
+                                <div>
+                                    <div id="imc-status-badge" class="imc-badge-status">
+                                        <span class="status-dot"></span> Peso normal
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Gauge / Espectro Visual da OMS -->
+                            <div class="imc-spectrum-wrapper">
+                                <div class="imc-needle-track">
+                                    <div class="imc-needle" id="imc-needle">
+                                        <i class="fa-solid fa-caret-down"></i>
+                                    </div>
+                                </div>
+                                <div class="imc-spectrum-bar">
+                                    <div class="spectrum-seg seg-underweight" title="Abaixo do peso (< 18.5)"></div>
+                                    <div class="spectrum-seg seg-normal" title="Normal (18.5 - 24.9)"></div>
+                                    <div class="spectrum-seg seg-overweight" title="Sobrepeso (25.0 - 29.9)"></div>
+                                    <div class="spectrum-seg seg-obese1" title="Obesidade I (30.0 - 34.9)"></div>
+                                    <div class="spectrum-seg seg-obese2" title="Obesidade II (35.0 - 39.9)"></div>
+                                    <div class="spectrum-seg seg-obese3" title="Obesidade III (>= 40.0)"></div>
+                                </div>
+                                <div class="imc-spectrum-ticks">
+                                    <span>&lt; 18.5</span>
+                                    <span>18.5</span>
+                                    <span>25.0</span>
+                                    <span>30.0</span>
+                                    <span>35.0</span>
+                                    <span>&ge; 40.0</span>
+                                </div>
+                            </div>
+
+                            <!-- Grade de Métricas Complementares -->
+                            <div class="imc-metrics-grid">
+                                <div class="imc-metric-tile">
+                                    <span class="metric-tile-title">Faixa de Peso Ideal</span>
+                                    <span class="metric-tile-val" id="metric-ideal-weight">53,5 kg — 72,0 kg</span>
+                                    <span class="metric-tile-sub">Baseado na sua altura</span>
+                                </div>
+                                <div class="imc-metric-tile">
+                                    <span class="metric-tile-title">Variação Recomendada</span>
+                                    <span class="metric-tile-val" id="metric-weight-diff">✓ Faixa Ideal</span>
+                                    <span class="metric-tile-sub" id="metric-weight-diff-sub">Peso em perfeito equilíbrio</span>
+                                </div>
+                                <div class="imc-metric-tile">
+                                    <span class="metric-tile-title">Gasto Basal Estimado</span>
+                                    <span class="metric-tile-val" id="metric-tmb">1.642 kcal/dia</span>
+                                    <span class="metric-tile-sub">Harris-Benedict (TMB)</span>
+                                </div>
+                                <div class="imc-metric-tile">
+                                    <span class="metric-tile-title">Diretriz Médica</span>
+                                    <span class="metric-tile-val">OMS Adultos</span>
+                                    <span class="metric-tile-sub">Padrão Internacional</span>
+                                </div>
+                            </div>
+
+                            <!-- Caixa de Recomendação Médica Personalizada -->
+                            <div class="imc-recommendation-box">
+                                <i class="fa-solid fa-circle-info"></i>
+                                <div id="imc-recommendation-text">
+                                    Excelente! Seu índice está na faixa de menor risco para a saúde. Mantenha rotina de hidratação e atividades regulares.
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <!-- Grid Inferior: Tabela da OMS e Histórico de Medições -->
+                    <div class="imc-grid-main">
+                        
+                        <!-- Card: Tabela Oficial OMS -->
+                        <div class="imc-card">
+                            <div class="imc-card-header">
+                                <h3 class="imc-card-title">
+                                    <i class="fa-solid fa-table-list"></i>
+                                    Tabela de Classificação da OMS
+                                </h3>
+                                <span class="imc-unit-tag">Adultos</span>
+                            </div>
+                            <p style="font-size:0.84rem; color:var(--text-muted); margin:0 0 10px 0;">
+                                Diretrizes da Organização Mundial da Saúde (OMS) para avaliação de riscos à saúde em adultos:
+                            </p>
+                            <div class="imc-table-container">
+                                <table class="imc-table" id="imc-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Classificação</th>
+                                            <th>Faixa IMC (kg/m²)</th>
+                                            <th>Risco de Doenças</th>
+                                            <th>Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td><span class="imc-pill-tag" style="background:rgba(14,165,233,0.15); color:#0ea5e9;">Baixo peso</span></td>
+                                            <td><strong>Menor que 18,5</strong></td>
+                                            <td>Risco de desnutrição e carências</td>
+                                            <td class="status-col">—</td>
+                                        </tr>
+                                        <tr class="table-row-active">
+                                            <td><span class="imc-pill-tag" style="background:rgba(16,185,129,0.15); color:#10b981;">Peso normal</span></td>
+                                            <td><strong>18,5 a 24,9</strong></td>
+                                            <td>Menor risco comórbido</td>
+                                            <td class="status-col"><span class="imc-pill-tag" style="background:rgba(0,102,204,0.15); color:var(--primary-color);">✦ Sua Faixa Atual</span></td>
+                                        </tr>
+                                        <tr>
+                                            <td><span class="imc-pill-tag" style="background:rgba(245,158,11,0.15); color:#f59e0b;">Sobrepeso</span></td>
+                                            <td><strong>25,0 a 29,9</strong></td>
+                                            <td>Risco aumentado de problemas metabólicos</td>
+                                            <td class="status-col">—</td>
+                                        </tr>
+                                        <tr>
+                                            <td><span class="imc-pill-tag" style="background:rgba(249,115,22,0.15); color:#f97316;">Obesidade grau I</span></td>
+                                            <td><strong>30,0 a 34,9</strong></td>
+                                            <td>Risco moderado de hipertensão/diabetes</td>
+                                            <td class="status-col">—</td>
+                                        </tr>
+                                        <tr>
+                                            <td><span class="imc-pill-tag" style="background:rgba(239,68,68,0.15); color:#ef4444;">Obesidade grau II</span></td>
+                                            <td><strong>35,0 a 39,9</strong></td>
+                                            <td>Risco alto cardiovascular</td>
+                                            <td class="status-col">—</td>
+                                        </tr>
+                                        <tr>
+                                            <td><span class="imc-pill-tag" style="background:rgba(185,28,28,0.2); color:#b91c1c;">Obesidade grau III</span></td>
+                                            <td><strong>40,0 ou mais</strong></td>
+                                            <td>Risco mórbido e severo à saúde</td>
+                                            <td class="status-col">—</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Card: Histórico de Avaliações -->
+                        <div class="imc-card">
+                            <div class="imc-card-header">
+                                <h3 class="imc-card-title">
+                                    <i class="fa-solid fa-clock-rotate-left"></i>
+                                    Histórico de Medições
+                                </h3>
+                                <button type="button" class="btn-delete-history" id="btn-clear-history" title="Limpar histórico">
+                                    <i class="fa-solid fa-trash-can"></i> Limpar
+                                </button>
+                            </div>
+                            <p style="font-size:0.84rem; color:var(--text-muted); margin:0 0 10px 0;">
+                                Registro de suas avaliações salvas localmente para acompanhamento da evolução:
+                            </p>
+                            <div id="imc-history-container">
+                                <!-- Preenchido dinamicamente via JS -->
+                            </div>
+                        </div>
+
+                    </div>
+
+                </div>
+            </div>
+        </main>
+    </section>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/supabase.js"></script>
+    <script src="js/db.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/timeTracker.js"></script>
+    <script src="js/reports.js"></script>
+    <script src="js/export.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/imc.js"></script>
+</body>
+</html>
+

@@ -176,6 +176,9 @@ async function initDashboard() {
     if (document.getElementById('perfil-content') && typeof initPerfilScreen === 'function') {
         await initPerfilScreen();
     }
+    if (document.getElementById('imc-content') && typeof initIMCScreen === 'function') {
+        initIMCScreen();
+    }
 }
 
 // --- SPA NAVIGATION (REMOVIDO PARA MPA) ---
