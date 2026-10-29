@@ -61,6 +61,9 @@
             const decimoSwitch = document.getElementById('checkbox-13');
             if (decimoSwitch) decimoSwitch.checked = !!settings.decimoTerceiroCalculation;
 
+            const feriasSwitch = document.getElementById('checkbox-ferias');
+            if (feriasSwitch) feriasSwitch.checked = (settings.feriasCalculation !== undefined && settings.feriasCalculation !== null) ? !!settings.feriasCalculation : (localStorage.getItem('ponto_ferias_calculation') !== 'false');
+
         } catch (e) {
             console.error('[Configurações] Erro ao carregar settings:', e);
         }
@@ -207,6 +210,7 @@
                 const noturnoCalculation = document.getElementById('checkbox-noturno')?.checked ?? false;
                 const fgtsCalculation = document.getElementById('checkbox-fgts')?.checked ?? false;
                 const decimoTerceiroCalculation = document.getElementById('checkbox-13')?.checked ?? false;
+                const feriasCalculation = document.getElementById('checkbox-ferias')?.checked ?? true;
 
                 let logoUrl = _currentLogoUrl;
 
@@ -226,7 +230,8 @@
                     irrfCalculation:            irrfCalculation,
                     noturnoCalculation:         noturnoCalculation,
                     fgtsCalculation:            fgtsCalculation,
-                    decimoTerceiroCalculation:  decimoTerceiroCalculation
+                    decimoTerceiroCalculation:  decimoTerceiroCalculation,
+                    feriasCalculation:          feriasCalculation
                 };
 
                 await db.settings.update('global', newSettings);

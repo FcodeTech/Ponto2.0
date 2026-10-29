@@ -106,6 +106,9 @@ function _mapSettingsFromDB(row) {
         decimoTerceiroCalculation:  row.decimo_terceiro_calculation !== undefined && row.decimo_terceiro_calculation !== null
                                         ? !!row.decimo_terceiro_calculation
                                         : (local13 === 'true'),
+        feriasCalculation:          row.ferias_calculation !== undefined && row.ferias_calculation !== null
+                                        ? !!row.ferias_calculation
+                                        : (localStorage.getItem('ponto_ferias_calculation') !== null ? localStorage.getItem('ponto_ferias_calculation') === 'true' : true),
         irrfCalculation:            row.irrf_calculation !== undefined && row.irrf_calculation !== null
                                         ? !!row.irrf_calculation
                                         : (localIrrf === 'true'),
@@ -124,6 +127,7 @@ function _mapSettingsToDB(data) {
     if (data.noturnoCalculation         !== undefined) row.noturno_calculation         = data.noturnoCalculation;
     if (data.fgtsCalculation            !== undefined) row.fgts_calculation            = data.fgtsCalculation;
     if (data.decimoTerceiroCalculation  !== undefined) row.decimo_terceiro_calculation  = data.decimoTerceiroCalculation;
+    if (data.feriasCalculation          !== undefined) row.ferias_calculation          = data.feriasCalculation;
     if (data.irrfCalculation            !== undefined) row.irrf_calculation            = data.irrfCalculation;
     if (data.resetTokens                !== undefined) row.reset_tokens                = data.resetTokens;
     if (data.filters                    !== undefined) row.filters                     = data.filters;
@@ -401,6 +405,9 @@ const db = {
             if (data.decimoTerceiroCalculation !== undefined) {
                 localStorage.setItem('ponto_decimo_terceiro_calculation', String(data.decimoTerceiroCalculation));
             }
+            if (data.feriasCalculation !== undefined) {
+                localStorage.setItem('ponto_ferias_calculation', String(data.feriasCalculation));
+            }
             if (data.irrfCalculation !== undefined) {
                 localStorage.setItem('ponto_irrf_calculation', String(data.irrfCalculation));
             }
@@ -418,9 +425,10 @@ const db = {
                     if (insertError) throw insertError;
                 }
             } catch (err) {
-                if (err && err.message && (err.message.includes('irrf_calculation') || err.message.includes('decimo_terceiro_calculation') || err.message.includes('fgts_calculation') || err.code === '42703' || err.code === 'PGRST204')) {
+                if (err && err.message && (err.message.includes('irrf_calculation') || err.message.includes('decimo_terceiro_calculation') || err.message.includes('ferias_calculation') || err.message.includes('fgts_calculation') || err.code === '42703' || err.code === 'PGRST204')) {
                     delete row.irrf_calculation;
                     delete row.decimo_terceiro_calculation;
+                    delete row.ferias_calculation;
                     delete row.fgts_calculation;
                     const { data: updated2, error: err2 } = await _supabase
                         .from('settings').update(row).eq('user_id', userId).select();
@@ -448,6 +456,9 @@ const db = {
             if (data.decimoTerceiroCalculation !== undefined) {
                 localStorage.setItem('ponto_decimo_terceiro_calculation', String(data.decimoTerceiroCalculation));
             }
+            if (data.feriasCalculation !== undefined) {
+                localStorage.setItem('ponto_ferias_calculation', String(data.feriasCalculation));
+            }
             if (data.irrfCalculation !== undefined) {
                 localStorage.setItem('ponto_irrf_calculation', String(data.irrfCalculation));
             }
@@ -465,9 +476,10 @@ const db = {
                     if (insertError) throw insertError;
                 }
             } catch (err) {
-                if (err && err.message && (err.message.includes('irrf_calculation') || err.message.includes('decimo_terceiro_calculation') || err.message.includes('fgts_calculation') || err.code === '42703' || err.code === 'PGRST204')) {
+                if (err && err.message && (err.message.includes('irrf_calculation') || err.message.includes('decimo_terceiro_calculation') || err.message.includes('ferias_calculation') || err.message.includes('fgts_calculation') || err.code === '42703' || err.code === 'PGRST204')) {
                     delete row.irrf_calculation;
                     delete row.decimo_terceiro_calculation;
+                    delete row.ferias_calculation;
                     delete row.fgts_calculation;
                     const { data: updated2, error: err2 } = await _supabase
                         .from('settings').update(row).eq('user_id', userId).select();
@@ -713,6 +725,192 @@ window.calculateDecimoTerceiro = function(baseSalary, admissionDateStr, refMonth
         remuneracaoBase: remuneracaoBase,
         baseSalary: Number(baseSalary || 0),
         mediaExtras: Number(mediaExtras || 0),
+        refMonth: refMonth,
+        refYear: refYear
+    };
+};
+
+/**
+ * Calcula o valor das Férias + 1/3 Constitucional de acordo com a CLT (Art. 129 a 145 CLT, Art. 7º, XVII CF/88 e Súmula 151/TST).
+ * 
+ * Regras Oficiais da CLT:
+ * 1. Remuneração Base de Férias (Art. 142 da CLT e Súmula 151 do TST):
+ *    - A remuneração base é composta pelo salário base contratual somado à média dos adicionais habituais
+ *      (horas extras 50%, horas extras 100%, adicional noturno, etc.) apurados no período aquisitivo.
+ *      Remuneração Base = Salário Base + Média de Horas Extras/Adicionais.
+ * 
+ * 2. Período Aquisitivo e Proporcionalidade de Dias (Art. 130 e Art. 146 da CLT):
+ *    - A cada 12 meses de contrato (período aquisitivo), o empregado adquire direito a 30 dias corridos de férias.
+ *    - Cada mês trabalhado (ou fração igual ou superior a 15 dias) confere 1/12 avos, o que equivale a 2,5 dias de férias.
+ *    - Na competência mensal consultada (ex: mês 10), acumulam-se os avos decorridos do período aquisitivo.
+ * 
+ * 3. Terço Constitucional (Art. 7º, inciso XVII da CF/88):
+ *    - Todo trabalhador tem direito a gozo de férias anuais remuneradas com, pelo menos, um terço a mais do que o salário normal.
+ *    - Terço Constitucional = Valor das Férias ÷ 3.
+ * 
+ * 4. Total Bruto e Descontos Legais (Art. 214 Dec. 3.048/99 e Art. 620 RIR/2018):
+ *    - Total Bruto = Valor Férias + Terço Constitucional.
+ *    - Sofre incidência exclusiva de INSS e IRRF (tabela progressiva oficial 2026).
+ * 
+ * @param {number} baseSalary - Salário base mensal
+ * @param {string} admissionDateStr - Data de admissão ('YYYY-MM-DD')
+ * @param {string} refMonthStr - Mês de referência ('YYYY-MM')
+ * @param {number} [mediaExtras=0] - Média de horas extras e adicionais apurados
+ * @returns {object} Detalhamento completo do cálculo de férias CLT
+ */
+window.calculateFerias = function(baseSalary, admissionDateStr, refMonthStr, mediaExtras = 0) {
+    const remuneracaoBase = Number((Number(baseSalary || 0) + Number(mediaExtras || 0)).toFixed(2));
+    if (remuneracaoBase <= 0) {
+        return {
+            avos: 0,
+            totalAvos: 12,
+            diasFerias: 0,
+            valorFerias: 0,
+            tercoConstitucional: 0,
+            totalBruto: 0,
+            inssFerias: 0,
+            irrfFerias: 0,
+            totalLiquido: 0,
+            valorIntegralAno: 0,
+            feriasIntegral: 0,
+            tercoIntegral: 0,
+            liquidoIntegral: 0,
+            remuneracaoBase: 0,
+            baseSalary: 0,
+            mediaExtras: 0,
+            isIntegral: true,
+            isCompetenciaIntegral: false,
+            mesesEmpresa: 0,
+            admissaoFormatada: '—',
+            refMonth: 12,
+            refYear: new Date().getFullYear()
+        };
+    }
+
+    const now = new Date();
+    let refYear = now.getFullYear();
+    let refMonth = now.getMonth() + 1;
+
+    if (refMonthStr && typeof refMonthStr === 'string' && refMonthStr.includes('-')) {
+        const parts = refMonthStr.split('-');
+        refYear = parseInt(parts[0], 10) || refYear;
+        refMonth = parseInt(parts[1], 10) || refMonth;
+    }
+
+    let avosAcumulados = Math.min(12, Math.max(1, refMonth));
+    let totalAvos = 12;
+    let mesesEmpresa = 0;
+    let admissaoFormatada = '—';
+    let isAdmitidoAnoAtual = false;
+
+    function _diasNoMes(ano, mes) {
+        return new Date(ano, mes, 0).getDate();
+    }
+
+    if (admissionDateStr && typeof admissionDateStr === 'string' && admissionDateStr.includes('-')) {
+        const parts = admissionDateStr.split('-');
+        const admYear = parseInt(parts[0], 10);
+        const admMonth = parseInt(parts[1], 10);
+        const admDay = parseInt(parts[2], 10);
+
+        admissaoFormatada = String(admDay).padStart(2, '0') + '/' + String(admMonth).padStart(2, '0') + '/' + admYear;
+
+        const diffMonths = ((refYear - admYear) * 12) + (refMonth - admMonth);
+        const diasMesAdm = _diasNoMes(admYear, admMonth);
+        const diasTrabalhadosAdm = Math.max(0, diasMesAdm - admDay + 1);
+        const admMonthValido = (diasTrabalhadosAdm >= 15);
+
+        mesesEmpresa = Math.max(0, diffMonths + (admMonthValido ? 1 : 0));
+
+        if (admYear < refYear) {
+            // Se admitido em ano anterior e vínculo >= 12 meses, possui período aquisitivo completo (12/12)
+            if (mesesEmpresa >= 12) {
+                avosAcumulados = 12;
+            } else {
+                avosAcumulados = Math.min(12, mesesEmpresa);
+            }
+            totalAvos = 12;
+            isAdmitidoAnoAtual = false;
+        } else if (admYear === refYear) {
+            isAdmitidoAnoAtual = true;
+            const admMonthCount = admMonthValido ? 1 : 0;
+            totalAvos = Math.min(12, Math.max(0, (12 - admMonth) + admMonthCount));
+
+            if (refMonth < admMonth) {
+                avosAcumulados = 0;
+            } else if (refMonth === admMonth) {
+                avosAcumulados = admMonthCount;
+            } else {
+                avosAcumulados = Math.min(totalAvos, Math.max(0, (refMonth - admMonth) + admMonthCount));
+            }
+        } else {
+            avosAcumulados = 0;
+            totalAvos = 0;
+        }
+    } else {
+        avosAcumulados = 12;
+        totalAvos = 12;
+    }
+
+    // Dias de férias proporcionais (30 dias / 12 = 2,5 dias por avo)
+    const diasFerias = Math.round((avosAcumulados * 2.5) * 10) / 10;
+
+    // Valor proporcional das férias (remuneração simples)
+    const valorFerias = Number(((remuneracaoBase / 12) * avosAcumulados).toFixed(2));
+
+    // Terço constitucional (1/3 sobre o valor das férias)
+    const tercoConstitucional = Number((valorFerias / 3).toFixed(2));
+
+    // Total Bruto de Férias a receber
+    const totalBruto = Number((valorFerias + tercoConstitucional).toFixed(2));
+
+    // Descontos Legais CLT (INSS e IRRF sobre a remuneração de férias)
+    const inssFerias = (typeof window.calculateINSS === 'function')
+        ? window.calculateINSS(totalBruto)
+        : 0;
+
+    const irrfInfoFerias = (typeof window.calculateIRRF === 'function')
+        ? window.calculateIRRF(totalBruto, inssFerias)
+        : { valor: 0 };
+    const irrfFerias = irrfInfoFerias ? (irrfInfoFerias.valor || 0) : 0;
+
+    const totalLiquido = Math.max(0, Number((totalBruto - inssFerias - irrfFerias).toFixed(2)));
+
+    // Projeção integral de 30 dias (12/12)
+    const feriasIntegral = remuneracaoBase;
+    const tercoIntegral = Number((remuneracaoBase / 3).toFixed(2));
+    const totalBrutoIntegral = Number((feriasIntegral + tercoIntegral).toFixed(2));
+    const inssIntegral = (typeof window.calculateINSS === 'function') ? window.calculateINSS(totalBrutoIntegral) : 0;
+    const irrfInfoIntegral = (typeof window.calculateIRRF === 'function') ? window.calculateIRRF(totalBrutoIntegral, inssIntegral) : { valor: 0 };
+    const irrfIntegral = irrfInfoIntegral ? (irrfInfoIntegral.valor || 0) : 0;
+    const liquidoIntegral = Math.max(0, Number((totalBrutoIntegral - inssIntegral - irrfIntegral).toFixed(2)));
+
+    const isIntegral = (avosAcumulados === 12);
+
+    return {
+        avos: avosAcumulados,
+        totalAvos: totalAvos,
+        diasFerias: diasFerias,
+        valorFerias: valorFerias,
+        tercoConstitucional: tercoConstitucional,
+        totalBruto: totalBruto,
+        inssFerias: inssFerias,
+        irrfFerias: irrfFerias,
+        totalLiquido: totalLiquido,
+        // Integrais (30 dias)
+        valorIntegralAno: totalBrutoIntegral,
+        feriasIntegral: feriasIntegral,
+        tercoIntegral: tercoIntegral,
+        liquidoIntegral: liquidoIntegral,
+        // Composição
+        remuneracaoBase: remuneracaoBase,
+        baseSalary: Number(baseSalary || 0),
+        mediaExtras: Number(mediaExtras || 0),
+        isIntegral: isIntegral,
+        isCompetenciaIntegral: isIntegral,
+        isAdmitidoAnoAtual: isAdmitidoAnoAtual,
+        mesesEmpresa: mesesEmpresa,
+        admissaoFormatada: admissaoFormatada,
         refMonth: refMonth,
         refYear: refYear
     };

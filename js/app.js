@@ -101,6 +101,9 @@ async function applyGlobalSettings() {
         const decimoSwitch = document.getElementById('checkbox-13');
         if (decimoSwitch) decimoSwitch.checked = !!settings.decimoTerceiroCalculation;
 
+        const feriasSwitch = document.getElementById('checkbox-ferias');
+        if (feriasSwitch) feriasSwitch.checked = (settings.feriasCalculation !== undefined && settings.feriasCalculation !== null) ? !!settings.feriasCalculation : (localStorage.getItem('ponto_ferias_calculation') !== 'false');
+
     } catch (e) {
         console.error('[applyGlobalSettings] Erro ao carregar settings:', e);
     }

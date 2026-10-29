@@ -55,9 +55,19 @@ async function calcFinanceiro(user, records) {
     const valor13 = decimoInfo.valor;
     const avos13 = decimoInfo.avos;
 
+    const isFeriasActive = (settings.feriasCalculation !== undefined && settings.feriasCalculation !== null)
+        ? !!settings.feriasCalculation
+        : (localStorage.getItem('ponto_ferias_calculation') !== 'false');
+
+    const feriasInfo = (isFeriasActive && typeof window.calculateFerias === 'function')
+        ? window.calculateFerias(baseSalary, user.admissionDate, filterMonth, mediaExtrasExport)
+        : { avos: 0, totalAvos: 12, diasFerias: 0, valorFerias: 0, tercoConstitucional: 0, totalBruto: 0, inssFerias: 0, irrfFerias: 0, totalLiquido: 0, valorIntegralAno: 0, mediaExtras: 0, remuneracaoBase: baseSalary };
+    const valorFerias = feriasInfo.totalBruto;
+    const avosFerias = feriasInfo.avos;
+
     const salarioLiquido = salarioBruto - descontoInss - descontoIrrf;
 
-    return { salarioBruto, descontoInss, descontoIrrf, salarioLiquido, adicNoturno, totNoturnoMinutes, isInssActive, isIrrfActive, isNoturnoActive, isFgtsActive, valorFgts, isDecimoActive, valor13, avos13, decimoInfo };
+    return { salarioBruto, descontoInss, descontoIrrf, salarioLiquido, adicNoturno, totNoturnoMinutes, isInssActive, isIrrfActive, isNoturnoActive, isFgtsActive, valorFgts, isDecimoActive, valor13, avos13, decimoInfo, isFeriasActive, valorFerias, avosFerias, feriasInfo };
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -113,6 +123,17 @@ async function getReportDataArray(singleEmployeeMode, targetUserId) {
             if (decimoInfo && decimoInfo.primeiraParcela > 0) {
                 rows.push(['   > 1ª Parcela (50% até 30/nov):', formatCurrency(decimoInfo.primeiraParcela)]);
                 rows.push(['   > 2ª Parcela Líquida (até 20/dez):', formatCurrency(decimoInfo.segundaParcela)]);
+            }
+        }
+        if (isFeriasActive && feriasInfo && feriasInfo.totalBruto > 0) {
+            rows.push([`Férias + 1/3 (${feriasInfo.avos}/12 avos CLT - ${feriasInfo.diasFerias} dias):`, formatCurrency(feriasInfo.totalBruto)]);
+            if (feriasInfo.mediaExtras > 0) {
+                rows.push(['   > Salário Base + Média de Horas Extras:', `${formatCurrency(feriasInfo.baseSalary)} + ${formatCurrency(feriasInfo.mediaExtras)} = ${formatCurrency(feriasInfo.remuneracaoBase)}`]);
+            }
+            rows.push(['   > Férias Simples:', formatCurrency(feriasInfo.valorFerias)]);
+            rows.push(['   > 1/3 Constitucional (Art. 7º, XVII CF):', formatCurrency(feriasInfo.tercoConstitucional)]);
+            if (feriasInfo.totalLiquido > 0) {
+                rows.push(['   > Estimativa Líquida a Receber:', formatCurrency(feriasInfo.totalLiquido)]);
             }
         }
         rows.push([]);
@@ -319,7 +340,7 @@ document.getElementById('btn-export-pdf')?.addEventListener('click', async () =>
             writeField("Jornada", jornadaStr, startY); startY += 12;
 
             // ── Resumo Financeiro ─────────────────────────────────────────
-            const { salarioBruto, descontoInss, descontoIrrf, salarioLiquido, adicNoturno, totNoturnoMinutes, isInssActive, isIrrfActive, isNoturnoActive, isFgtsActive, valorFgts, isDecimoActive, valor13, avos13, decimoInfo } =
+            const { salarioBruto, descontoInss, descontoIrrf, salarioLiquido, adicNoturno, totNoturnoMinutes, isInssActive, isIrrfActive, isNoturnoActive, isFgtsActive, valorFgts, isDecimoActive, valor13, avos13, decimoInfo, isFeriasActive, valorFerias, avosFerias, feriasInfo } =
                 await calcFinanceiro(u, data);
 
             // Título da seção
@@ -439,6 +460,27 @@ document.getElementById('btn-export-pdf')?.addEventListener('click', async () =>
                     const inssTxt = decimoInfo.inssDecimo > 0 ? ` (desc. INSS: -${formatCurrency(decimoInfo.inssDecimo)})` : '';
                     const baseCompTxt = decimoInfo.mediaExtras > 0 ? `Base: ${formatCurrency(decimoInfo.baseSalary)} + Méd. Extras: ${formatCurrency(decimoInfo.mediaExtras)} = ${formatCurrency(decimoInfo.remuneracaoBase)} | ` : '';
                     doc.text(`${baseCompTxt}1ª: ${formatCurrency(decimoInfo.primeiraParcela)} | 2ª líq: ${formatCurrency(decimoInfo.segundaParcela)}${inssTxt}`, 16, startY - 2);
+                    doc.setFontSize(10);
+                    doc.setTextColor(textColor[0], textColor[1], textColor[2]);
+                    startY += 4;
+                }
+            }
+
+            if (isFeriasActive) {
+                // ── Férias + 1/3 ───────────────────────────────────────────
+                doc.setFont("helvetica", "bold");
+                doc.text("Férias + 1/3 (CLT):", 14, startY);
+                doc.setFont("helvetica", "normal");
+                doc.setTextColor(8, 145, 178);
+                doc.text(`${formatCurrency(valorFerias)} (${avosFerias}/12 avos • ${feriasInfo.diasFerias}d)`, 60, startY);
+                doc.setTextColor(textColor[0], textColor[1], textColor[2]);
+                startY += 7;
+                if (feriasInfo && feriasInfo.valorFerias > 0) {
+                    doc.setFontSize(8);
+                    doc.setTextColor(110, 110, 110);
+                    const baseCompTxt = feriasInfo.mediaExtras > 0 ? `Base: ${formatCurrency(feriasInfo.baseSalary)} + Méd. Extras: ${formatCurrency(feriasInfo.mediaExtras)} = ${formatCurrency(feriasInfo.remuneracaoBase)} | ` : '';
+                    const liqEstTxt = feriasInfo.totalLiquido > 0 ? ` | Líq. est: ${formatCurrency(feriasInfo.totalLiquido)}` : '';
+                    doc.text(`${baseCompTxt}Férias: ${formatCurrency(feriasInfo.valorFerias)} | 1/3: +${formatCurrency(feriasInfo.tercoConstitucional)}${liqEstTxt}`, 16, startY - 2);
                     doc.setFontSize(10);
                     doc.setTextColor(textColor[0], textColor[1], textColor[2]);
                     startY += 4;
