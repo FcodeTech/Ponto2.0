@@ -45,9 +45,13 @@ async function calcFinanceiro(user, records) {
     
     const isDecimoActive = !!settings.decimoTerceiroCalculation;
     const filterMonth = document.getElementById('filter-month')?.value || null;
+    const totExtrasExport = recE50 + recE100 + adicNoturno;
+    const monthsExport = new Set(records.map(r => r.month || (r.date ? r.date.substring(0, 7) : null)).filter(Boolean)).size || 1;
+    const mediaExtrasExport = Number((totExtrasExport / monthsExport).toFixed(2));
+
     const decimoInfo = (isDecimoActive && typeof window.calculateDecimoTerceiro === 'function')
-        ? window.calculateDecimoTerceiro(baseSalary, user.admissionDate, filterMonth)
-        : { avos: 0, valor: 0, valorIntegralAno: 0, primeiraParcela: 0, segundaParcela: 0, inssDecimo: 0 };
+        ? window.calculateDecimoTerceiro(baseSalary, user.admissionDate, filterMonth, mediaExtrasExport)
+        : { avos: 0, valor: 0, valorIntegralAno: 0, primeiraParcela: 0, segundaParcela: 0, inssDecimo: 0, mediaExtras: 0, remuneracaoBase: baseSalary };
     const valor13 = decimoInfo.valor;
     const avos13 = decimoInfo.avos;
 
@@ -103,9 +107,12 @@ async function getReportDataArray(singleEmployeeMode, targetUserId) {
         }
         if (isDecimoActive) {
             rows.push([`13º Salário (${avos13}/12 avos CLT):`, formatCurrency(valor13)]);
+            if (decimoInfo && decimoInfo.mediaExtras > 0) {
+                rows.push(['   > Salário Base + Média de Horas Extras:', `${formatCurrency(decimoInfo.baseSalary)} + ${formatCurrency(decimoInfo.mediaExtras)} = ${formatCurrency(decimoInfo.remuneracaoBase)}`]);
+            }
             if (decimoInfo && decimoInfo.primeiraParcela > 0) {
-                rows.push(['   1ª Parcela (50% até 30/nov):', formatCurrency(decimoInfo.primeiraParcela)]);
-                rows.push(['   2ª Parcela Líquida (até 20/dez):', formatCurrency(decimoInfo.segundaParcela)]);
+                rows.push(['   > 1ª Parcela (50% até 30/nov):', formatCurrency(decimoInfo.primeiraParcela)]);
+                rows.push(['   > 2ª Parcela Líquida (até 20/dez):', formatCurrency(decimoInfo.segundaParcela)]);
             }
         }
         rows.push([]);
@@ -430,7 +437,8 @@ document.getElementById('btn-export-pdf')?.addEventListener('click', async () =>
                     doc.setFontSize(8);
                     doc.setTextColor(110, 110, 110);
                     const inssTxt = decimoInfo.inssDecimo > 0 ? ` (desc. INSS: -${formatCurrency(decimoInfo.inssDecimo)})` : '';
-                    doc.text(`1ª parc: ${formatCurrency(decimoInfo.primeiraParcela)} | 2ª parc. líq: ${formatCurrency(decimoInfo.segundaParcela)}${inssTxt}`, 16, startY - 2);
+                    const baseCompTxt = decimoInfo.mediaExtras > 0 ? `Base: ${formatCurrency(decimoInfo.baseSalary)} + Méd. Extras: ${formatCurrency(decimoInfo.mediaExtras)} = ${formatCurrency(decimoInfo.remuneracaoBase)} | ` : '';
+                    doc.text(`${baseCompTxt}1ª: ${formatCurrency(decimoInfo.primeiraParcela)} | 2ª líq: ${formatCurrency(decimoInfo.segundaParcela)}${inssTxt}`, 16, startY - 2);
                     doc.setFontSize(10);
                     doc.setTextColor(textColor[0], textColor[1], textColor[2]);
                     startY += 4;

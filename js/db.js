@@ -598,6 +598,8 @@ window.calculateDecimoTerceiro = function(baseSalary, admissionDateStr, refMonth
             irrfDecimo: 0,
             segundaParcela: 0,
             remuneracaoBase: 0,
+            baseSalary: 0,
+            mediaExtras: 0,
             refMonth: 12,
             refYear: new Date().getFullYear()
         };
@@ -709,6 +711,8 @@ window.calculateDecimoTerceiro = function(baseSalary, admissionDateStr, refMonth
         irrfDecimo: irrfDecimo,
         segundaParcela: segundaParcelaLiquida,
         remuneracaoBase: remuneracaoBase,
+        baseSalary: Number(baseSalary || 0),
+        mediaExtras: Number(mediaExtras || 0),
         refMonth: refMonth,
         refYear: refYear
     };

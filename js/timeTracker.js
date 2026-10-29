@@ -660,12 +660,16 @@ window.updateDashboardStats = async function() {
         dashSalario.textContent = formatCurrency(targetSalary);
 
         // Buscar registros
-        let records = await db.timeRecords.toArray();
+        let allDbRecords = await db.timeRecords.toArray();
+
+        // Guardar todos os registros do colaborador para apuração de médias anuais (CLT / 13º)
+        const allEmployeeRecords = (employeeId !== 'all')
+            ? allDbRecords.filter(r => r.userId === employeeId)
+            : allDbRecords;
+
+        let records = [...allEmployeeRecords];
 
         // Aplicar filtros
-        if (employeeId !== 'all') {
-            records = records.filter(r => r.userId === employeeId);
-        }
         
         if (dateStart && dateEnd) {
             records = records.filter(r => r.date >= dateStart && r.date <= dateEnd);
@@ -824,9 +828,51 @@ window.updateDashboardStats = async function() {
 
         if (isDecimoActive && employeeId !== 'all') {
             const admissionDate = targetEmployee ? targetEmployee.admissionDate : null;
+
+            // ── Apuração da Média de Horas Extras e Adicionais (CLT / Súmula 45 TST) ──
+            let mediaExtrasAno = 0;
+            const refYear = filterMonth ? parseInt(filterMonth.split('-')[0], 10) : new Date().getFullYear();
+            const refMonth = filterMonth ? parseInt(filterMonth.split('-')[1], 10) : (new Date().getMonth() + 1);
+
+            // Filtrar todos os registros do colaborador no ano consultado até a competência
+            const yearRecords = allEmployeeRecords.filter(r => {
+                const m = r.month || (r.date ? r.date.substring(0, 7) : null);
+                if (!m) return false;
+                const [y, mo] = m.split('-').map(Number);
+                return y === refYear && mo <= refMonth;
+            });
+
+            const monthsWithRecords = new Set();
+            let sumE50Min = 0;
+            let sumE100Min = 0;
+            let sumNoturnoMin = 0;
+
+            yearRecords.forEach(r => {
+                if (!r.calc) return;
+                const m = r.month || (r.date ? r.date.substring(0, 7) : null);
+                if (m) monthsWithRecords.add(m);
+                sumE50Min     += (r.calc.extra50 || 0);
+                sumE100Min    += (r.calc.extra100 || 0);
+                sumNoturnoMin += (r.calc.minutosNoturnos || 0);
+            });
+
+            // Se houver registros com horas extras no ano, calcula a média dividindo pelos meses com registro
+            if (monthsWithRecords.size > 0 && (sumE50Min > 0 || sumE100Min > 0 || sumNoturnoMin > 0)) {
+                const divMeses = monthsWithRecords.size;
+                const medHoras50  = (sumE50Min / 60) / divMeses;
+                const medHoras100 = (sumE100Min / 60) / divMeses;
+                const vMed50      = medHoras50 * (valorHora * 1.5);
+                const vMed100     = medHoras100 * (valorHora * 2.0);
+                const vMedNot     = isNoturnoActive ? (((sumNoturnoMin / 60) / divMeses) * (valorHora * 0.20)) : 0;
+                mediaExtrasAno    = Number((vMed50 + vMed100 + vMedNot).toFixed(2));
+            } else if (totalExtras > 0 || (isNoturnoActive && valorNoturno > 0)) {
+                // Fallback: se os filtros forem pontuais e já houver extras apurados na tela
+                mediaExtrasAno = Number((totalExtras + (isNoturnoActive ? valorNoturno : 0)).toFixed(2));
+            }
+
             const decimoInfo = (typeof window.calculateDecimoTerceiro === 'function')
-                ? window.calculateDecimoTerceiro(targetSalary, admissionDate, filterMonth)
-                : { avos: 0, valor: 0, totalAvosAno: 12, valorIntegralAno: 0, mesesEmpresa: 0, admissaoFormatada: '—' };
+                ? window.calculateDecimoTerceiro(targetSalary, admissionDate, filterMonth, mediaExtrasAno)
+                : { avos: 0, valor: 0, totalAvosAno: 12, valorIntegralAno: 0, mesesEmpresa: 0, admissaoFormatada: '—', remuneracaoBase: targetSalary, mediaExtras: 0 };
 
             if (card13) card13.style.display = 'flex';
             if (val13) val13.textContent = formatCurrency(decimoInfo.valor);
@@ -834,14 +880,71 @@ window.updateDashboardStats = async function() {
             if (val13Periodo) {
                 val13Periodo.textContent = decimoInfo.isCompetenciaIntegral ? 'Integral' : 'Proporcional CLT';
             }
-            if (val13Admissao) {
-                const descInss13 = decimoInfo.inssDecimo > 0 ? ` &bull; Desc. INSS: -<strong>${formatCurrency(decimoInfo.inssDecimo)}</strong>` : '';
+
+            const badge13 = document.getElementById('dash-13-badge');
+            if (badge13) {
                 if (decimoInfo.isCompetenciaIntegral) {
-                    val13Admissao.innerHTML = `1ª parc. (50% até 30/nov): <strong>${formatCurrency(decimoInfo.primeiraParcela)}</strong> &bull; 2ª parc. líq. (até 20/dez): <strong>${formatCurrency(decimoInfo.segundaParcela)}</strong>${descInss13}`;
+                    badge13.style.background = 'rgba(16, 185, 129, 0.12)';
+                    badge13.style.color = '#059669';
                 } else {
-                    const admLabel = decimoInfo.admissaoFormatada !== '—' ? `Adm: <strong>${decimoInfo.admissaoFormatada}</strong> &bull; ` : '';
-                    val13Admissao.innerHTML = `${admLabel}Prev. Anual (12/12): <strong>${formatCurrency(decimoInfo.valorIntegralAno)}</strong> &bull; 1ª parc: <strong>${formatCurrency(decimoInfo.primeiraParcela)}</strong> &bull; 2ª líq: <strong>${formatCurrency(decimoInfo.segundaParcela)}</strong>`;
+                    badge13.style.background = 'rgba(245, 158, 11, 0.12)';
+                    badge13.style.color = '#d97706';
                 }
+            }
+
+            // Composição da Base (Horas Extras) de forma limpa e organizada
+            const elExtras13 = document.getElementById('dash-13-extras-info');
+            if (elExtras13) {
+                if (decimoInfo.mediaExtras > 0) {
+                    elExtras13.style.display = 'block';
+                    elExtras13.innerHTML = `
+                        <div style="display: flex; justify-content: space-between; align-items: center; color: var(--text-muted); font-size: 0.74rem;">
+                            <span>Salário Base:</span>
+                            <strong style="color: var(--text-color);">${formatCurrency(targetSalary)}</strong>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; align-items: center; color: #d97706; font-size: 0.74rem; margin-top: 2px;">
+                            <span><i class="fa-solid fa-clock-rotate-left" style="font-size: 0.8em;"></i> Média Horas Extras:</span>
+                            <strong>+ ${formatCurrency(decimoInfo.mediaExtras)}</strong>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px dashed var(--border-color); margin-top: 4px; padding-top: 3px; font-size: 0.76rem; font-weight: 600;">
+                            <span style="color: var(--text-color);">Base de Cálculo:</span>
+                            <span style="color: #f59e0b;">${formatCurrency(decimoInfo.remuneracaoBase)}</span>
+                        </div>
+                    `;
+                } else {
+                    elExtras13.style.display = 'none';
+                }
+            }
+
+            // Grid das Parcelas CLT organizado e profissional
+            const elParcelasGrid = document.getElementById('dash-13-parcelas-grid');
+            if (elParcelasGrid) {
+                elParcelasGrid.innerHTML = `
+                    <div>
+                        <span style="display: block; font-size: 0.67rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.03em; font-weight: 600;">1ª Parcela (50%)</span>
+                        <strong style="display: block; font-size: 0.83rem; color: var(--text-color); margin-top: 1px;">${formatCurrency(decimoInfo.primeiraParcela)}</strong>
+                        <span style="display: block; font-size: 0.67rem; color: var(--text-muted);">até 30/nov &bull; sem desc.</span>
+                    </div>
+                    <div>
+                        <span style="display: block; font-size: 0.67rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.03em; font-weight: 600;">2ª Parc. Líquida</span>
+                        <strong style="display: block; font-size: 0.83rem; color: #10b981; margin-top: 1px;">${formatCurrency(decimoInfo.segundaParcela)}</strong>
+                        <span style="display: block; font-size: 0.67rem; color: var(--text-muted);">até 20/dez &bull; líq. a pagar</span>
+                    </div>
+                `;
+            }
+
+            // Rodapé organizado
+            if (val13Admissao) {
+                const admTxt = decimoInfo.admissaoFormatada !== '—'
+                    ? `<span><i class="fa-regular fa-calendar-check" style="font-size: 0.85em; opacity: 0.7;"></i> Adm: <strong>${decimoInfo.admissaoFormatada}</strong></span>`
+                    : '<span>CLT Lei 4.090/62</span>';
+                const inssTxt = decimoInfo.inssDecimo > 0
+                    ? ` <span style="font-size: 0.67rem; color: var(--danger-color, #dc3545);" title="Desconto INSS 13º">(INSS: -${formatCurrency(decimoInfo.inssDecimo)})</span>`
+                    : '';
+                val13Admissao.innerHTML = `
+                    ${admTxt}
+                    <span>Total Anual (12/12): <strong style="color: var(--text-color);">${formatCurrency(decimoInfo.valorIntegralAno)}</strong>${inssTxt}</span>
+                `;
             }
         } else {
             if (card13) card13.style.display = 'none';

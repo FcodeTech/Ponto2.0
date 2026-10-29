@@ -367,15 +367,30 @@
                                 <small style="display: block; margin-top: 3px; color: var(--text-muted); font-size: 0.82em;">Depósito do empregador</small>
                             </div>
                         </div>
-                        <div class="stat-card" id="card-decimo-terceiro" style="display: none;">
-                            <div class="card-icon" style="background-color: rgba(245, 158, 11, 0.15); color: #f59e0b;">
+                        <div class="stat-card" id="card-decimo-terceiro" style="display: none; align-items: flex-start;">
+                            <div class="card-icon" style="background-color: rgba(245, 158, 11, 0.15); color: #f59e0b; flex-shrink: 0;">
                                 <i class="fa-solid fa-gift"></i>
                             </div>
-                            <div class="card-info">
-                                <h3>13º Salário (CLT)</h3>
-                                <span class="value" id="dash-valor-13" style="color: #f59e0b;">R$ 0,00</span>
-                                <small style="display: block; margin-top: 5px; color: var(--text-muted); font-size: 0.85em;">Avos: <strong id="dash-13-avos">0/12</strong> (<span id="dash-13-periodo">Proporcional</span>)</small>
-                                <small style="display: block; margin-top: 3px; color: var(--text-muted); font-size: 0.80em;" id="dash-13-admissao">Previsão CLT</small>
+                            <div class="card-info" style="min-width: 0;">
+                                <div style="display: flex; align-items: center; justify-content: space-between; gap: 6px; flex-wrap: wrap;">
+                                    <h3>13º Salário (CLT)</h3>
+                                    <span id="dash-13-badge" style="display: inline-flex; align-items: center; font-size: 0.72rem; font-weight: 600; padding: 2px 8px; border-radius: 12px; background: rgba(245, 158, 11, 0.12); color: #d97706; white-space: nowrap;">
+                                        <span id="dash-13-avos">0/12</span>&nbsp;&bull;&nbsp;<span id="dash-13-periodo">Proporcional CLT</span>
+                                    </span>
+                                </div>
+                                <span class="value" id="dash-valor-13" style="color: #f59e0b; margin-top: 2px;">R$ 0,00</span>
+
+                                <!-- Detalhamento Organizado e Profissional -->
+                                <div id="dash-13-detalhes-container" style="margin-top: 6px; font-size: 0.78rem;">
+                                    <!-- Composição da Base (Salário + Méd. Extras) -->
+                                    <div id="dash-13-extras-info" style="display: none; margin-top: 6px; padding: 6px 10px; background: rgba(245, 158, 11, 0.05); border-left: 3px solid #f59e0b; border-radius: 0 6px 6px 0; font-size: 0.76rem; line-height: 1.4;"></div>
+
+                                    <!-- Grid das Parcelas CLT -->
+                                    <div id="dash-13-parcelas-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 6px; padding: 7px 10px; background: rgba(0, 0, 0, 0.02); border: 1px solid var(--border-color); border-radius: 6px;"></div>
+
+                                    <!-- Rodapé do Card (Admissão e Previsão Anual) -->
+                                    <div id="dash-13-admissao" style="display: flex; justify-content: space-between; align-items: center; margin-top: 6px; color: var(--text-muted); font-size: 0.72rem; flex-wrap: wrap; gap: 4px;"></div>
+                                </div>
                             </div>
                         </div>
                         <div class="stat-card highlight-card">

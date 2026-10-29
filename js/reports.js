@@ -375,18 +375,90 @@ async function updateReportTotals() {
     if (isDecimoActive && singleEmployeeMode && currentReportData.length > 0) {
         const u = userMap[targetUserId] || currentUser;
         const filterMonth = document.getElementById('filter-month')?.value;
+
+        // Calcular média de horas extras e adicionais apurados no relatório
+        const valorHoraU = (u.baseSalary || 0) / 220;
+        const vE50 = (valorHoraU * 1.5) * (totalE50 / 60);
+        const vE100 = (valorHoraU * 2.0) * (totalE100 / 60);
+        const vNot = isNoturnoActive ? ((valorHoraU * 0.20) * (totalNoturnoMinutes / 60)) : 0;
+        const totExtrasRep = vE50 + vE100 + vNot;
+
+        const monthsInRep = new Set(currentReportData.map(r => r.month || (r.date ? r.date.substring(0, 7) : null)).filter(Boolean)).size || 1;
+        const mediaExtrasRep = Number((totExtrasRep / monthsInRep).toFixed(2));
+
         const decimoInfo = (typeof window.calculateDecimoTerceiro === 'function')
-            ? window.calculateDecimoTerceiro(u.baseSalary || 0, u.admissionDate, filterMonth)
-            : { avos: 0, valor: 0, admissaoFormatada: '—' };
+            ? window.calculateDecimoTerceiro(u.baseSalary || 0, u.admissionDate, filterMonth, mediaExtrasRep)
+            : { avos: 0, valor: 0, admissaoFormatada: '—', mediaExtras: 0 };
+
         if (relCard13) relCard13.style.display = 'flex';
         if (relTot13)  relTot13.textContent = formatCurrency(decimoInfo.valor);
         if (rel13Avos) rel13Avos.textContent = `${decimoInfo.avos}/12`;
         if (rel13Detalhe) {
+            rel13Detalhe.textContent = decimoInfo.isCompetenciaIntegral ? 'Integral' : 'Proporcional CLT';
+        }
+
+        const badgeRel13 = document.getElementById('rel-13-badge');
+        if (badgeRel13) {
             if (decimoInfo.isCompetenciaIntegral) {
-                rel13Detalhe.textContent = `Integral (12/12) • 1ª: ${formatCurrency(decimoInfo.primeiraParcela)} • 2ª líq: ${formatCurrency(decimoInfo.segundaParcela)}`;
+                badgeRel13.style.background = 'rgba(16, 185, 129, 0.12)';
+                badgeRel13.style.color = '#059669';
             } else {
-                rel13Detalhe.textContent = `Provisão até o mês • Prev. anual: ${formatCurrency(decimoInfo.valorIntegralAno)} (1ª: ${formatCurrency(decimoInfo.primeiraParcela)} • 2ª líq: ${formatCurrency(decimoInfo.segundaParcela)})`;
+                badgeRel13.style.background = 'rgba(245, 158, 11, 0.12)';
+                badgeRel13.style.color = '#d97706';
             }
+        }
+
+        const elExtrasRel = document.getElementById('rel-13-extras-info');
+        if (elExtrasRel) {
+            if (decimoInfo.mediaExtras > 0) {
+                elExtrasRel.style.display = 'block';
+                elExtrasRel.innerHTML = `
+                    <div style="display: flex; justify-content: space-between; align-items: center; color: var(--text-muted); font-size: 0.74rem;">
+                        <span>Salário Base:</span>
+                        <strong style="color: var(--text-color);">${formatCurrency(u.baseSalary || 0)}</strong>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; color: #d97706; font-size: 0.74rem; margin-top: 2px;">
+                        <span><i class="fa-solid fa-clock-rotate-left" style="font-size: 0.8em;"></i> Média Horas Extras:</span>
+                        <strong>+ ${formatCurrency(decimoInfo.mediaExtras)}</strong>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px dashed var(--border-color); margin-top: 4px; padding-top: 3px; font-size: 0.76rem; font-weight: 600;">
+                        <span style="color: var(--text-color);">Base de Cálculo:</span>
+                        <span style="color: #f59e0b;">${formatCurrency(decimoInfo.remuneracaoBase)}</span>
+                    </div>
+                `;
+            } else {
+                elExtrasRel.style.display = 'none';
+            }
+        }
+
+        const elParcelasRel = document.getElementById('rel-13-parcelas-grid');
+        if (elParcelasRel) {
+            elParcelasRel.innerHTML = `
+                <div>
+                    <span style="display: block; font-size: 0.67rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.03em; font-weight: 600;">1ª Parcela (50%)</span>
+                    <strong style="display: block; font-size: 0.83rem; color: var(--text-color); margin-top: 1px;">${formatCurrency(decimoInfo.primeiraParcela)}</strong>
+                    <span style="display: block; font-size: 0.67rem; color: var(--text-muted);">até 30/nov &bull; sem desc.</span>
+                </div>
+                <div>
+                    <span style="display: block; font-size: 0.67rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.03em; font-weight: 600;">2ª Parc. Líquida</span>
+                    <strong style="display: block; font-size: 0.83rem; color: #10b981; margin-top: 1px;">${formatCurrency(decimoInfo.segundaParcela)}</strong>
+                    <span style="display: block; font-size: 0.67rem; color: var(--text-muted);">até 20/dez &bull; líq. a pagar</span>
+                </div>
+            `;
+        }
+
+        const elRodapeRel = document.getElementById('rel-13-rodape');
+        if (elRodapeRel) {
+            const admTxt = decimoInfo.admissaoFormatada !== '—'
+                ? `<span><i class="fa-regular fa-calendar-check" style="font-size: 0.85em; opacity: 0.7;"></i> Adm: <strong>${decimoInfo.admissaoFormatada}</strong></span>`
+                : '<span>CLT Lei 4.090/62</span>';
+            const inssTxt = decimoInfo.inssDecimo > 0
+                ? ` <span style="font-size: 0.67rem; color: var(--danger-color, #dc3545);" title="Desconto INSS 13º">(INSS: -${formatCurrency(decimoInfo.inssDecimo)})</span>`
+                : '';
+            elRodapeRel.innerHTML = `
+                ${admTxt}
+                <span>Total Anual (12/12): <strong style="color: var(--text-color);">${formatCurrency(decimoInfo.valorIntegralAno)}</strong>${inssTxt}</span>
+            `;
         }
     } else {
         if (relCard13) relCard13.style.display = 'none';
