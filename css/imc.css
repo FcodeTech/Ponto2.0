@@ -1007,13 +1007,18 @@
         display: none;
     }
     .imc-table tr {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        row-gap: 8px;
+        column-gap: 12px;
+        align-items: center;
         margin-bottom: 10px;
         border: 1px solid var(--border-color);
         border-radius: 12px;
         background: var(--secondary-color);
         padding: 12px 14px;
-        position: relative;
         transition: all 0.2s ease;
+        box-sizing: border-box;
     }
     [data-theme="dark"] .imc-table tr {
         background: rgba(255, 255, 255, 0.02);
@@ -1033,58 +1038,87 @@
         border-left: none;
     }
     .imc-table td {
-        padding: 4px 0;
+        padding: 0;
         border: none;
+        box-sizing: border-box;
+    }
+    /* Linha 1 (Esquerda): Classificação */
+    .imc-table td:nth-child(1) {
+        grid-column: 1;
+        grid-row: 1;
         display: flex;
         align-items: center;
-        justify-content: space-between;
-        font-size: 0.85rem;
-    }
-    /* Linha 1: Classificação */
-    .imc-table td:nth-child(1) {
-        padding-bottom: 6px;
-        margin-bottom: 6px;
+        justify-content: flex-start;
+        padding-bottom: 8px;
         border-bottom: 1px dashed var(--border-color);
+        margin: 0;
     }
     [data-theme="dark"] .imc-table td:nth-child(1) {
         border-bottom-color: rgba(255, 255, 255, 0.06);
     }
+    /* Linha 1 (Direita / O Outro Lado): Status da Faixa Ativa */
+    .imc-table td.status-col {
+        grid-column: 2;
+        grid-row: 1;
+        display: none;
+        align-items: center;
+        justify-content: flex-end;
+        text-align: right;
+        padding-bottom: 8px;
+        border-bottom: 1px dashed var(--border-color);
+        margin: 0;
+    }
+    [data-theme="dark"] .imc-table td.status-col {
+        border-bottom-color: rgba(255, 255, 255, 0.06);
+    }
+    .imc-table tr.table-row-active td.status-col {
+        display: flex;
+    }
+    .imc-table tr.table-row-active td.status-col .imc-pill-tag {
+        font-size: 0.72rem;
+        padding: 3px 8px;
+        white-space: nowrap;
+    }
+    /* Quando a linha NÃO está ativa, td:nth-child(1) expande por toda a linha superior */
+    .imc-table tr:not(.table-row-active) td:nth-child(1) {
+        grid-column: 1 / -1;
+    }
+
     /* Linha 2: Faixa IMC com label */
+    .imc-table td:nth-child(2) {
+        grid-column: 1 / -1;
+        grid-row: 2;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        font-size: 0.86rem;
+        padding: 3px 0;
+        margin: 0;
+    }
     .imc-table td:nth-child(2)::before {
         content: "Faixa IMC:";
         font-weight: 600;
         color: var(--text-muted);
         font-size: 0.78rem;
     }
+
     /* Linha 3: Risco de Doenças */
     .imc-table td:nth-child(3) {
+        grid-column: 1 / -1;
+        grid-row: 3;
+        display: flex;
         flex-direction: column;
         align-items: flex-start;
         gap: 2px;
-        margin-top: 4px;
+        font-size: 0.85rem;
+        padding: 2px 0 0 0;
+        margin: 0;
     }
     .imc-table td:nth-child(3)::before {
         content: "Risco de Doenças:";
         font-weight: 600;
         color: var(--text-muted);
         font-size: 0.78rem;
-    }
-    /* Linha 4: Status / Badge de Faixa Ativa */
-    .imc-table td.status-col {
-        display: none;
-    }
-    .imc-table tr.table-row-active td.status-col {
-        display: block;
-        position: absolute;
-        top: 10px;
-        right: 12px;
-        padding: 0;
-        margin: 0;
-        border: none;
-    }
-    .imc-table tr.table-row-active td.status-col .imc-pill-tag {
-        font-size: 0.72rem;
-        padding: 3px 8px;
     }
 
     /* Histórico de medições responsivo */
