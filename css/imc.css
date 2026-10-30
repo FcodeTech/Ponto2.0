@@ -1,7 +1,23 @@
 /* ==========================================================================
-   IMC & SAÚDE - FOLHA DE ESTILOS MODERNA E RESPONSIVA
-   Totalmente compatível com Tema Claro e Tema Escuro
+   IMC & SAÚDE - FOLHA DE ESTILOS MODERNA E 100% RESPONSIVA
+   Compatível com Mobile (Smartphones 320px+), Tablets e Desktop
+   Suporte Completo a Tema Claro e Escuro
    ========================================================================== */
+
+/* ── Container Global da Tela de IMC ─────────────────────────────────────── */
+#imc-content {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    overflow-x: hidden;
+}
+
+/* Otimização de espaçamento do container em dispositivos móveis */
+@media (max-width: 768px) {
+    .content-wrapper:has(#imc-content) {
+        padding: 12px 10px;
+    }
+}
 
 /* ── Banner Hero Central com Logo ────────────────────────────────────────── */
 .imc-hero-banner {
@@ -10,13 +26,15 @@
     align-items: center;
     text-align: center;
     padding: 24px 20px 20px;
-    margin-bottom: 24px;
+    margin-bottom: 22px;
     background: linear-gradient(135deg, rgba(0, 102, 204, 0.08) 0%, rgba(111, 66, 193, 0.08) 100%);
     border-radius: 16px;
     border: 1px solid var(--border-color);
     position: relative;
     overflow: hidden;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
+    box-sizing: border-box;
+    width: 100%;
 }
 
 [data-theme="dark"] .imc-hero-banner {
@@ -47,8 +65,9 @@
     border: none;
     box-shadow: none;
     padding: 0;
-    margin-bottom: 16px;
+    margin-bottom: 14px;
     transition: transform 0.3s ease;
+    max-width: 100%;
 }
 
 .imc-logo-wrapper:hover {
@@ -56,7 +75,8 @@
 }
 
 .imc-central-logo {
-    max-height: 115px;
+    max-height: 110px;
+    max-width: 100%;
     width: auto;
     object-fit: contain;
     filter: drop-shadow(0 6px 16px rgba(14, 165, 233, 0.25));
@@ -72,11 +92,13 @@
 .imc-title {
     position: relative;
     z-index: 1;
-    font-size: 1.6rem;
+    font-size: 1.55rem;
     font-weight: 800;
     letter-spacing: -0.02em;
     color: var(--text-color);
     margin: 0 0 6px 0;
+    word-break: break-word;
+    max-width: 100%;
 }
 
 .imc-subtitle {
@@ -86,24 +108,28 @@
     color: var(--text-muted);
     max-width: 650px;
     margin: 0;
+    line-height: 1.45;
 }
 
 /* ── Grid Principal de 2 Colunas ─────────────────────────────────────────── */
 .imc-grid-main {
     display: grid;
     grid-template-columns: 1.15fr 1fr;
-    gap: 22px;
-    margin-bottom: 24px;
+    gap: 20px;
+    margin-bottom: 22px;
+    width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
 }
 
-@media (max-width: 960px) {
-    .imc-grid-main {
-        grid-template-columns: 1fr;
-    }
+.imc-grid-main > * {
+    min-width: 0;
+    max-width: 100%;
 }
 
 /* ── Cards Estilo Neomórfico / Glassmorphism ─────────────────────────────── */
-.imc-card {
+.imc-card,
+.imc-result-card {
     background: var(--card-bg);
     border-radius: 14px;
     border: 1px solid var(--border-color);
@@ -112,10 +138,14 @@
     position: relative;
     display: flex;
     flex-direction: column;
+    min-width: 0;
+    max-width: 100%;
+    box-sizing: border-box;
     transition: box-shadow 0.25s ease, border-color 0.25s ease;
 }
 
-[data-theme="dark"] .imc-card {
+[data-theme="dark"] .imc-card,
+[data-theme="dark"] .imc-result-card {
     background: #151e2e;
     border-color: rgba(255, 255, 255, 0.08);
     box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35);
@@ -125,9 +155,12 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-bottom: 18px;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 16px;
     padding-bottom: 12px;
     border-bottom: 1px solid var(--border-color);
+    min-width: 0;
 }
 
 [data-theme="dark"] .imc-card-header {
@@ -137,16 +170,20 @@
 .imc-card-title {
     display: flex;
     align-items: center;
-    gap: 10px;
-    font-size: 1.1rem;
+    gap: 8px;
+    font-size: 1.05rem;
     font-weight: 700;
     color: var(--text-color);
     margin: 0;
+    flex: 1 1 auto;
+    min-width: 0;
+    word-break: break-word;
 }
 
 .imc-card-title i {
     color: var(--primary-color);
     font-size: 1.15rem;
+    flex-shrink: 0;
 }
 
 [data-theme="dark"] .imc-card-title i {
@@ -157,24 +194,28 @@
 .imc-gender-selector {
     display: flex;
     gap: 10px;
-    margin-bottom: 18px;
+    margin-bottom: 16px;
+    width: 100%;
+    min-width: 0;
 }
 
 .gender-btn {
     flex: 1;
+    min-width: 0;
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 8px;
-    padding: 10px 14px;
+    padding: 10px 12px;
     border-radius: 10px;
     border: 1.5px solid var(--border-color);
     background: var(--secondary-color);
     color: var(--text-muted);
     font-weight: 600;
-    font-size: 0.9rem;
+    font-size: 0.88rem;
     cursor: pointer;
     transition: all 0.2s ease;
+    box-sizing: border-box;
 }
 
 [data-theme="dark"] .gender-btn {
@@ -207,8 +248,11 @@
     background: var(--secondary-color);
     border: 1px solid var(--border-color);
     border-radius: 12px;
-    padding: 14px 16px;
-    margin-bottom: 14px;
+    padding: 13px 15px;
+    margin-bottom: 13px;
+    width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
     transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
@@ -231,6 +275,8 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
+    flex-wrap: wrap;
+    gap: 6px;
     margin-bottom: 8px;
 }
 
@@ -241,16 +287,19 @@
     font-size: 0.88rem;
     font-weight: 700;
     color: var(--text-color);
+    margin: 0;
 }
 
 .imc-unit-tag {
-    font-size: 0.75rem;
+    font-size: 0.74rem;
     font-weight: 700;
     padding: 2px 7px;
     border-radius: 6px;
     background: rgba(0, 102, 204, 0.1);
     color: var(--primary-color);
     letter-spacing: 0.02em;
+    flex-shrink: 0;
+    white-space: nowrap;
 }
 
 [data-theme="dark"] .imc-unit-tag {
@@ -262,6 +311,9 @@
     display: flex;
     align-items: center;
     gap: 8px;
+    width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
 }
 
 .imc-stepper-btn {
@@ -304,6 +356,8 @@
 
 .imc-numeric-input {
     flex: 1;
+    min-width: 0;
+    width: 100%;
     height: 40px;
     font-size: 1.25rem;
     font-weight: 700;
@@ -312,6 +366,7 @@
     border: 1px solid var(--border-color);
     background: var(--card-bg);
     color: var(--text-color);
+    box-sizing: border-box;
     transition: border-color 0.2s ease;
 }
 
@@ -333,6 +388,7 @@
 /* ── Modern Sliders ──────────────────────────────────────────────────────── */
 .imc-slider-container {
     margin-top: 10px;
+    width: 100%;
 }
 
 .imc-range-slider {
@@ -345,6 +401,7 @@
     outline: none;
     transition: background 0.2s;
     cursor: pointer;
+    box-sizing: border-box;
 }
 
 [data-theme="dark"] .imc-range-slider {
@@ -386,25 +443,29 @@
 .imc-actions-row {
     display: flex;
     gap: 10px;
-    margin-top: 18px;
+    margin-top: 16px;
+    width: 100%;
+    min-width: 0;
 }
 
 .imc-btn-primary {
     flex: 2;
+    min-width: 0;
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 8px;
-    padding: 12px 16px;
+    padding: 12px 14px;
     background: linear-gradient(135deg, var(--primary-color) 0%, #1e40af 100%);
     color: #ffffff;
-    font-size: 0.95rem;
+    font-size: 0.92rem;
     font-weight: 700;
     border: none;
     border-radius: 10px;
     cursor: pointer;
     box-shadow: 0 4px 14px rgba(0, 102, 204, 0.3);
     transition: all 0.2s ease;
+    white-space: nowrap;
 }
 
 [data-theme="dark"] .imc-btn-primary {
@@ -419,19 +480,21 @@
 
 .imc-btn-secondary {
     flex: 1;
+    min-width: 0;
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 6px;
-    padding: 12px 14px;
+    padding: 12px 12px;
     background: var(--secondary-color);
     color: var(--text-color);
-    font-size: 0.9rem;
+    font-size: 0.88rem;
     font-weight: 600;
     border: 1px solid var(--border-color);
     border-radius: 10px;
     cursor: pointer;
     transition: all 0.2s ease;
+    white-space: nowrap;
 }
 
 [data-theme="dark"] .imc-btn-secondary {
@@ -448,34 +511,23 @@
     background: rgba(255, 255, 255, 0.1);
 }
 
-/* ── Card de Resultados (Evolução Moderna do Layout 3) ───────────────────── */
+/* ── Card de Resultados ──────────────────────────────────────────────────── */
 .imc-result-card {
-    background: var(--card-bg);
-    border: 1px solid var(--border-color);
-    border-radius: 14px;
-    padding: 24px;
-    display: flex;
-    flex-direction: column;
     justify-content: space-between;
-    position: relative;
-    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.05);
-}
-
-[data-theme="dark"] .imc-result-card {
-    background: #151e2e;
-    border-color: rgba(255, 255, 255, 0.08);
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
 }
 
 .imc-display-box {
     text-align: center;
-    padding: 18px 12px;
+    padding: 16px 12px;
     background: var(--secondary-color);
     border-radius: 12px;
     border: 1px solid var(--border-color);
-    margin-bottom: 18px;
+    margin-bottom: 16px;
     position: relative;
     overflow: hidden;
+    width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
 }
 
 [data-theme="dark"] .imc-display-box {
@@ -484,7 +536,7 @@
 }
 
 .imc-display-label {
-    font-size: 0.82rem;
+    font-size: 0.8rem;
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.08em;
@@ -493,7 +545,7 @@
 }
 
 .imc-value-large {
-    font-size: 3.2rem;
+    font-size: 3rem;
     font-weight: 900;
     line-height: 1;
     letter-spacing: -0.03em;
@@ -501,6 +553,8 @@
     display: inline-flex;
     align-items: baseline;
     gap: 6px;
+    flex-wrap: wrap;
+    justify-content: center;
 }
 
 [data-theme="dark"] .imc-value-large {
@@ -509,7 +563,7 @@
 }
 
 .imc-value-unit {
-    font-size: 1.1rem;
+    font-size: 1.05rem;
     font-weight: 600;
     color: var(--text-muted);
 }
@@ -518,14 +572,16 @@
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    margin-top: 12px;
+    margin-top: 10px;
     padding: 6px 16px;
     border-radius: 20px;
-    font-size: 0.95rem;
+    font-size: 0.92rem;
     font-weight: 700;
     letter-spacing: 0.01em;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
     transition: all 0.3s ease;
+    max-width: 100%;
+    word-break: break-word;
 }
 
 .status-dot {
@@ -535,6 +591,7 @@
     background: currentColor;
     box-shadow: 0 0 6px currentColor;
     animation: pulse 2s infinite;
+    flex-shrink: 0;
 }
 
 @keyframes pulse {
@@ -545,13 +602,16 @@
 
 /* ── Visual Spectrum Bar / Gauge ─────────────────────────────────────────── */
 .imc-spectrum-wrapper {
-    margin-bottom: 20px;
+    margin-bottom: 18px;
+    width: 100%;
+    min-width: 0;
 }
 
 .imc-needle-track {
     position: relative;
     height: 18px;
     margin-bottom: 2px;
+    width: 100%;
 }
 
 .imc-needle {
@@ -578,6 +638,7 @@
     overflow: hidden;
     background: #e2e8f0;
     box-shadow: inset 0 1px 3px rgba(0,0,0,0.15);
+    width: 100%;
 }
 
 .spectrum-seg {
@@ -601,6 +662,9 @@
     font-weight: 600;
     margin-top: 5px;
     padding: 0 2px;
+    width: 100%;
+    overflow: hidden;
+    box-sizing: border-box;
 }
 
 /* ── Micro-Stats Grid do Resultado ───────────────────────────────────────── */
@@ -609,6 +673,8 @@
     grid-template-columns: repeat(2, 1fr);
     gap: 10px;
     margin-bottom: 16px;
+    width: 100%;
+    min-width: 0;
 }
 
 .imc-metric-tile {
@@ -619,6 +685,8 @@
     display: flex;
     flex-direction: column;
     gap: 2px;
+    min-width: 0;
+    word-break: break-word;
 }
 
 [data-theme="dark"] .imc-metric-tile {
@@ -627,7 +695,7 @@
 }
 
 .metric-tile-title {
-    font-size: 0.74rem;
+    font-size: 0.73rem;
     font-weight: 700;
     color: var(--text-muted);
     text-transform: uppercase;
@@ -635,9 +703,10 @@
 }
 
 .metric-tile-val {
-    font-size: 1.05rem;
+    font-size: 1.02rem;
     font-weight: 800;
     color: var(--text-color);
+    word-break: break-word;
 }
 
 .metric-tile-sub {
@@ -656,6 +725,10 @@
     display: flex;
     align-items: flex-start;
     gap: 10px;
+    width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+    line-height: 1.45;
 }
 
 [data-theme="dark"] .imc-recommendation-box {
@@ -677,10 +750,14 @@
 
 /* ── Tabela de Classificação da OMS ──────────────────────────────────────── */
 .imc-table-container {
+    width: 100%;
+    max-width: 100%;
     overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
     margin-top: 6px;
     border-radius: 10px;
     border: 1px solid var(--border-color);
+    box-sizing: border-box;
 }
 
 [data-theme="dark"] .imc-table-container {
@@ -689,20 +766,23 @@
 
 .imc-table {
     width: 100%;
+    min-width: 100%;
     border-collapse: collapse;
-    font-size: 0.88rem;
+    font-size: 0.86rem;
     text-align: left;
+    box-sizing: border-box;
 }
 
 .imc-table th {
     background: var(--secondary-color);
     color: var(--text-muted);
-    font-size: 0.76rem;
+    font-size: 0.74rem;
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.06em;
-    padding: 10px 14px;
+    padding: 10px 12px;
     border-bottom: 1px solid var(--border-color);
+    white-space: nowrap;
 }
 
 [data-theme="dark"] .imc-table th {
@@ -711,10 +791,11 @@
 }
 
 .imc-table td {
-    padding: 11px 14px;
+    padding: 10px 12px;
     border-bottom: 1px solid var(--border-color);
     color: var(--text-color);
     transition: background 0.2s;
+    vertical-align: middle;
 }
 
 [data-theme="dark"] .imc-table td {
@@ -726,12 +807,12 @@
 }
 
 .imc-table tr.table-row-active {
-    background: rgba(0, 102, 204, 0.1) !important;
+    background: rgba(0, 102, 204, 0.08) !important;
     font-weight: 700;
 }
 
 [data-theme="dark"] .imc-table tr.table-row-active {
-    background: rgba(56, 189, 248, 0.15) !important;
+    background: rgba(56, 189, 248, 0.14) !important;
 }
 
 .imc-table tr.table-row-active td:first-child {
@@ -750,14 +831,16 @@
     border-radius: 12px;
     font-size: 0.76rem;
     font-weight: 700;
+    white-space: nowrap;
 }
 
 /* ── Histórico de Medições ───────────────────────────────────────────────── */
 .imc-history-empty {
     text-align: center;
-    padding: 28px 16px;
+    padding: 24px 16px;
     color: var(--text-muted);
-    font-size: 0.9rem;
+    font-size: 0.88rem;
+    line-height: 1.5;
 }
 
 .imc-history-empty i {
@@ -771,9 +854,11 @@
     display: flex;
     flex-direction: column;
     gap: 8px;
-    max-height: 260px;
+    max-height: 280px;
     overflow-y: auto;
     padding-right: 4px;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .imc-history-item {
@@ -785,6 +870,9 @@
     border-radius: 10px;
     padding: 10px 14px;
     font-size: 0.85rem;
+    width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
     transition: transform 0.15s ease, border-color 0.15s ease;
 }
 
@@ -806,6 +894,8 @@
     display: flex;
     flex-direction: column;
     gap: 2px;
+    min-width: 0;
+    flex: 1;
 }
 
 .imc-history-date {
@@ -817,12 +907,14 @@
 .imc-history-details {
     font-size: 0.82rem;
     color: var(--text-color);
+    word-break: break-word;
 }
 
 .imc-history-right {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 10px;
+    flex-shrink: 0;
 }
 
 .imc-history-score {
@@ -836,9 +928,13 @@
     border: none;
     color: var(--text-muted);
     cursor: pointer;
-    padding: 4px 6px;
-    border-radius: 4px;
+    padding: 6px 8px;
+    border-radius: 6px;
+    font-size: 0.88rem;
     transition: color 0.15s ease, background 0.15s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
 }
 
 .btn-delete-history:hover {
@@ -846,3 +942,261 @@
     background: rgba(239, 68, 68, 0.1);
 }
 
+/* ==========================================================================
+   MEDIA QUERIES - 100% RESPONSIVIDADE PARA TABLETS E SMARTPHONES
+   ========================================================================== */
+
+/* ── 1. TABLETS & TELAS MÉDIAS (<= 960px) ────────────────────────────────── */
+@media (max-width: 960px) {
+    .imc-grid-main {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+    .imc-card,
+    .imc-result-card {
+        padding: 20px 20px;
+    }
+}
+
+/* ── 2. TABLETS MENORES & SMARTPHONES (<= 768px) ─────────────────────────── */
+@media (max-width: 768px) {
+    .imc-hero-banner {
+        padding: 18px 14px 16px;
+        margin-bottom: 16px;
+        border-radius: 14px;
+    }
+    .imc-central-logo {
+        max-height: 90px;
+    }
+    .imc-title {
+        font-size: 1.35rem;
+    }
+    .imc-subtitle {
+        font-size: 0.86rem;
+    }
+    .imc-card,
+    .imc-result-card {
+        padding: 16px 16px;
+        border-radius: 12px;
+    }
+    .imc-table th,
+    .imc-table td {
+        padding: 8px 10px;
+        font-size: 0.82rem;
+    }
+}
+
+/* ── 3. SMARTPHONES - VISTA EM CARDS PARA A TABELA OMS (<= 640px) ────────── */
+@media (max-width: 640px) {
+    /* Transformar tabela OMS em cards limpos e sem barra de rolagem horizontal */
+    .imc-table-container {
+        border: none;
+        background: transparent;
+        overflow: visible;
+        margin-top: 8px;
+    }
+    .imc-table,
+    .imc-table tbody,
+    .imc-table tr,
+    .imc-table td {
+        display: block;
+        width: 100%;
+        box-sizing: border-box;
+    }
+    .imc-table thead {
+        display: none;
+    }
+    .imc-table tr {
+        margin-bottom: 10px;
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        background: var(--secondary-color);
+        padding: 12px 14px;
+        position: relative;
+        transition: all 0.2s ease;
+    }
+    [data-theme="dark"] .imc-table tr {
+        background: rgba(255, 255, 255, 0.02);
+        border-color: rgba(255, 255, 255, 0.08);
+    }
+    .imc-table tr.table-row-active {
+        background: rgba(0, 102, 204, 0.07) !important;
+        border-color: var(--primary-color) !important;
+        box-shadow: 0 4px 14px rgba(0, 102, 204, 0.15);
+    }
+    [data-theme="dark"] .imc-table tr.table-row-active {
+        background: rgba(56, 189, 248, 0.12) !important;
+        border-color: #38bdf8 !important;
+        box-shadow: 0 4px 18px rgba(56, 189, 248, 0.25);
+    }
+    .imc-table tr.table-row-active td:first-child {
+        border-left: none;
+    }
+    .imc-table td {
+        padding: 4px 0;
+        border: none;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        font-size: 0.85rem;
+    }
+    /* Linha 1: Classificação */
+    .imc-table td:nth-child(1) {
+        padding-bottom: 6px;
+        margin-bottom: 6px;
+        border-bottom: 1px dashed var(--border-color);
+    }
+    [data-theme="dark"] .imc-table td:nth-child(1) {
+        border-bottom-color: rgba(255, 255, 255, 0.06);
+    }
+    /* Linha 2: Faixa IMC com label */
+    .imc-table td:nth-child(2)::before {
+        content: "Faixa IMC:";
+        font-weight: 600;
+        color: var(--text-muted);
+        font-size: 0.78rem;
+    }
+    /* Linha 3: Risco de Doenças */
+    .imc-table td:nth-child(3) {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 2px;
+        margin-top: 4px;
+    }
+    .imc-table td:nth-child(3)::before {
+        content: "Risco de Doenças:";
+        font-weight: 600;
+        color: var(--text-muted);
+        font-size: 0.78rem;
+    }
+    /* Linha 4: Status / Badge de Faixa Ativa */
+    .imc-table td.status-col {
+        display: none;
+    }
+    .imc-table tr.table-row-active td.status-col {
+        display: block;
+        position: absolute;
+        top: 10px;
+        right: 12px;
+        padding: 0;
+        margin: 0;
+        border: none;
+    }
+    .imc-table tr.table-row-active td.status-col .imc-pill-tag {
+        font-size: 0.72rem;
+        padding: 3px 8px;
+    }
+
+    /* Histórico de medições responsivo */
+    .imc-history-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+        padding: 10px 12px;
+    }
+    .imc-history-right {
+        width: 100%;
+        justify-content: space-between;
+        padding-top: 6px;
+        border-top: 1px dashed var(--border-color);
+    }
+    [data-theme="dark"] .imc-history-right {
+        border-top-color: rgba(255, 255, 255, 0.06);
+    }
+}
+
+/* ── 4. SMARTPHONES EM RETRATO (<= 480px) ─────────────────────────────────── */
+@media (max-width: 480px) {
+    .imc-hero-banner {
+        padding: 16px 12px 14px;
+        margin-bottom: 14px;
+        border-radius: 12px;
+    }
+    .imc-central-logo {
+        max-height: 80px;
+    }
+    .imc-title {
+        font-size: 1.22rem;
+        line-height: 1.3;
+    }
+    .imc-subtitle {
+        font-size: 0.82rem;
+        line-height: 1.4;
+    }
+    .imc-card,
+    .imc-result-card {
+        padding: 14px 12px;
+        border-radius: 12px;
+    }
+    .imc-card-header {
+        margin-bottom: 12px;
+        padding-bottom: 10px;
+    }
+    .imc-card-title {
+        font-size: 0.98rem;
+    }
+    .imc-unit-tag {
+        font-size: 0.7rem;
+        padding: 2px 6px;
+    }
+    /* Botões empilhados para toque confortável no mobile */
+    .imc-actions-row {
+        flex-direction: column;
+        gap: 8px;
+    }
+    .imc-btn-primary,
+    .imc-btn-secondary {
+        width: 100%;
+        flex: none;
+        padding: 12px 14px;
+        font-size: 0.9rem;
+    }
+    /* Métricas em 1 coluna para não quebrar textos */
+    .imc-metrics-grid {
+        grid-template-columns: 1fr;
+        gap: 8px;
+    }
+    .imc-metric-tile {
+        padding: 9px 12px;
+    }
+    .imc-value-large {
+        font-size: 2.5rem;
+    }
+    .imc-value-unit {
+        font-size: 0.95rem;
+    }
+    .imc-badge-status {
+        font-size: 0.85rem;
+        padding: 5px 12px;
+    }
+    .imc-spectrum-ticks {
+        font-size: 0.65rem;
+    }
+}
+
+/* ── 5. SMARTPHONES ULTRA-COMPACTOS (<= 360px) ────────────────────────────── */
+@media (max-width: 360px) {
+    .imc-central-logo {
+        max-height: 70px;
+    }
+    .imc-title {
+        font-size: 1.12rem;
+    }
+    .gender-btn {
+        padding: 8px 6px;
+        font-size: 0.8rem;
+        gap: 4px;
+    }
+    .imc-stepper-btn {
+        width: 32px;
+        height: 32px;
+        font-size: 0.85rem;
+    }
+    .imc-numeric-input {
+        font-size: 1.1rem;
+        height: 36px;
+    }
+    .imc-value-large {
+        font-size: 2.2rem;
+    }
+}
