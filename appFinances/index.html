@@ -1,0 +1,1457 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#070b14">
+  <title>MarketPulse B3 • Pesquisa & Analista IA</title>
+  <style>
+    :root {
+      --bg-base: #070b14;
+      --bg-elevated: #0f1626;
+      --bg-card: #131c31;
+      --bg-card-hover: #18233d;
+      --bg-input: #090e1a;
+      --border: rgba(148, 163, 184, 0.15);
+      --border-strong: rgba(148, 163, 184, 0.28);
+      --text-primary: #f8fafc;
+      --text-secondary: #94a3b8;
+      --text-muted: #64748b;
+      --accent: #38bdf8;
+      --accent-glow: rgba(56, 189, 248, 0.18);
+      --ai-primary: #a855f7;
+      --ai-secondary: #6366f1;
+      --ai-glow: rgba(168, 85, 247, 0.22);
+      --green: #10b981;
+      --green-bg: rgba(16, 185, 129, 0.14);
+      --amber: #f59e0b;
+      --amber-bg: rgba(245, 158, 11, 0.14);
+      --red: #f87171;
+      --radius-xl: 20px;
+      --radius-lg: 16px;
+      --radius-md: 12px;
+      --radius-sm: 10px;
+      --nav-height: 66px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html, body {
+      max-width: 100%;
+      overflow-x: hidden;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Inter, Helvetica, Arial, sans-serif;
+      background-color: var(--bg-base);
+      background-image:
+        radial-gradient(circle at 50% 0%, rgba(56, 189, 248, 0.1) 0%, transparent 48%),
+        radial-gradient(circle at 100% 15%, rgba(168, 85, 247, 0.09) 0%, transparent 45%);
+      color: var(--text-primary);
+      min-height: 100dvh;
+      line-height: 1.5;
+      padding-bottom: calc(var(--nav-height) + env(safe-area-inset-bottom) + 1.25rem);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    ::-webkit-scrollbar { width: 5px; height: 5px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: rgba(148, 163, 184, 0.24); border-radius: 99px; }
+
+    /* ================= HEADER MOBILE-FIRST (LOGO CENTRALIZADA) ================= */
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 40;
+      background: rgba(7, 11, 20, 0.88);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border);
+      padding: 0.85rem 1rem;
+    }
+
+    .topbar-inner {
+      max-width: 1380px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 0.75rem;
+    }
+
+    .brand {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      gap: 0.35rem;
+    }
+
+    .brand-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.6rem;
+    }
+
+    .brand-logo {
+      width: 34px;
+      height: 34px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, var(--accent), var(--ai-primary));
+      display: grid;
+      place-items: center;
+      font-weight: 800;
+      font-size: 0.88rem;
+      color: #fff;
+      box-shadow: 0 4px 16px rgba(56, 189, 248, 0.28);
+      flex-shrink: 0;
+    }
+
+    .brand-name {
+      font-size: 1.12rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      color: var(--text-primary);
+    }
+
+    .brand-tag {
+      font-size: 0.74rem;
+      color: var(--text-secondary);
+    }
+
+    /* ================= BLOCO DE CHAVE API ABAIXO DA LOGO ================= */
+    .api-section {
+      max-width: 1380px;
+      margin: 0.85rem auto 0;
+      padding: 0 1rem;
+    }
+
+    .api-card {
+      background: var(--bg-elevated);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 0.75rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.55rem;
+    }
+
+    .api-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.76rem;
+      color: var(--text-secondary);
+      font-weight: 600;
+    }
+
+    .api-status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-size: 0.72rem;
+      padding: 0.15rem 0.55rem;
+      border-radius: 99px;
+      background: rgba(245, 158, 11, 0.12);
+      color: var(--amber);
+    }
+
+    .api-status-badge.online {
+      background: var(--green-bg);
+      color: var(--green);
+    }
+
+    .status-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: currentColor;
+    }
+
+    .api-input-row {
+      display: flex;
+      gap: 0.5rem;
+      width: 100%;
+    }
+
+    .api-input-row input {
+      flex: 1;
+      min-width: 0;
+      background: var(--bg-input);
+      border: 1px solid var(--border-strong);
+      color: var(--text-primary);
+      padding: 0.62rem 0.85rem;
+      border-radius: var(--radius-sm);
+      font-size: 16px;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .api-input-row input:focus {
+      border-color: var(--ai-primary);
+      box-shadow: 0 0 0 3px var(--ai-glow);
+    }
+
+    /* ================= SHELL PRINCIPAL ================= */
+    .app-shell {
+      max-width: 1380px;
+      margin: 0 auto;
+      padding: 0.85rem 1rem 1rem;
+    }
+
+    .view-panel {
+      display: none;
+    }
+
+    .view-panel.active-mobile {
+      display: block;
+      animation: fadeUp 0.22s ease;
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ================= KPIs RESPONSIVOS ================= */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0.5rem;
+      margin-bottom: 0.9rem;
+    }
+
+    .kpi-card {
+      background: var(--bg-elevated);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 0.75rem 0.65rem;
+      text-align: center;
+      min-width: 0;
+    }
+
+    .kpi-label {
+      font-size: 0.65rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--text-secondary);
+      display: block;
+      margin-bottom: 0.2rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .kpi-value {
+      font-size: clamp(0.88rem, 3.6vw, 1.12rem);
+      font-weight: 800;
+      font-variant-numeric: tabular-nums;
+      display: block;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .kpi-value.green { color: var(--green); }
+
+    /* ================= CONTROLES DE BUSCA E FILTRO ================= */
+    .controls-bar {
+      display: flex;
+      flex-direction: column;
+      gap: 0.65rem;
+      background: var(--bg-elevated);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 0.75rem;
+      margin-bottom: 1rem;
+    }
+
+    .search-row {
+      display: flex;
+      gap: 0.5rem;
+      width: 100%;
+    }
+
+    .search-row input {
+      flex: 1;
+      min-width: 0;
+      background: var(--bg-input);
+      border: 1px solid var(--border);
+      color: var(--text-primary);
+      border-radius: var(--radius-sm);
+      padding: 0.65rem 0.85rem;
+      font-size: 16px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      outline: none;
+    }
+
+    .search-row input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-glow);
+    }
+
+    .filter-tabs {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      background: var(--bg-input);
+      padding: 0.25rem;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border);
+      width: 100%;
+    }
+
+    .tab-filter {
+      background: transparent;
+      border: none;
+      color: var(--text-secondary);
+      font-size: 0.82rem;
+      font-weight: 600;
+      padding: 0.52rem 0.25rem;
+      border-radius: 7px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .tab-filter.active {
+      background: var(--bg-card-hover);
+      color: var(--text-primary);
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
+    }
+
+    /* ================= BOTÕES ================= */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.35rem;
+      border: none;
+      border-radius: var(--radius-sm);
+      padding: 0 1rem;
+      min-height: 44px;
+      font-size: 0.88rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform 0.12s, opacity 0.2s, box-shadow 0.2s;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .btn:active { transform: scale(0.97); }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .btn-accent {
+      background: var(--accent);
+      color: #04101f;
+    }
+
+    .btn-ai {
+      background: linear-gradient(135deg, var(--ai-primary), var(--ai-secondary));
+      color: #ffffff;
+    }
+
+    /* ================= GRID DE CARDS DE ATIVOS ================= */
+    .assets-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 0.85rem;
+    }
+
+    .asset-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 1.05rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transition: border-color 0.2s, background-color 0.2s;
+    }
+
+    .asset-card:hover {
+      border-color: rgba(56, 189, 248, 0.35);
+      background: var(--bg-card-hover);
+    }
+
+    .card-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.3rem;
+    }
+
+    .ticker-group {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .ticker-symbol {
+      font-size: 1.15rem;
+      font-weight: 800;
+    }
+
+    .badge {
+      font-size: 0.66rem;
+      font-weight: 700;
+      padding: 0.18rem 0.55rem;
+      border-radius: 99px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .badge-acao {
+      background: rgba(56, 189, 248, 0.14);
+      color: var(--accent);
+      border: 1px solid rgba(56, 189, 248, 0.25);
+    }
+
+    .badge-fii {
+      background: var(--amber-bg);
+      color: var(--amber);
+      border: 1px solid rgba(245, 158, 11, 0.25);
+    }
+
+    .refresh-btn {
+      width: 36px;
+      height: 36px;
+      border-radius: 9px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--border);
+      color: var(--text-secondary);
+      display: grid;
+      place-items: center;
+      cursor: pointer;
+      font-size: 1rem;
+    }
+
+    .refresh-btn:active {
+      background: rgba(56, 189, 248, 0.15);
+      color: var(--accent);
+    }
+
+    .asset-desc {
+      font-size: 0.82rem;
+      color: var(--text-secondary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin-bottom: 0.9rem;
+    }
+
+    .card-metrics {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.5rem;
+      padding-top: 0.75rem;
+      border-top: 1px solid var(--border);
+    }
+
+    .m-label {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      display: block;
+      margin-bottom: 0.15rem;
+    }
+
+    .m-price {
+      font-size: 1.1rem;
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .m-dy-col {
+      text-align: right;
+    }
+
+    .m-dy {
+      display: inline-block;
+      font-size: 0.98rem;
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
+      color: var(--green);
+      background: var(--green-bg);
+      padding: 0.14rem 0.55rem;
+      border-radius: 7px;
+    }
+
+    .card-meta {
+      margin-top: 0.75rem;
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      display: flex;
+      justify-content: space-between;
+    }
+
+    /* ================= PAINEL ANALISTA IA (GEMINI) ================= */
+    .ai-container {
+      background: var(--bg-elevated);
+      border: 1px solid rgba(168, 85, 247, 0.3);
+      border-radius: var(--radius-xl);
+      padding: 0.95rem;
+      display: flex;
+      flex-direction: column;
+      min-height: 58dvh;
+      max-height: 75dvh;
+      box-shadow: 0 14px 36px rgba(0, 0, 0, 0.35);
+    }
+
+    .ai-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 0.7rem;
+      margin-bottom: 0.7rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .ai-heading {
+      display: flex;
+      align-items: center;
+      gap: 0.45rem;
+      font-size: 0.96rem;
+      font-weight: 700;
+    }
+
+    .ai-pill {
+      font-size: 0.65rem;
+      padding: 0.16rem 0.5rem;
+      border-radius: 99px;
+      background: var(--ai-glow);
+      color: #d8b4fe;
+      border: 1px solid rgba(168, 85, 247, 0.35);
+      font-weight: 600;
+    }
+
+    .chips-scroller {
+      display: flex;
+      gap: 0.45rem;
+      overflow-x: auto;
+      padding-bottom: 0.55rem;
+      margin-bottom: 0.45rem;
+      scrollbar-width: none;
+    }
+    .chips-scroller::-webkit-scrollbar { display: none; }
+
+    .chip-prompt {
+      flex-shrink: 0;
+      background: var(--bg-card);
+      color: var(--text-secondary);
+      border: 1px solid var(--border);
+      font-size: 0.76rem;
+      font-weight: 600;
+      padding: 0.45rem 0.75rem;
+      border-radius: 99px;
+      cursor: pointer;
+    }
+
+    .chip-prompt.primary {
+      border-color: rgba(168, 85, 247, 0.5);
+      color: #f3e8ff;
+      background: rgba(168, 85, 247, 0.15);
+    }
+
+    .chat-feed {
+      flex: 1;
+      background: var(--bg-input);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 0.85rem;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .msg-bubble {
+      padding: 0.75rem 0.9rem;
+      border-radius: var(--radius-md);
+      font-size: 0.88rem;
+      line-height: 1.55;
+      max-width: 94%;
+      word-wrap: break-word;
+    }
+
+    .msg-user {
+      align-self: flex-end;
+      background: linear-gradient(135deg, rgba(56, 189, 248, 0.2), rgba(99, 102, 241, 0.2));
+      border: 1px solid rgba(56, 189, 248, 0.32);
+      border-bottom-right-radius: 4px;
+    }
+
+    .msg-ai {
+      align-self: flex-start;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      color: #e2e8f0;
+      border-bottom-left-radius: 4px;
+    }
+
+    .msg-sender {
+      font-size: 0.66rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 0.25rem;
+    }
+
+    .msg-user .msg-sender { color: var(--accent); text-align: right; }
+    .msg-ai .msg-sender { color: #c084fc; }
+
+    .msg-body strong { color: #ffffff; font-weight: 700; }
+
+    .chat-form {
+      display: flex;
+      gap: 0.5rem;
+      width: 100%;
+    }
+
+    .chat-form input {
+      flex: 1;
+      min-width: 0;
+      background: var(--bg-input);
+      border: 1px solid var(--border-strong);
+      color: var(--text-primary);
+      border-radius: var(--radius-sm);
+      padding: 0.65rem 0.85rem;
+      font-size: 16px;
+      outline: none;
+    }
+
+    .chat-form input:focus {
+      border-color: var(--ai-primary);
+    }
+
+    /* ================= NAVEGAÇÃO INFERIOR MOBILE ================= */
+    .mobile-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      z-index: 50;
+      height: calc(var(--nav-height) + env(safe-area-inset-bottom));
+      padding-bottom: env(safe-area-inset-bottom);
+      background: rgba(11, 16, 29, 0.94);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      border-top: 1px solid var(--border);
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+    }
+
+    .nav-tab {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 0.22rem;
+      font-size: 0.76rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .nav-tab svg {
+      width: 22px;
+      height: 22px;
+      stroke-width: 2;
+    }
+
+    .nav-tab.active {
+      color: var(--accent);
+    }
+
+    .nav-tab.active.ai-tab {
+      color: #c084fc;
+    }
+
+    .state-box {
+      grid-column: 1 / -1;
+      text-align: center;
+      padding: 2.25rem 1rem;
+      background: var(--bg-elevated);
+      border: 1px dashed var(--border);
+      border-radius: var(--radius-lg);
+      color: var(--text-secondary);
+      font-size: 0.88rem;
+    }
+
+    /* ================= BREAKPOINT TABLET (768px+) ================= */
+    @media (min-width: 768px) {
+      .api-section {
+        padding: 0 1.5rem;
+      }
+
+      .api-card {
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0.75rem 1rem;
+      }
+
+      .api-input-row {
+        max-width: 420px;
+      }
+
+      .app-shell {
+        padding: 1rem 1.5rem 1.5rem;
+      }
+
+      .kpi-card {
+        text-align: left;
+        padding: 0.9rem 1.1rem;
+      }
+
+      .controls-bar {
+        flex-direction: row;
+        align-items: center;
+      }
+
+      .filter-tabs {
+        width: 270px;
+        flex-shrink: 0;
+      }
+
+      .assets-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+      }
+
+      .chips-scroller {
+        flex-wrap: wrap;
+        overflow-x: visible;
+      }
+    }
+
+    /* ================= BREAKPOINT WEB / DESKTOP (1024px+) ================= */
+    @media (min-width: 1024px) {
+      body {
+        padding-bottom: 1.5rem;
+      }
+
+      .mobile-nav {
+        display: none;
+      }
+
+      .topbar-inner {
+        flex-direction: row;
+        justify-content: space-between;
+      }
+
+      .brand {
+        flex-direction: row;
+        text-align: left;
+        gap: 0.75rem;
+      }
+
+      .app-shell {
+        display: grid;
+        grid-template-columns: 1.4fr 1fr;
+        gap: 1.5rem;
+        align-items: start;
+      }
+
+      .view-panel {
+        display: block !important;
+      }
+
+      .ai-panel-wrapper {
+        position: sticky;
+        top: 84px;
+      }
+
+      .ai-container {
+        height: calc(100dvh - 110px);
+        max-height: 780px;
+      }
+    }
+
+    /* ================= TELAS GRANDES (1320px+) ================= */
+    @media (min-width: 1320px) {
+      .assets-grid {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header com Logo Centralizada no Mobile -->
+  <header class="topbar">
+    <div class="topbar-inner">
+      <div style="width: 100%; display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px;">
+        <a href="../index.html" style="display: inline-flex; align-items: center; gap: 6px; font-size: 0.78rem; font-weight: 600; color: var(--accent); text-decoration: none; padding: 5px 12px; background: rgba(56, 189, 248, 0.08); border: 1px solid var(--border); border-radius: var(--radius-sm); transition: all 0.2s;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+          Voltar ao Ponto
+        </a>
+        <span style="font-size: 0.72rem; color: var(--text-muted); font-weight: 500;">Sistema Financeiro Independente</span>
+      </div>
+      <div class="brand">
+        <div class="brand-row">
+          <div class="brand-logo">B3</div>
+          <span class="brand-name">MarketPulse B3</span>
+        </div>
+        <span class="brand-tag">Cotações, Dividendos & Analista IA</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Bloco da Chave API posicionado abaixo da Logo -->
+  <section class="api-section">
+    <div class="api-card">
+      <div class="api-card-header">
+        <span>Chave de API do Google Gemini</span>
+        <span id="api-badge" class="api-status-badge">
+          <span class="status-dot"></span>
+          <span id="api-status-text">Não configurada</span>
+        </span>
+      </div>
+      <div class="api-input-row">
+        <input type="password" id="gemini-key" placeholder="Cole sua Gemini API Key aqui...">
+        <button class="btn btn-ai" onclick="salvarChaveGemini()">Salvar</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Container Principal -->
+  <main class="app-shell">
+
+    <!-- ABA 1 (Mobile) / COLUNA ESQUERDA (Web): Mercado & Ativos -->
+    <section id="panel-mercado" class="view-panel active-mobile">
+      <div class="kpi-grid">
+        <div class="kpi-card">
+          <span class="kpi-label">Ativos</span>
+          <span id="kpi-total" class="kpi-value">0</span>
+        </div>
+        <div class="kpi-card">
+          <span class="kpi-label">DY Médio</span>
+          <span id="kpi-dy-medio" class="kpi-value green">0,00%</span>
+        </div>
+        <div class="kpi-card">
+          <span class="kpi-label">Maior Yield</span>
+          <span id="kpi-top-dy" class="kpi-value">—</span>
+        </div>
+      </div>
+
+      <div class="controls-bar">
+        <div class="search-row">
+          <input type="text" id="novo-ticker" placeholder="Ticker (ex: BBAS3)" maxlength="8" onkeydown="if(event.key==='Enter') buscarNovoAtivo()">
+          <button id="btn-buscar" class="btn btn-accent" onclick="buscarNovoAtivo()">+ Buscar</button>
+        </div>
+
+        <div class="filter-tabs" role="tablist">
+          <button class="tab-filter active" data-filtro="TODOS" onclick="mudarFiltro(this)">Todos</button>
+          <button class="tab-filter" data-filtro="Ação" onclick="mudarFiltro(this)">Ações</button>
+          <button class="tab-filter" data-filtro="FII" onclick="mudarFiltro(this)">FIIs</button>
+        </div>
+      </div>
+
+      <div id="lista-ativos" class="assets-grid">
+        <div class="state-box">Sincronizando cotações com o Supabase...</div>
+      </div>
+    </section>
+
+    <!-- ABA 2 (Mobile) / COLUNA DIREITA (Web): Copiloto Analítico Gemini -->
+    <aside id="panel-ia" class="view-panel ai-panel-wrapper">
+      <div class="ai-container">
+        <div class="ai-top">
+          <div class="ai-heading">
+            <span>Analista IA</span>
+            <span id="memoria-badge" class="ai-pill">Memória Ativa (0)</span>
+          </div>
+          <button class="refresh-btn" title="Limpar conversa" onclick="limparChat()">↺</button>
+        </div>
+
+        <div class="chips-scroller">
+          <button class="chip-prompt primary" onclick="usarSugestao('Analise com total liberdade as melhores oportunidades entre Ações, FIIs e Tesouro Direto para comprar no momento, apontando melhor Dividend Yield, cenário atual e projeções futuras.')">✦ Oportunidades: Ações, FIIs e Tesouro</button>
+          <button class="chip-prompt" onclick="usarSugestao('Qual o melhor Dividend Yield disponível hoje e o que esperar do futuro da taxa Selic, inflação e dividendos nos próximos meses?')">Melhor DY & Cenário Futuro</button>
+          <button class="chip-prompt" onclick="usarSugestao('Compare Tesouro Direto (Selic e IPCA+) contra os FIIs e Ações da minha lista para montar uma carteira equilibrada.')">Tesouro Direto vs. Bolsa</button>
+        </div>
+
+        <div id="chat-box" class="chat-feed">
+          <div class="msg-bubble msg-ai">
+            <div class="msg-sender">Gemini Analista</div>
+            <div class="msg-body">Estou conectado à tabela exclusiva deste projeto no seu Supabase, com liberdade total para analisar Ações, FIIs e Tesouro Direto cruzando preço, Dividend Yield, cenário atual e projeções futuras.</div>
+          </div>
+        </div>
+
+        <div class="chat-form">
+          <input type="text" id="pergunta-gemini" placeholder="Pergunte sobre Ações, FIIs, Tesouro ou futuro..." onkeydown="if(event.key==='Enter') enviarPerguntaGemini()">
+          <button id="btn-perguntar" class="btn btn-ai" onclick="enviarPerguntaGemini()">Analisar</button>
+        </div>
+      </div>
+    </aside>
+
+  </main>
+
+  <!-- Navegação Inferior Exclusiva para Mobile e Tablet (< 1024px) -->
+  <nav class="mobile-nav" aria-label="Navegação principal">
+    <button id="nav-mercado" class="nav-tab active" onclick="alternarAbaMobile('mercado')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="22 7 13.5 15.5 8.5 10.5 2 17"></polyline>
+        <polyline points="16 7 22 7 22 13"></polyline>
+      </svg>
+      <span>Mercado</span>
+    </button>
+    <button id="nav-ia" class="nav-tab ai-tab" onclick="alternarAbaMobile('ia')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 2a4 4 0 0 1 4 4v2a4 4 0 0 1-8 0V6a4 4 0 0 1 4-4z"></path>
+        <path d="M16 14H8a4 4 0 0 0-4 4v2h16v-2a4 4 0 0 0-4-4z"></path>
+      </svg>
+      <span>Analista IA</span>
+    </button>
+  </nav>
+
+  <script>
+    // Mesma URL e Chave ANON do seu projeto Supabase existente
+    const SUPABASE_URL = 'https://zwcvaqxdfurmexyuxtvv.supabase.co';
+    const SUPABASE_ANON_KEY = 'sb_publishable_OZ2UClbyGByJ1-PXaVCfMw_1ozLY5FC';
+
+    // Tabela única exclusiva desta aplicação (não interfere com outras tabelas do banco)
+    const TABELA_UNICA = 'mp_ativos';
+
+    const STORAGE_KEY_GEMINI = 'gemini_api_key';
+    const STORAGE_KEY_MEMORIA = 'mp_gemini_memoria_cache';
+
+    let listaCompleta = [];
+    let memoriaEvolutiva = [];
+    let filtroAtual = 'TODOS';
+    let historicoSessao = [];
+
+    // ================= CARREGAMENTO UNIFICADO DA TABELA ÚNICA =================
+    async function sincronizarTabelaUnica() {
+      const container = document.getElementById('lista-ativos');
+
+      // Carrega cache local da memória imediato
+      try {
+        const cache = localStorage.getItem(STORAGE_KEY_MEMORIA);
+        if (cache) {
+          memoriaEvolutiva = JSON.parse(cache);
+          atualizarIndicadorMemoria();
+        }
+      } catch {}
+
+      try {
+        const resp = await fetch(`${SUPABASE_URL}/rest/v1/${TABELA_UNICA}?select=*&order=ticker.asc`, {
+          headers: {
+            'apikey': SUPABASE_ANON_KEY,
+            'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+          }
+        });
+
+        if (!resp.ok) throw new Error(`Erro ao acessar a tabela ${TABELA_UNICA} no Supabase`);
+
+        const todosRegistros = await resp.json();
+
+        // Separa o que é Ativo de Mercado do que é Memória Evolutiva da IA
+        listaCompleta = todosRegistros.filter(item => item.tipo !== 'MEMORIA');
+
+        const registrosMemoria = todosRegistros
+          .filter(item => item.tipo === 'MEMORIA' && item.nome)
+          .sort((a, b) => new Date(a.atualizado_em) - new Date(b.atualizado_em));
+
+        memoriaEvolutiva = registrosMemoria.map(m => ({
+          id: m.ticker,
+          data: new Date(m.atualizado_em).toLocaleDateString('pt-BR'),
+          fato: m.nome
+        }));
+
+        localStorage.setItem(STORAGE_KEY_MEMORIA, JSON.stringify(memoriaEvolutiva));
+        atualizarIndicadorMemoria();
+        atualizarKPIs();
+        renderizar();
+      } catch (erro) {
+        container.innerHTML = `<div class="state-box" style="color: var(--red);">${erro.message}</div>`;
+      }
+    }
+
+    async function salvarAprendizado(fatosNovos) {
+      const itens = Array.isArray(fatosNovos) ? fatosNovos : [fatosNovos];
+      const dataRegistro = new Date().toLocaleDateString('pt-BR');
+      const novosParaBanco = [];
+
+      itens.forEach((fato, idx) => {
+        const textoLimpo = String(fato || '').trim();
+        if (textoLimpo && !memoriaEvolutiva.some(m => m.fato.toLowerCase() === textoLimpo.toLowerCase())) {
+          const chaveUnica = `MEM_${Date.now()}_${idx}`;
+          memoriaEvolutiva.push({ id: chaveUnica, data: dataRegistro, fato: textoLimpo });
+          novosParaBanco.push({
+            ticker: chaveUnica,
+            tipo: 'MEMORIA',
+            nome: textoLimpo,
+            preco_atual: 0,
+            dividend_yield: 0,
+            atualizado_em: new Date().toISOString()
+          });
+        }
+      });
+
+      memoriaEvolutiva = memoriaEvolutiva.slice(-60);
+      localStorage.setItem(STORAGE_KEY_MEMORIA, JSON.stringify(memoriaEvolutiva));
+      atualizarIndicadorMemoria();
+
+      // Grava na mesma tabela mp_ativos usando tipo = 'MEMORIA'
+      if (novosParaBanco.length > 0) {
+        try {
+          await fetch(`${SUPABASE_URL}/rest/v1/${TABELA_UNICA}`, {
+            method: 'POST',
+            headers: {
+              'apikey': SUPABASE_ANON_KEY,
+              'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+              'Content-Type': 'application/json',
+              'Prefer': 'resolution=merge-duplicates'
+            },
+            body: JSON.stringify(novosParaBanco)
+          });
+        } catch (e) {
+          console.warn('Falha ao gravar aprendizado na tabela única:', e.message);
+        }
+      }
+
+      return memoriaEvolutiva;
+    }
+
+    function atualizarIndicadorMemoria() {
+      const badge = document.getElementById('memoria-badge');
+      if (!badge) return;
+      const total = memoriaEvolutiva.length;
+      badge.textContent = `Memória Ativa (${total})`;
+      badge.title = `${total} aprendizados salvos na tabela ${TABELA_UNICA}`;
+    }
+
+    // ================= NAVEGAÇÃO E INTERFACE =================
+    function alternarAbaMobile(aba) {
+      const panelMercado = document.getElementById('panel-mercado');
+      const panelIa = document.getElementById('panel-ia');
+      const navMercado = document.getElementById('nav-mercado');
+      const navIa = document.getElementById('nav-ia');
+
+      if (aba === 'mercado') {
+        panelMercado.classList.add('active-mobile');
+        panelIa.classList.remove('active-mobile');
+        navMercado.classList.add('active');
+        navIa.classList.remove('active');
+      } else {
+        panelIa.classList.add('active-mobile');
+        panelMercado.classList.remove('active-mobile');
+        navIa.classList.add('active');
+        navMercado.classList.remove('active');
+      }
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function atualizarVisualStatusKey(ativa) {
+      const badge = document.getElementById('api-badge');
+      const texto = document.getElementById('api-status-text');
+
+      if (ativa) {
+        badge.classList.add('online');
+        texto.textContent = 'Conectada';
+      } else {
+        badge.classList.remove('online');
+        texto.textContent = 'Não configurada';
+      }
+    }
+
+    function inicializarChaveGemini() {
+      const chaveSalva = localStorage.getItem(STORAGE_KEY_GEMINI);
+      const inputKey = document.getElementById('gemini-key');
+
+      if (chaveSalva) {
+        inputKey.value = chaveSalva;
+        atualizarVisualStatusKey(true);
+      } else {
+        atualizarVisualStatusKey(false);
+      }
+    }
+
+    function salvarChaveGemini() {
+      const chave = document.getElementById('gemini-key').value.trim();
+
+      if (!chave) {
+        localStorage.removeItem(STORAGE_KEY_GEMINI);
+        atualizarVisualStatusKey(false);
+        return;
+      }
+
+      localStorage.setItem(STORAGE_KEY_GEMINI, chave);
+      atualizarVisualStatusKey(true);
+    }
+
+    function atualizarKPIs() {
+      const totalEl = document.getElementById('kpi-total');
+      const dyMedioEl = document.getElementById('kpi-dy-medio');
+      const topDyEl = document.getElementById('kpi-top-dy');
+
+      totalEl.textContent = listaCompleta.length;
+
+      if (listaCompleta.length === 0) {
+        dyMedioEl.textContent = '0,00%';
+        topDyEl.textContent = '—';
+        return;
+      }
+
+      const somaDy = listaCompleta.reduce((acc, item) => acc + Number(item.dividend_yield || 0), 0);
+      const media = somaDy / listaCompleta.length;
+      dyMedioEl.textContent = `${media.toFixed(2).replace('.', ',')}%`;
+
+      const melhor = [...listaCompleta].sort((a, b) => Number(b.dividend_yield || 0) - Number(a.dividend_yield || 0))[0];
+      topDyEl.textContent = `${melhor.ticker} ${Number(melhor.dividend_yield || 0).toFixed(1).replace('.', ',')}%`;
+    }
+
+    function mudarFiltro(botao) {
+      document.querySelectorAll('.tab-filter').forEach(b => b.classList.remove('active'));
+      botao.classList.add('active');
+      filtroAtual = botao.dataset.filtro;
+      renderizar();
+    }
+
+    function renderizar() {
+      const container = document.getElementById('lista-ativos');
+
+      const filtrados = filtroAtual === 'TODOS'
+        ? listaCompleta
+        : listaCompleta.filter(item => item.tipo === filtroAtual);
+
+      if (filtrados.length === 0) {
+        container.innerHTML = '<div class="state-box">Nenhum ativo encontrado nesta categoria. Adicione um ticker acima.</div>';
+        return;
+      }
+
+      container.innerHTML = filtrados.map(ativo => {
+        const preco = Number(ativo.preco_atual || 0).toLocaleString('pt-BR', {
+          style: 'currency',
+          currency: 'BRL'
+        });
+        const dy = Number(ativo.dividend_yield || 0).toFixed(2).replace('.', ',');
+        const dataHora = new Date(ativo.atualizado_em).toLocaleString('pt-BR', {
+          day: '2-digit',
+          month: '2-digit',
+          hour: '2-digit',
+          minute: '2-digit'
+        });
+        const classeBadge = ativo.tipo === 'FII' ? 'badge-fii' : 'badge-acao';
+
+        return `
+          <article class="asset-card">
+            <div>
+              <div class="card-top">
+                <div class="ticker-group">
+                  <span class="ticker-symbol">${ativo.ticker}</span>
+                  <span class="badge ${classeBadge}">${ativo.tipo}</span>
+                </div>
+                <button class="refresh-btn" title="Atualizar ${ativo.ticker}" onclick="atualizarCardIndividual('${ativo.ticker}', this)">↻</button>
+              </div>
+              <div class="asset-desc" title="${ativo.nome || ''}">${ativo.nome || 'Ativo B3'}</div>
+            </div>
+
+            <div>
+              <div class="card-metrics">
+                <div>
+                  <span class="m-label">Cotação</span>
+                  <span class="m-price">${preco}</span>
+                </div>
+                <div class="m-dy-col">
+                  <span class="m-label">Dividend Yield</span>
+                  <span class="m-dy">${dy}%</span>
+                </div>
+              </div>
+              <div class="card-meta">
+                <span>B3 • À vista</span>
+                <span>Atualizado ${dataHora}</span>
+              </div>
+            </div>
+          </article>
+        `;
+      }).join('');
+    }
+
+    async function atualizarCardIndividual(ticker, btnEl) {
+      btnEl.disabled = true;
+      btnEl.style.opacity = '0.4';
+      try {
+        await executarBuscaAtivoApi(ticker);
+      } catch (e) {
+        alert(e.message);
+      } finally {
+        btnEl.disabled = false;
+        btnEl.style.opacity = '1';
+      }
+    }
+
+    async function executarBuscaAtivoApi(ticker) {
+      const resp = await fetch(`/api/atualizar?ticker=${encodeURIComponent(ticker.toUpperCase())}`);
+      const dados = await resp.json();
+
+      if (!resp.ok || !dados.sucesso) {
+        throw new Error(dados.erro || `Não foi possível buscar o ativo ${ticker}`);
+      }
+
+      await sincronizarTabelaUnica();
+      return dados.atualizados;
+    }
+
+    async function buscarNovoAtivo() {
+      const input = document.getElementById('novo-ticker');
+      const btn = document.getElementById('btn-buscar');
+      const ticker = input.value.trim().toUpperCase();
+
+      if (!ticker) return;
+
+      btn.disabled = true;
+      btn.textContent = '...';
+
+      try {
+        await executarBuscaAtivoApi(ticker);
+        input.value = '';
+      } catch (erro) {
+        alert(erro.message);
+      } finally {
+        btn.disabled = false;
+        btn.textContent = '+ Buscar';
+      }
+    }
+
+    function usarSugestao(texto) {
+      if (window.innerWidth < 1024) {
+        alternarAbaMobile('ia');
+      }
+      document.getElementById('pergunta-gemini').value = texto;
+      enviarPerguntaGemini();
+    }
+
+    function limparChat() {
+      historicoSessao = [];
+      const chatBox = document.getElementById('chat-box');
+      const totalMem = memoriaEvolutiva.length;
+      chatBox.innerHTML = `
+        <div class="msg-bubble msg-ai">
+          <div class="msg-sender">Gemini Analista</div>
+          <div class="msg-body">Chat reiniciado, mas minha memória evolutiva (${totalMem} registros na tabela ${TABELA_UNICA}) continua ativa. Sobre qual ativo, FII ou título do Tesouro Direto vamos falar agora?</div>
+        </div>
+      `;
+    }
+
+    function formatarTextoSeguro(texto) {
+      const escapado = texto
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+      return escapado
+        .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+        .replace(/\n/g, '<br>');
+    }
+
+    function adicionarMensagemChat(autor, texto, tipo) {
+      const chatBox = document.getElementById('chat-box');
+      const div = document.createElement('div');
+      div.className = `msg-bubble ${tipo === 'user' ? 'msg-user' : 'msg-ai'}`;
+      div.innerHTML = `
+        <div class="msg-sender">${autor}</div>
+        <div class="msg-body"></div>
+      `;
+      div.querySelector('.msg-body').innerHTML = formatarTextoSeguro(texto);
+      chatBox.appendChild(div);
+      chatBox.scrollTop = chatBox.scrollHeight;
+      return div;
+    }
+
+    async function chamarApiGemini(apiKey, contents, instrucaoSistema) {
+      const ferramentas = [
+        {
+          functionDeclarations: [
+            {
+              name: 'buscar_e_salvar_ativo',
+              description: 'Busca a cotação atual e o dividend yield de qualquer Ação ou Fundo Imobiliário (FII) da B3 na API externa e salva na tabela mp_ativos do Supabase quando o ativo não estiver na lista ou precisar de atualização.',
+              parameters: {
+                type: 'OBJECT',
+                properties: {
+                  ticker: {
+                    type: 'STRING',
+                    description: 'Código do ativo na B3 em letras maiúsculas, ex: PETR4, BBAS3, HGLG11, MXRF11, KNRI11'
+                  }
+                },
+                required: ['ticker']
+              }
+            },
+            {
+              name: 'registrar_aprendizado',
+              description: 'Salva permanentemente na tabela mp_ativos (com tipo MEMORIA) novos aprendizados, preferências do investidor, teses de investimento, alertas de mercado ou conclusões importantes descobertas durante a conversa.',
+              parameters: {
+                type: 'OBJECT',
+                properties: {
+                  aprendizados: {
+                    type: 'ARRAY',
+                    items: { type: 'STRING' },
+                    description: 'Lista de frases curtas e objetivas resumindo o que foi aprendido sobre o investidor, ativos ou cenário de mercado.'
+                  }
+                },
+                required: ['aprendizados']
+              }
+            }
+          ]
+        },
+        {
+          googleSearch: {}
+        }
+      ];
+
+      const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${encodeURIComponent(apiKey)}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          systemInstruction: { parts: [{ text: instrucaoSistema }] },
+          contents: contents,
+          tools: ferramentas
+        })
+      });
+
+      const dados = await resp.json();
+      if (!resp.ok) {
+        throw new Error(dados.error?.message || 'Erro ao comunicar com a API do Gemini');
+      }
+      return dados;
+    }
+
+    async function enviarPerguntaGemini() {
+      const apiKey = localStorage.getItem(STORAGE_KEY_GEMINI) || document.getElementById('gemini-key').value.trim();
+      const input = document.getElementById('pergunta-gemini');
+      const btn = document.getElementById('btn-perguntar');
+      const pergunta = input.value.trim();
+
+      if (!apiKey) {
+        document.getElementById('gemini-key').focus();
+        alert('Insira e salve sua Gemini API Key no campo acima primeiro.');
+        return;
+      }
+
+      if (!pergunta) return;
+
+      adicionarMensagemChat('Você', pergunta, 'user');
+      input.value = '';
+      btn.disabled = true;
+      btn.textContent = '...';
+
+      const msgStatus = adicionarMensagemChat('Gemini Analista', 'Analisando mercado, cotações, Tesouro Direto e memória evolutiva...', 'ai');
+      const textoElemento = msgStatus.querySelector('.msg-body');
+
+      const gerarInstrucao = () => {
+        const contextoAtivos = listaCompleta.length > 0
+          ? JSON.stringify(listaCompleta)
+          : 'Nenhum ativo cadastrado na tabela mp_ativos ainda.';
+
+        const blocoMemoria = memoriaEvolutiva.length > 0
+          ? memoriaEvolutiva.map(m => `- [${m.data}] ${m.fato}`).join('\n')
+          : 'Nenhum registro prévio ainda. Comece a aprender com esta conversa.';
+
+        const dataHoje = new Date().toLocaleDateString('pt-BR', {
+          weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+        });
+
+        return `Você é um estrategista-chefe de investimentos e inteligência artificial evolutiva com TOTAL LIBERDADE analítica sobre o mercado financeiro brasileiro (Ações da B3, Fundos Imobiliários/FIIs e Tesouro Direto).
+Data atual: ${dataHoje}.
+
+BASE DE ATIVOS MONITORADOS NA TABELA EXCLUSIVA (mp_ativos):
+${contextoAtivos}
+
+MEMÓRIA EVOLUTIVA ACUMULADA (REGISTROS tipo='MEMORIA' EM mp_ativos):
+${blocoMemoria}
+
+DIRETRIZES DE LIBERDADE ANALÍTICA E APRENDIZADO CONTÍNUO:
+1. **Total Liberdade de Análise e Dicas Práticas:** Nunca dê respostas evasivas ou genéricas. Analise abertamente papéis de Ações, Fundos Imobiliários (tijolo, papel, híbridos, eventos como incorporações/fusões) e títulos do Tesouro Direto (Tesouro Selic, Tesouro IPCA+ e Tesouro Prefixado). Dê dicas claras de compra, pontos de atenção, faixas de preço atrativas, comparação de Dividend Yield real vs. juros reais do Tesouro e cenários futuros (curto, médio e longo prazo).
+2. **Pesquisa em Tempo Real:** Use a ferramenta googleSearch sempre que precisar verificar taxas atuais do Tesouro Direto, taxa Selic vigente, IPCA, fatos relevantes recentes, balanços trimestrais, guidance ou mudanças de dividendos.
+3. **Expansão Automática da Carteira:** Se o usuário citar qualquer ticker de Ação ou FII que não esteja no JSON acima, acione imediatamente \`buscar_e_salvar_ativo\` para trazê-lo para o painel e incluí-lo na análise.
+4. **Aprendizado Contínuo (Auto-Evolução):** Sempre que você identificar uma preferência do usuário (ex: foco em renda mensal, tolerância a risco, interesse em FIIs logísticos, bancos ou Tesouro IPCA+), uma meta financeira ou um fato relevante importante sobre um ativo analisado, chame silenciosamente a ferramenta \`registrar_aprendizado\` para gravar esse conhecimento na tabela mp_ativos.
+5. **Clareza e Estrutura:** Responda em português de forma direta, incisiva e bem organizada com tópicos e **negrito** para destaques.`;
+      };
+
+      try {
+        historicoSessao.push({ role: 'user', parts: [{ text: pergunta }] });
+        if (historicoSessao.length > 12) {
+          historicoSessao = historicoSessao.slice(-12);
+        }
+
+        let conversaAtual = [...historicoSessao];
+        let dadosResposta = await chamarApiGemini(apiKey, conversaAtual, gerarInstrucao());
+        let parteResposta = dadosResposta.candidates?.[0]?.content?.parts?.find(p => p.functionCall);
+
+        while (parteResposta?.functionCall) {
+          const chamada = parteResposta.functionCall;
+          let resultadoFerramenta = {};
+
+          if (chamada.name === 'buscar_e_salvar_ativo') {
+            const tickerSolicitado = (chamada.args?.ticker || '').toUpperCase();
+            textoElemento.innerHTML = formatarTextoSeguro(`Consultando ${tickerSolicitado} na B3 e atualizando painel...`);
+
+            try {
+              const ativosAtualizados = await executarBuscaAtivoApi(tickerSolicitado);
+              resultadoFerramenta = { sucesso: true, dados: ativosAtualizados };
+            } catch (erroBusca) {
+              resultadoFerramenta = { sucesso: false, erro: erroBusca.message };
+            }
+          } else if (chamada.name === 'registrar_aprendizado') {
+            const novosFatos = chamada.args?.aprendizados || [];
+            const memoriaAtualizada = await salvarAprendizado(novosFatos);
+            resultadoFerramenta = {
+              sucesso: true,
+              total_memorias: memoriaAtualizada.length
+            };
+          } else {
+            break;
+          }
+
+          conversaAtual.push({
+            role: 'model',
+            parts: [{ functionCall: chamada }]
+          });
+          conversaAtual.push({
+            role: 'user',
+            parts: [{
+              functionResponse: {
+                name: chamada.name,
+                response: resultadoFerramenta
+              }
+            }]
+          });
+
+          dadosResposta = await chamarApiGemini(apiKey, conversaAtual, gerarInstrucao());
+          parteResposta = dadosResposta.candidates?.[0]?.content?.parts?.find(p => p.functionCall);
+        }
+
+        const partesTexto = dadosResposta.candidates?.[0]?.content?.parts
+          ?.filter(p => p.text)
+          ?.map(p => p.text)
+          ?.join('\n') || 'Análise concluída.';
+
+        historicoSessao.push({
+          role: 'model',
+          parts: [{ text: partesTexto }]
+        });
+
+        textoElemento.innerHTML = formatarTextoSeguro(partesTexto);
+
+      } catch (erro) {
+        textoElemento.innerHTML = `<span style="color: var(--red);">Erro: ${erro.message}</span>`;
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Analisar';
+      }
+    }
+
+    // Inicialização única
+    inicializarChaveGemini();
+    sincronizarTabelaUnica();
+  </script>
+</body>
+</html>
