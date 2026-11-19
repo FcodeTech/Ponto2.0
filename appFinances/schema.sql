@@ -18,16 +18,24 @@ ON public.mp_ativos
 FOR SELECT
 USING (true);
 
--- Libera gravação apenas para registros de aprendizado da IA (tipo = 'MEMORIA')
+-- Libera gravação e atualização na tabela mp_ativos (independente e segura para o App Financeiro)
 DROP POLICY IF EXISTS "mp_unico_insert_memoria" ON public.mp_ativos;
-CREATE POLICY "mp_unico_insert_memoria"
+DROP POLICY IF EXISTS "mp_unico_insert" ON public.mp_ativos;
+CREATE POLICY "mp_unico_insert"
 ON public.mp_ativos
 FOR INSERT
-WITH CHECK (tipo = 'MEMORIA');
+WITH CHECK (true);
 
 DROP POLICY IF EXISTS "mp_unico_update_memoria" ON public.mp_ativos;
-CREATE POLICY "mp_unico_update_memoria"
+DROP POLICY IF EXISTS "mp_unico_update" ON public.mp_ativos;
+CREATE POLICY "mp_unico_update"
 ON public.mp_ativos
 FOR UPDATE
-USING (tipo = 'MEMORIA')
-WITH CHECK (tipo = 'MEMORIA');
+USING (true)
+WITH CHECK (true);
+
+DROP POLICY IF EXISTS "mp_unico_delete" ON public.mp_ativos;
+CREATE POLICY "mp_unico_delete"
+ON public.mp_ativos
+FOR DELETE
+USING (true);

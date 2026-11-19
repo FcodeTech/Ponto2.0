@@ -790,7 +790,7 @@
   <!-- Header com Logo Centralizada no Mobile -->
   <header class="topbar">
     <div class="topbar-inner">
-      <div style="width: 100%; display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px;">
+      <div id="btn-voltar-topo" style="width: 100%; display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px;">
         <a href="../index.html" style="display: inline-flex; align-items: center; gap: 6px; font-size: 0.78rem; font-weight: 600; color: var(--accent); text-decoration: none; padding: 5px 12px; background: rgba(56, 189, 248, 0.08); border: 1px solid var(--border); border-radius: var(--radius-sm); transition: all 0.2s;">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
           Voltar ao Ponto
@@ -1191,15 +1191,78 @@
     }
 
     async function executarBuscaAtivoApi(ticker) {
-      const resp = await fetch(`/api/atualizar?ticker=${encodeURIComponent(ticker.toUpperCase())}`);
-      const dados = await resp.json();
+      ticker = ticker.trim().toUpperCase();
+      let dados = null;
 
-      if (!resp.ok || !dados.sucesso) {
-        throw new Error(dados.erro || `Não foi possível buscar o ativo ${ticker}`);
+      // 1. Tenta chamar o endpoint da API (/api/atualizar)
+      try {
+        const resp = await fetch(`/api/atualizar?ticker=${encodeURIComponent(ticker)}`);
+        const contentType = resp.headers.get('content-type') || '';
+        if (contentType.includes('application/json')) {
+          dados = await resp.json();
+        } else {
+          console.warn('[AppFinance] Resposta da API não é JSON (servidor estático ou 404). Acionando busca direta...');
+        }
+      } catch (errApi) {
+        console.warn('[AppFinance] Falha ao contatar /api/atualizar:', errApi.message);
       }
 
-      await sincronizarTabelaUnica();
-      return dados.atualizados;
+      // Se a API retornou com sucesso, sincroniza
+      if (dados && dados.sucesso && dados.atualizados && dados.atualizados.length > 0) {
+        await sincronizarTabelaUnica();
+        return dados.atualizados;
+      }
+
+      // 2. Fallback direto no navegador caso /api/atualizar não esteja disponível ou falhe
+      try {
+        const respBrapi = await fetch(`https://brapi.dev/api/quote/${ticker}`);
+        if (respBrapi.ok) {
+          const jsonBrapi = await respBrapi.json();
+          const item = jsonBrapi.results?.[0];
+          if (item && item.regularMarketPrice !== undefined) {
+            const novoAtivo = {
+              ticker: ticker,
+              tipo: ticker.endsWith('11') ? 'FII' : 'Ação',
+              nome: item.longName || item.shortName || ticker,
+              preco_atual: Number(item.regularMarketPrice) || 0,
+              dividend_yield: Number(item.dividendYield || 0),
+              atualizado_em: new Date().toISOString()
+            };
+
+            // Tenta persistir no Supabase
+            try {
+              await fetch(`${SUPABASE_URL}/rest/v1/${TABELA_UNICA}`, {
+                method: 'POST',
+                headers: {
+                  'apikey': SUPABASE_ANON_KEY,
+                  'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+                  'Content-Type': 'application/json',
+                  'Prefer': 'resolution=merge-duplicates'
+                },
+                body: JSON.stringify([novoAtivo])
+              });
+            } catch (eDb) {
+              console.warn('[AppFinance] Aviso ao salvar ativo no Supabase:', eDb);
+            }
+
+            // Atualiza localmente para visualização imediata
+            const idx = listaCompleta.findIndex(a => a.ticker === ticker);
+            if (idx >= 0) {
+              listaCompleta[idx] = novoAtivo;
+            } else {
+              listaCompleta.push(novoAtivo);
+            }
+            atualizarKPIs();
+            renderizar();
+            return [novoAtivo];
+          }
+        }
+      } catch (errFallback) {
+        console.warn('[AppFinance] Fallback brapi falhou:', errFallback);
+      }
+
+      // Se todas as tentativas falharem
+      throw new Error(`Não foi possível obter dados para o ativo "${ticker}". Verifique o código ou tente novamente.`);
     }
 
     async function buscarNovoAtivo() {
@@ -1307,21 +1370,53 @@
         }
       ];
 
-      const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${encodeURIComponent(apiKey)}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          systemInstruction: { parts: [{ text: instrucaoSistema }] },
-          contents: contents,
-          tools: ferramentas
-        })
-      });
+      // Modelos em ordem de recomendação da Google AI Studio
+      const MODELOS = [
+        'gemini-3.8-flash',
+        'gemini-3.5-flash-lite',
+        'gemini-3.6-flash',
+        'gemini-2.5-flash-lite',
+        'gemini-2.5-flash'
+      ];
 
-      const dados = await resp.json();
-      if (!resp.ok) {
-        throw new Error(dados.error?.message || 'Erro ao comunicar com a API do Gemini');
+      let ultimoErro = null;
+
+      for (const modelo of MODELOS) {
+        try {
+          const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelo}:generateContent?key=${encodeURIComponent(apiKey)}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              systemInstruction: { parts: [{ text: instrucaoSistema }] },
+              contents: contents,
+              tools: ferramentas
+            })
+          });
+
+          const dados = await resp.json();
+
+          if (resp.ok) {
+            return dados;
+          }
+
+          const msg = dados.error?.message || '';
+          console.warn(`[Gemini] Modelo ${modelo} retornou:`, msg);
+
+          if (resp.status === 404 || msg.includes('not available') || msg.includes('no longer available') || msg.includes('not found')) {
+            ultimoErro = new Error(msg);
+            continue;
+          }
+
+          throw new Error(msg || 'Erro ao comunicar com a API do Gemini');
+        } catch (e) {
+          if (e.message.includes('API key not valid') || e.message.includes('permission') || e.message.includes('quota')) {
+            throw e;
+          }
+          ultimoErro = e;
+        }
       }
-      return dados;
+
+      throw ultimoErro || new Error('Não foi possível conectar aos modelos do Gemini. Verifique sua chave de API.');
     }
 
     async function enviarPerguntaGemini() {
@@ -1450,6 +1545,10 @@ DIRETRIZES DE LIBERDADE ANALÍTICA E APRENDIZADO CONTÍNUO:
     }
 
     // Inicialização única
+    if (window.self !== window.top) {
+      const btnVoltar = document.getElementById('btn-voltar-topo');
+      if (btnVoltar) btnVoltar.style.display = 'none';
+    }
     inicializarChaveGemini();
     sincronizarTabelaUnica();
   </script>
