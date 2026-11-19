@@ -992,7 +992,7 @@
         <button id="btn-salvar-key" class="btn btn-ai" onclick="validarEConectarGemini(true)">Validar &amp; Conectar</button>
       </div>
       <div class="api-card-footer">
-        <span>💡 <strong>Assinatura Pro:</strong> Sua chave no <a href="https://aistudio.google.com/app/apikey" target="_blank" style="color: var(--accent); text-decoration: underline;">aistudio.google.com</a> ativa o <strong>gemini-2.5-pro</strong> com alta capacidade.</span>
+        <span>💡 <strong>Assinatura Pro:</strong> Sua conta <strong>fredsoncitty@gmail.com</strong> ativa o <strong>Gemini Pro</strong> com inteligência analítica profunda e capacidade em tempo real.</span>
         <a href="javascript:void(0)" onclick="alternarVisibilidadeChave()" style="color: var(--text-secondary); text-decoration: none; font-weight: 600; white-space: nowrap;">👁️ Mostrar/Ocultar</a>
       </div>
     </div>
@@ -1406,7 +1406,6 @@
         }
       }
     }
-    }
 
     function atualizarKPIs() {
       const totalEl = document.getElementById('kpi-total');
@@ -1421,12 +1420,17 @@
         return;
       }
 
+      const ativosComDy = listaCompleta.filter(item => Number(item.dividend_yield || 0) > 0);
       const somaDy = listaCompleta.reduce((acc, item) => acc + Number(item.dividend_yield || 0), 0);
-      const media = somaDy / listaCompleta.length;
+      const media = ativosComDy.length > 0 ? (somaDy / ativosComDy.length) : (somaDy / listaCompleta.length);
       dyMedioEl.textContent = `${media.toFixed(2).replace('.', ',')}%`;
 
       const melhor = [...listaCompleta].sort((a, b) => Number(b.dividend_yield || 0) - Number(a.dividend_yield || 0))[0];
-      topDyEl.textContent = `${melhor.ticker} ${Number(melhor.dividend_yield || 0).toFixed(1).replace('.', ',')}%`;
+      if (melhor && Number(melhor.dividend_yield || 0) > 0) {
+        topDyEl.textContent = `${melhor.ticker} ${Number(melhor.dividend_yield).toFixed(1).replace('.', ',')}%`;
+      } else {
+        topDyEl.textContent = '—';
+      }
     }
 
     function mudarFiltro(botao) {
@@ -1441,7 +1445,12 @@
 
       const filtrados = filtroAtual === 'TODOS'
         ? listaCompleta
-        : listaCompleta.filter(item => item.tipo === filtroAtual);
+        : listaCompleta.filter(item => {
+            const t = (item.tipo || '').toUpperCase();
+            if (filtroAtual === 'FII') return t.includes('FII') || t.includes('FIAGRO');
+            if (filtroAtual === 'Ação' || filtroAtual === 'AÇÃO') return t.includes('AÇ') || t.includes('AC') || t === 'AÇÃO' || t === 'ACAO';
+            return item.tipo === filtroAtual;
+          });
 
       if (filtrados.length === 0) {
         container.innerHTML = '<div class="state-box">Nenhum ativo encontrado nesta categoria. Adicione um ticker acima.</div>';
@@ -1557,15 +1566,22 @@
     }
 
     async function atualizarCardIndividual(ticker, btnEl) {
-      btnEl.disabled = true;
-      btnEl.style.opacity = '0.4';
+      if (btnEl) {
+        btnEl.disabled = true;
+        btnEl.style.opacity = '0.5';
+        btnEl.style.transition = 'transform 0.8s ease';
+        btnEl.style.transform = 'rotate(360deg)';
+      }
       try {
         await executarBuscaAtivoApi(ticker);
       } catch (e) {
         alert(e.message);
       } finally {
-        btnEl.disabled = false;
-        btnEl.style.opacity = '1';
+        if (btnEl) {
+          btnEl.disabled = false;
+          btnEl.style.opacity = '1';
+          btnEl.style.transform = 'none';
+        }
       }
     }
 
@@ -1648,16 +1664,20 @@
     async function buscarNovoAtivo() {
       const input = document.getElementById('novo-ticker');
       const btn = document.getElementById('btn-buscar');
-      const ticker = input.value.trim().toUpperCase();
+      const ticker = input.value.trim().toUpperCase().replace(/[^A-Z0-9]/g, '');
 
-      if (!ticker) return;
+      if (!ticker) {
+        input.focus();
+        return;
+      }
 
       btn.disabled = true;
-      btn.textContent = '...';
+      btn.textContent = 'Buscando...';
 
       try {
         await executarBuscaAtivoApi(ticker);
         input.value = '';
+        input.focus();
       } catch (erro) {
         alert(erro.message);
       } finally {
