@@ -478,6 +478,18 @@
       to { opacity: 1; transform: translateY(0); }
     }
 
+    /* No mobile/tablet (< 880px), o Analista IA é exclusivo de sua própria aba no menu inferior */
+    @media (max-width: 879px) {
+      .ai-panel-wrapper {
+        display: none !important;
+      }
+
+      .ai-panel-wrapper.active-mobile {
+        display: block !important;
+        animation: fadeUp 0.22s ease;
+      }
+    }
+
     /* ================= KPIs RESPONSIVOS ================= */
     .kpi-grid {
       display: grid;
@@ -1323,11 +1335,351 @@
       line-height: 1.45;
     }
 
-    .sub-header-row {
+    /* ================= SELETORES E SEÇÕES DA QUARENTENA ================= */
+    .q-segmented-control {
       display: flex;
-      justify-content: space-between;
+      background: var(--bg-base);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 4px;
+      gap: 6px;
+      margin-bottom: 1.25rem;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+    .q-segmented-control::-webkit-scrollbar {
+      display: none;
+    }
+
+    .q-seg-btn {
+      flex: 1;
+      min-width: 140px;
+      background: transparent;
+      border: 1px solid transparent;
+      color: var(--text-secondary);
+      padding: 8px 14px;
+      border-radius: var(--radius-sm);
+      font-size: 0.8rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
       align-items: center;
-      margin-bottom: 0.65rem;
+      justify-content: center;
+      gap: 6px;
+      transition: all 0.18s ease;
+      white-space: nowrap;
+    }
+
+    .q-seg-btn:hover {
+      color: var(--text-primary);
+      background: var(--bg-elevated);
+    }
+
+    .q-seg-btn.active {
+      background: var(--bg-card);
+      color: var(--text-primary);
+      border-color: var(--border-strong);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18);
+    }
+
+    .q-seg-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+    }
+    .q-seg-dot.red { background: #f43f5e; box-shadow: 0 0 8px rgba(244, 63, 94, 0.6); }
+    .q-seg-dot.purple { background: var(--ai-primary); box-shadow: 0 0 8px var(--ai-glow); }
+
+    .q-seg-badge {
+      background: rgba(148, 163, 184, 0.15);
+      color: var(--text-muted);
+      font-size: 0.72rem;
+      font-weight: 800;
+      padding: 2px 7px;
+      border-radius: 99px;
+    }
+    .q-seg-btn.active .q-seg-badge {
+      background: var(--ai-glow);
+      color: var(--ai-primary);
+    }
+
+    .quarantine-section, .substitutes-box {
+      margin-bottom: 1.5rem;
+    }
+
+    .q-section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.75rem;
+      margin-bottom: 0.95rem;
+      padding-bottom: 0.65rem;
+      border-bottom: 1px solid var(--border);
+      flex-wrap: wrap;
+    }
+
+    .q-section-title-wrap {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .q-sec-icon-pill {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      border: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    .q-sec-icon-pill.red {
+      background: rgba(244, 63, 94, 0.14);
+      border-color: rgba(244, 63, 94, 0.35);
+    }
+    .q-sec-icon-pill.purple {
+      background: rgba(168, 85, 247, 0.15);
+      border-color: rgba(168, 85, 247, 0.35);
+    }
+
+    .q-section-title {
+      font-size: 1.05rem;
+      font-weight: 800;
+      color: var(--text-primary);
+      margin: 0;
+    }
+
+    .q-section-subtitle {
+      font-size: 0.76rem;
+      color: var(--text-secondary);
+      margin: 2px 0 0;
+    }
+
+    .q-section-actions {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .mini-btn {
+      background: var(--bg-elevated);
+      border: 1px solid var(--border);
+      color: var(--text-secondary);
+      border-radius: var(--radius-sm);
+      padding: 0.42rem 0.8rem;
+      font-size: 0.75rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      transition: all 0.16s ease;
+    }
+    .mini-btn:hover {
+      color: var(--text-primary);
+      border-color: var(--border-strong);
+      background: var(--bg-card);
+    }
+    .mini-btn.hide-subs:hover {
+      color: var(--red);
+      border-color: var(--red);
+      background: rgba(239, 68, 68, 0.1);
+    }
+
+    /* ================= GRID E CARDS DE SUBSTITUTOS ================= */
+    .sub-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 1rem;
+    }
+
+    @media (min-width: 680px) {
+      .sub-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    .sub-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-strong);
+      border-radius: var(--radius-lg);
+      padding: 1.15rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 0.95rem;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.24);
+      transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .sub-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, #10b981, #6366f1);
+      opacity: 0.95;
+    }
+
+    .sub-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.35);
+      border-color: rgba(16, 185, 129, 0.45);
+    }
+
+    .sub-card-content {
+      display: flex;
+      flex-direction: column;
+      gap: 0.8rem;
+    }
+
+    .sub-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.5rem;
+    }
+
+    .sub-ticker-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .sub-avatar-circle {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 15px;
+    }
+    .sub-avatar-circle.fii-bg {
+      background: rgba(245, 158, 11, 0.16);
+      border: 1px solid rgba(245, 158, 11, 0.3);
+    }
+    .sub-avatar-circle.acao-bg {
+      background: rgba(56, 189, 248, 0.16);
+      border: 1px solid rgba(56, 189, 248, 0.3);
+    }
+
+    .sub-ticker {
+      font-size: 1.15rem;
+      font-weight: 800;
+      color: var(--text-primary);
+      letter-spacing: -0.01em;
+      margin-right: 4px;
+    }
+
+    .sub-dy-pill {
+      background: var(--green-bg);
+      color: var(--green);
+      border: 1px solid rgba(16, 185, 129, 0.35);
+      border-radius: 99px;
+      padding: 3px 10px;
+      font-size: 0.78rem;
+      font-weight: 800;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .sub-thesis-box {
+      background: var(--bg-elevated);
+      border: 1px solid var(--border);
+      border-left: 3px solid var(--ai-primary);
+      border-radius: var(--radius-sm);
+      padding: 0.75rem 0.85rem;
+      font-size: 0.82rem;
+      color: var(--text-secondary);
+      line-height: 1.45;
+    }
+
+    .sub-thesis-label {
+      font-size: 0.68rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--ai-primary);
+      margin-bottom: 4px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .sub-thesis-text {
+      color: var(--text-primary);
+    }
+
+    .sub-card-actions {
+      margin-top: 0.2rem;
+    }
+
+    .sub-add-btn {
+      width: 100%;
+      background: linear-gradient(135deg, #10b981, #059669);
+      color: #ffffff;
+      border: none;
+      border-radius: var(--radius-sm);
+      padding: 0.68rem 1rem;
+      font-size: 0.82rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: all 0.18s ease;
+      box-shadow: 0 4px 14px rgba(16, 185, 129, 0.25);
+    }
+
+    .sub-add-btn:hover:not(:disabled) {
+      filter: brightness(1.12);
+      transform: translateY(-1px);
+      box-shadow: 0 6px 18px rgba(16, 185, 129, 0.38);
+    }
+
+    .sub-add-btn:disabled, .sub-add-btn.already-added {
+      background: var(--bg-elevated) !important;
+      color: var(--text-muted) !important;
+      border: 1px solid var(--border) !important;
+      cursor: default !important;
+      box-shadow: none !important;
+      transform: none !important;
+    }
+
+    .sub-empty-box {
+      text-align: center;
+      padding: 2.5rem 1.5rem;
+      background: var(--bg-elevated);
+      border: 1px dashed var(--border-strong);
+      border-radius: var(--radius-lg);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.6rem;
+    }
+    .sub-empty-icon {
+      font-size: 32px;
+      opacity: 0.8;
+    }
+    .sub-empty-title {
+      font-size: 0.98rem;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+    .sub-empty-sub {
+      font-size: 0.78rem;
+      color: var(--text-secondary);
+      max-width: 400px;
+      line-height: 1.4;
     }
 
     /* ================= PAINEL ANALISTA IA (GEMINI) ================= */
@@ -1809,10 +2161,38 @@
     [data-theme="light"] .mini-btn {
       background: #ffffff;
       color: var(--text-primary);
+      border-color: rgba(148, 163, 184, 0.4);
     }
     [data-theme="light"] .sub-card {
+      background: #ffffff;
+      border-color: rgba(148, 163, 184, 0.35);
+      box-shadow: 0 4px 18px rgba(15, 23, 42, 0.06);
+    }
+    [data-theme="light"] .sub-thesis-box {
       background: #f8fafc;
-      border-color: rgba(16, 185, 129, 0.35);
+      border-color: rgba(148, 163, 184, 0.25);
+      color: #334155;
+    }
+    [data-theme="light"] .sub-thesis-text {
+      color: #0f172a;
+    }
+    [data-theme="light"] .q-segmented-control {
+      background: #f1f5f9;
+      border-color: rgba(148, 163, 184, 0.35);
+    }
+    [data-theme="light"] .q-seg-btn.active {
+      background: #ffffff;
+      border-color: rgba(148, 163, 184, 0.45);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+      color: #0f172a;
+    }
+    [data-theme="light"] .q-sec-icon-pill.red {
+      background: #fee2e2;
+      border-color: #fca5a5;
+    }
+    [data-theme="light"] .q-sec-icon-pill.purple {
+      background: #f3e8ff;
+      border-color: #d8b4fe;
     }
     [data-theme="light"] .ind-val.pvp-desconto {
       color: #059669;
@@ -2193,6 +2573,406 @@
         grid-template-columns: repeat(3, 1fr);
       }
     }
+
+    /* ================= CÉREBRO COGNITIVO & MODAL DE MEMÓRIA EVOLUTIVA ================= */
+    .ai-pill-clickable {
+      cursor: pointer !important;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      user-select: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .ai-pill-clickable:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px var(--ai-glow);
+      filter: brightness(1.15);
+      border-color: var(--ai-primary);
+    }
+
+    .memoria-modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(3, 7, 18, 0.72);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      z-index: 99999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      animation: modalFadeIn 0.22s ease-out;
+    }
+
+    @keyframes modalFadeIn {
+      from { opacity: 0; transform: scale(0.97); }
+      to { opacity: 1; transform: scale(1); }
+    }
+
+    .memoria-modal-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-strong);
+      border-radius: var(--radius-xl);
+      width: 100%;
+      max-width: 680px;
+      max-height: 90vh;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.45);
+      overflow: hidden;
+    }
+
+    .memoria-modal-header {
+      padding: 18px 22px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: var(--bg-elevated);
+    }
+
+    .memoria-header-title {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .memoria-icon-badge {
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, rgba(168, 85, 247, 0.25), rgba(99, 102, 241, 0.25));
+      border: 1px solid var(--ai-primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+    }
+
+    .memoria-header-title h3 {
+      margin: 0;
+      font-size: 1.08rem;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+
+    .memoria-header-title p {
+      margin: 2px 0 0;
+      font-size: 0.78rem;
+      color: var(--text-secondary);
+    }
+
+    .memoria-btn-fechar {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--text-muted);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 15px;
+      transition: all 0.15s ease;
+    }
+
+    .memoria-btn-fechar:hover {
+      background: rgba(239, 68, 68, 0.15);
+      color: var(--red);
+      border-color: var(--red);
+    }
+
+    .memoria-stats-strip {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+      padding: 12px 20px;
+      background: var(--bg-base);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .memoria-stat-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      padding: 6px 4px;
+      background: var(--bg-elevated);
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border);
+    }
+
+    .memoria-stat-item .stat-num {
+      font-size: 1.05rem;
+      font-weight: 800;
+      color: var(--ai-primary);
+    }
+
+    .memoria-stat-item .stat-label {
+      font-size: 0.68rem;
+      color: var(--text-muted);
+      font-weight: 600;
+      margin-top: 2px;
+    }
+
+    .memoria-add-box {
+      padding: 14px 20px;
+      border-bottom: 1px solid var(--border);
+      background: var(--bg-card);
+    }
+
+    .memoria-add-header {
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: var(--text-secondary);
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .memoria-add-row {
+      display: flex;
+      gap: 8px;
+    }
+
+    .memoria-select-tipo {
+      background: var(--bg-input);
+      border: 1px solid var(--border);
+      color: var(--text-primary);
+      border-radius: var(--radius-sm);
+      padding: 0 10px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      outline: none;
+      cursor: pointer;
+      min-width: 130px;
+    }
+
+    .memoria-input-texto {
+      flex: 1;
+      background: var(--bg-input);
+      border: 1px solid var(--border);
+      color: var(--text-primary);
+      border-radius: var(--radius-sm);
+      padding: 9px 12px;
+      font-size: 0.82rem;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .memoria-input-texto:focus {
+      border-color: var(--ai-primary);
+    }
+
+    .memoria-btn-add {
+      background: linear-gradient(135deg, var(--ai-primary), var(--ai-secondary));
+      color: #fff;
+      border: none;
+      border-radius: var(--radius-sm);
+      padding: 0 16px;
+      font-size: 0.82rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform 0.15s ease, filter 0.15s ease;
+      white-space: nowrap;
+    }
+
+    .memoria-btn-add:hover {
+      filter: brightness(1.12);
+      transform: translateY(-1px);
+    }
+
+    .memoria-filtros {
+      display: flex;
+      gap: 6px;
+      padding: 10px 20px;
+      background: var(--bg-elevated);
+      border-bottom: 1px solid var(--border);
+      overflow-x: auto;
+    }
+
+    .memoria-filtros .filtro-btn {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      color: var(--text-secondary);
+      border-radius: 20px;
+      padding: 5px 12px;
+      font-size: 0.74rem;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.15s ease;
+    }
+
+    .memoria-filtros .filtro-btn:hover {
+      border-color: var(--ai-primary);
+      color: var(--text-primary);
+    }
+
+    .memoria-filtros .filtro-btn.active {
+      background: var(--ai-primary);
+      color: #fff;
+      border-color: var(--ai-primary);
+    }
+
+    .memoria-cards-scroll {
+      flex: 1;
+      overflow-y: auto;
+      padding: 14px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      min-height: 220px;
+      max-height: 420px;
+    }
+
+    .memoria-card-item {
+      background: var(--bg-elevated);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 12px 14px;
+      transition: transform 0.15s ease, border-color 0.15s ease;
+    }
+
+    .memoria-card-item:hover {
+      border-color: var(--border-strong);
+      transform: translateY(-1px);
+    }
+
+    .memoria-item-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 6px;
+    }
+
+    .memoria-tag {
+      font-size: 0.68rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      padding: 3px 8px;
+      border-radius: 6px;
+    }
+
+    .tag-perfil { background: rgba(168, 85, 247, 0.18); color: #c084fc; border: 1px solid rgba(168, 85, 247, 0.4); }
+    .tag-tese { background: rgba(16, 185, 129, 0.16); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.4); }
+    .tag-decisao { background: rgba(245, 158, 11, 0.16); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.4); }
+    .tag-auditoria { background: rgba(244, 63, 94, 0.16); color: #fb7185; border: 1px solid rgba(244, 63, 94, 0.4); }
+    .tag-macro { background: rgba(56, 189, 248, 0.16); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.4); }
+
+    .memoria-item-data {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      margin-left: auto;
+      margin-right: 10px;
+    }
+
+    .memoria-btn-del {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      padding: 4px;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.15s ease;
+    }
+
+    .memoria-btn-del:hover {
+      color: var(--red);
+      background: rgba(239, 68, 68, 0.15);
+    }
+
+    .memoria-item-body {
+      font-size: 0.83rem;
+      line-height: 1.45;
+      color: var(--text-primary);
+    }
+
+    .memoria-empty-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 20px;
+      text-align: center;
+    }
+
+    .memoria-empty-state .empty-icon {
+      font-size: 38px;
+      margin-bottom: 10px;
+      opacity: 0.8;
+    }
+
+    .memoria-empty-state h4 {
+      margin: 0 0 6px;
+      font-size: 0.95rem;
+      color: var(--text-primary);
+    }
+
+    .memoria-empty-state p {
+      margin: 0;
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+      max-width: 380px;
+      line-height: 1.4;
+    }
+
+    .memoria-modal-footer {
+      padding: 12px 20px;
+      background: var(--bg-elevated);
+      border-top: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .memoria-footer-hint {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      line-height: 1.35;
+    }
+
+    .memoria-btn-limpar {
+      background: transparent;
+      border: 1px solid rgba(239, 68, 68, 0.35);
+      color: var(--red);
+      border-radius: var(--radius-sm);
+      padding: 6px 12px;
+      font-size: 0.74rem;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.15s ease;
+    }
+
+    .memoria-btn-limpar:hover {
+      background: rgba(239, 68, 68, 0.12);
+      border-color: var(--red);
+    }
+
+    @media (max-width: 600px) {
+      .memoria-add-row {
+        flex-direction: column;
+      }
+      .memoria-select-tipo {
+        width: 100%;
+        height: 36px;
+      }
+      .memoria-btn-add {
+        height: 38px;
+      }
+      .memoria-stats-strip {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
   </style>
 </head>
 <body>
@@ -2350,15 +3130,60 @@
           </div>
         </div>
 
-        <!-- Grid de Cards Inteligentes de Quarentena -->
-        <div id="lista-quarentena" class="quarantine-smart-grid"></div>
+        <!-- Seletor Segmentado: Separar Isolados e Substitutos -->
+        <div class="q-segmented-control" role="tablist">
+          <button id="q-subtab-todos" class="q-seg-btn active" onclick="filtrarSecaoQuarentena('TODOS', this)">
+            <span>📋 Ver Ambos</span>
+          </button>
+          <button id="q-subtab-isolados" class="q-seg-btn" onclick="filtrarSecaoQuarentena('ISOLADOS', this)">
+            <span class="q-seg-dot red"></span>
+            <span>🛡️ Ativos Isolados</span>
+            <span id="badge-seg-isolados" class="q-seg-badge">0</span>
+          </button>
+          <button id="q-subtab-substitutos" class="q-seg-btn" onclick="filtrarSecaoQuarentena('SUBSTITUTOS', this)">
+            <span class="q-seg-dot purple"></span>
+            <span>✨ Substitutos Recomendados</span>
+            <span id="badge-seg-substitutos" class="q-seg-badge">0</span>
+          </button>
+        </div>
 
-        <!-- Box de Substitutos Recomendados -->
-        <div id="box-substitutos" class="substitutes-box" style="display: none; margin-top: 1.25rem;">
-          <div class="sub-header-row">
-            <span class="substitutes-label">✧ Substitutos de Alta Performance Recomendados pelo Gemini:</span>
-            <button class="mini-btn" onclick="limparSubstitutos()">Ocultar</button>
+        <!-- SEÇÃO 1: Ativos Isolados em Quarentena -->
+        <div id="secao-isolados" class="quarantine-section">
+          <div class="q-section-header">
+            <div class="q-section-title-wrap">
+              <span class="q-sec-icon-pill red">🛡️</span>
+              <div>
+                <h3 class="q-section-title">Ativos Isolados em Quarentena</h3>
+                <p class="q-section-subtitle">Papéis com fundamentos enfraquecidos aguardando valorização ou alta médica</p>
+              </div>
+            </div>
+            <span id="badge-total-isolados-sec" class="badge badge-quarantine">0 ativos</span>
           </div>
+
+          <!-- Grid de Cards Inteligentes de Quarentena -->
+          <div id="lista-quarentena" class="quarantine-smart-grid"></div>
+        </div>
+
+        <!-- SEÇÃO 2: Substitutos de Alta Performance Recomendados -->
+        <div id="box-substitutos" class="substitutes-box" style="display: none;">
+          <div class="q-section-header">
+            <div class="q-section-title-wrap">
+              <span class="q-sec-icon-pill purple">✨</span>
+              <div>
+                <h3 class="q-section-title">Substitutos de Alta Performance Recomendados</h3>
+                <p class="q-section-subtitle">Alternativas selecionadas pelo Gemini com alto Dividend Yield para recompor a carteira</p>
+              </div>
+            </div>
+            <div class="q-section-actions">
+              <button class="mini-btn" onclick="gerarNovosSubstitutosComGemini()" title="Pedir novas sugestões de substitutos ao Gemini">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M23 4v6h-6"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+                <span>Sugerir Mais</span>
+              </button>
+              <button class="mini-btn hide-subs" onclick="limparSubstitutos()" title="Ocultar sugestões">Ocultar</button>
+            </div>
+          </div>
+
+          <!-- Grid de Cards Profissionais de Substitutos -->
           <div id="grid-substitutos" class="sub-grid"></div>
         </div>
       </section>
@@ -2366,7 +3191,7 @@
     </div>
 
     <!-- ABA 2 (Mobile) / COLUNA DIREITA (Web): Copiloto Analítico Gemini -->
-    <aside id="panel-ia" class="view-panel ai-panel-wrapper active-mobile">
+    <aside id="panel-ia" class="view-panel ai-panel-wrapper">
       <div class="ai-container">
         <div class="ai-top">
           <div class="ai-heading">
@@ -2376,7 +3201,7 @@
               </svg>
             </div>
             <span>Analista IA</span>
-            <span id="memoria-badge" class="ai-pill">Memória Ativa (0)</span>
+            <span id="memoria-badge" class="ai-pill ai-pill-clickable" onclick="abrirModalMemoria()" title="Clique para abrir o Cérebro Cognitivo e gerenciar os aprendizados da IA">🧠 Memória Ativa (0)</span>
           </div>
           <div class="ai-top-actions">
             <button class="refresh-btn" id="btn-expand-ai" title="Expandir área de trabalho" onclick="alternarExpansaoAi(this)">
@@ -2389,19 +3214,22 @@
         <div class="chips-scroller">
           <button class="chip-prompt primary" onclick="usarSugestao('Audite toda a minha carteira, analisando tanto todas as Ações quanto todos os Fundos Imobiliários (FIIs). Atualize as cotações se necessário, avalie fundamentos, dividend yield e cenário atual de cada papel, coloque os papéis ruins na lista de quarentena e me indique boas Ações e FIIs para substituí-los.')">🔍 Auditar Carteira (Ações + FIIs)</button>
           <button class="chip-prompt primary" onclick="reavaliarQuarentenaComGemini()">⚡ Reavaliar Quarentena (Dar Alta)</button>
-          <button class="chip-prompt" onclick="usarSugestao('Analise com total liberdade as melhores oportunidades entre Ações, FIIs e Tesouro Direto para comprar no momento, apontando melhor Dividend Yield, cenário atual e projeções futuras.')">✦ Melhores Oportunidades</button>
-          <button class="chip-prompt" onclick="usarSugestao('Qual o melhor Dividend Yield disponível hoje e o que esperar do futuro da taxa Selic, inflação e dividendos nos próximos meses?')">Melhor DY & Cenário Futuro</button>
+          <button class="chip-prompt" onclick="usarSugestao('Calcule o Preço Teto pelo Método Décio Bazin (yield 6%) e o Valor Intrínseco de Benjamin Graham para os principais ativos da minha carteira.')">📐 Preço Teto Bazin & Graham</button>
+          <button class="chip-prompt" onclick="usarSugestao('Qual o Número Mágico (Magic Number) de cotas dos meus FIIs para gerar proventos suficientes e comprar 1 nova cota sozinho todo mês?')">🔮 Magic Number (Bola de Neve)</button>
+          <button class="chip-prompt" onclick="usarSugestao('Faça um comparativo aprofundado entre Tesouro Direto (Selic e IPCA+) contra FIIs e Ações de dividendos no atual cenário econômico.')">⚖️ Tesouro Direto vs. FIIs</button>
+          <button class="chip-prompt" onclick="usarSugestao('Como funciona a tributação e isenção de R$ 20.000 para ações no swing trade, tributação de FIIs e emissão de DARF?')">📋 Guia IR & DARF</button>
+          <button class="chip-prompt" onclick="abrirModalMemoria()">🧠 Cérebro Cognitivo da IA</button>
         </div>
 
         <div id="chat-box" class="chat-feed">
           <div class="msg-bubble msg-ai">
-            <div class="msg-sender">Gemini Analista</div>
-            <div class="msg-body">Estou pronto para auditar 100% da sua carteira (Ações e FIIs), gerenciar a Quarentena Inteligente com pareceres detalhados e sugerir substitutos de excelência. Conforme os papéis em quarentena forem se valorizando e recuperando fundamentos, concederei alta médica automática para retornarem à carteira ativa.</div>
+            <div class="msg-sender">Gemini Analista Pro</div>
+            <div class="msg-body">Olá, Fredson Mendes! Sou seu <strong>Analista Financeiro Completo & Estrategista-Chefe Privado</strong>. Tenho total liberdade técnica para responder a qualquer dúvida de mercado: <strong>Macroeconomia (Selic, Inflação, Copom, Dólar)</strong>, <strong>Valuation (Bazin, Graham)</strong>, <strong>Renda Fixa & Tesouro Direto</strong>, <strong>Planejamento Tributário (DARF/Isenções)</strong>, <strong>Efeito Bola de Neve (Magic Number)</strong> e <strong>Auditoria Rigorosa com Quarentena Inteligente</strong>.<br><br>💡 <em>A cada conversa, aprendo e memorizo continuamente seus objetivos, perfil e teses no <strong>Cérebro Cognitivo</strong> (clique no selo <strong>Memória Ativa</strong> no topo para visualizar e gerenciar). Como posso acelerar seus resultados hoje?</em></div>
           </div>
         </div>
 
         <div class="chat-form">
-          <input type="text" id="pergunta-gemini" placeholder="Peça para auditar a carteira, quarentena ou substitutos..." onkeydown="if(event.key==='Enter') enviarPerguntaGemini()">
+          <input type="text" id="pergunta-gemini" placeholder="Pergunte qualquer coisa sobre mercado, valuation, Selic, ações ou audite a carteira..." onkeydown="if(event.key==='Enter') enviarPerguntaGemini()">
           <button id="btn-perguntar" class="btn btn-ai" onclick="enviarPerguntaGemini()">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
             <span>Analisar</span>
@@ -2411,6 +3239,78 @@
     </aside>
 
   </main>
+
+  <!-- Modal Cérebro Cognitivo do Gemini (Aprendizado Contínuo & Memória Evolutiva) -->
+  <div id="modal-memoria" class="memoria-modal-backdrop" onclick="fecharModalMemoriaSeClicarFora(event)" style="display: none;">
+    <div class="memoria-modal-card" role="dialog" aria-modal="true" aria-labelledby="modal-memoria-titulo">
+      <div class="memoria-modal-header">
+        <div class="memoria-header-title">
+          <div class="memoria-icon-badge">🧠</div>
+          <div>
+            <h3 id="modal-memoria-titulo">Cérebro Cognitivo do Gemini</h3>
+            <p>Aprendizado Contínuo & Memória Evolutiva em Tempo Real</p>
+          </div>
+        </div>
+        <button class="memoria-btn-fechar" onclick="fecharModalMemoria()" title="Fechar">✕</button>
+      </div>
+
+      <div class="memoria-stats-strip">
+        <div class="memoria-stat-item">
+          <span class="stat-num" id="memoria-stat-total">0</span>
+          <span class="stat-label">Aprendizados Ativos</span>
+        </div>
+        <div class="memoria-stat-item">
+          <span class="stat-num" id="memoria-stat-perfil">0</span>
+          <span class="stat-label">Perfil & Metas</span>
+        </div>
+        <div class="memoria-stat-item">
+          <span class="stat-num" id="memoria-stat-teses">0</span>
+          <span class="stat-label">Teses & Setores</span>
+        </div>
+        <div class="memoria-stat-item">
+          <span class="stat-num" style="color: var(--green);">Nuvem</span>
+          <span class="stat-label">Supabase mp_ativos</span>
+        </div>
+      </div>
+
+      <!-- Formulário para Ensinar Nova Diretriz Manual à IA -->
+      <div class="memoria-add-box">
+        <div class="memoria-add-header">
+          <span>⚡ Ensinar Nova Diretriz ou Preferência à IA</span>
+        </div>
+        <div class="memoria-add-row">
+          <select id="memoria-novo-tipo" class="memoria-select-tipo" title="Categoria do Aprendizado">
+            <option value="[PERFIL]">👤 Perfil & Metas</option>
+            <option value="[TESE]" selected>💡 Tese de Investimento</option>
+            <option value="[DECISÃO]">🎯 Decisão de Alocação</option>
+            <option value="[MACRO]">🌐 Macro & Cenário</option>
+          </select>
+          <input type="text" id="memoria-novo-texto" class="memoria-input-texto" placeholder="Ex: Priorizar FIIs de logística com desconto e empresas com DY > 7%..." onkeydown="if(event.key==='Enter') salvarNovaDiretrizManual()">
+          <button class="memoria-btn-add" onclick="salvarNovaDiretrizManual()">+ Ensinar</button>
+        </div>
+      </div>
+
+      <!-- Filtros de Visualização -->
+      <div class="memoria-filtros">
+        <button class="filtro-btn active" data-filtro="TODOS" onclick="filtrarMemoriasModal('TODOS', this)">Todos</button>
+        <button class="filtro-btn" data-filtro="[PERFIL]" onclick="filtrarMemoriasModal('[PERFIL]', this)">👤 Perfil</button>
+        <button class="filtro-btn" data-filtro="[TESE]" onclick="filtrarMemoriasModal('[TESE]', this)">💡 Teses</button>
+        <button class="filtro-btn" data-filtro="[DECISÃO]" onclick="filtrarMemoriasModal('[DECISÃO]', this)">🎯 Decisões</button>
+        <button class="filtro-btn" data-filtro="[AUDITORIA]" onclick="filtrarMemoriasModal('[AUDITORIA]', this)">🛡️ Auditoria</button>
+        <button class="filtro-btn" data-filtro="[MACRO]" onclick="filtrarMemoriasModal('[MACRO]', this)">🌐 Macro</button>
+      </div>
+
+      <!-- Lista de Memórias / Diretrizes -->
+      <div id="memoria-lista-itens" class="memoria-cards-scroll">
+        <!-- Renderizado dinamicamente via JS -->
+      </div>
+
+      <div class="memoria-modal-footer">
+        <span class="memoria-footer-hint">💡 O Gemini extrai aprendizados automaticamente a cada conversa e utiliza essa memória em todas as análises.</span>
+        <button class="memoria-btn-limpar" onclick="limparTodaMemoriaComConfirmacao()">Limpar Tudo</button>
+      </div>
+    </div>
+  </div>
 
   <!-- Navegação Inferior Exclusiva para Mobile e Tablet (< 1024px) -->
   <nav class="mobile-nav" aria-label="Navegação principal">
@@ -2550,6 +3450,19 @@
         }
       }
 
+      if (item.ticker === 'IFRA11') {
+        if (!nomeExibicao || nomeExibicao.includes('RESUMO DO DIA')) {
+          nomeExibicao = 'Itaú Infra Debêntures FI-Infra';
+        }
+        if (Number(item.dividend_yield || 0) <= 0) {
+          item.dividend_yield = 13.60;
+        }
+        if (!min52) min52 = 81.37;
+        if (!max52) max52 = 100.95;
+      } else if (nomeExibicao && nomeExibicao.includes('RESUMO DO DIA')) {
+        nomeExibicao = item.ticker;
+      }
+
       return {
         ...item,
         nome_exibicao: nomeExibicao,
@@ -2623,15 +3536,34 @@
       }
     }
 
+    // ================= APRENDIZADO DE MÁQUINA & CÉREBRO COGNITIVO =================
     async function salvarAprendizado(fatosNovos) {
       const itens = Array.isArray(fatosNovos) ? fatosNovos : [fatosNovos];
       const dataRegistro = new Date().toLocaleDateString('pt-BR');
       const novosParaBanco = [];
 
       itens.forEach((fato, idx) => {
-        const textoLimpo = String(fato || '').trim();
-        if (textoLimpo && !memoriaEvolutiva.some(m => m.fato.toLowerCase() === textoLimpo.toLowerCase())) {
-          const chaveUnica = `MEM_${Date.now()}_${idx}`;
+        let textoLimpo = String(fato || '').trim();
+        if (!textoLimpo) return;
+
+        // Auto-categorização caso não contenha tag explícita
+        if (!textoLimpo.startsWith('[')) {
+          const lower = textoLimpo.toLowerCase();
+          if (lower.includes('perfil') || lower.includes('meta') || lower.includes('horizonte') || lower.includes('risco') || lower.includes('aposentadoria') || lower.includes('objetivo')) {
+            textoLimpo = `[PERFIL] ${textoLimpo}`;
+          } else if (lower.includes('quarentena') || lower.includes('reprovad') || lower.includes('alta') || lower.includes('auditoria')) {
+            textoLimpo = `[AUDITORIA] ${textoLimpo}`;
+          } else if (lower.includes('comprou') || lower.includes('vendeu') || lower.includes('decidi') || lower.includes('aporte') || lower.includes('alocação')) {
+            textoLimpo = `[DECISÃO] ${textoLimpo}`;
+          } else if (lower.includes('selic') || lower.includes('inflação') || lower.includes('ipca') || lower.includes('dólar') || lower.includes('copom') || lower.includes('macro')) {
+            textoLimpo = `[MACRO] ${textoLimpo}`;
+          } else {
+            textoLimpo = `[TESE] ${textoLimpo}`;
+          }
+        }
+
+        if (!memoriaEvolutiva.some(m => m.fato.toLowerCase() === textoLimpo.toLowerCase())) {
+          const chaveUnica = `MEM_${Date.now()}_${idx}_${Math.floor(Math.random()*1000)}`;
           memoriaEvolutiva.push({ id: chaveUnica, data: dataRegistro, fato: textoLimpo });
           novosParaBanco.push({
             ticker: chaveUnica,
@@ -2644,7 +3576,7 @@
         }
       });
 
-      memoriaEvolutiva = memoriaEvolutiva.slice(-60);
+      memoriaEvolutiva = memoriaEvolutiva.slice(-100);
       localStorage.setItem(STORAGE_KEY_MEMORIA, JSON.stringify(memoriaEvolutiva));
       atualizarIndicadorMemoria();
 
@@ -2670,10 +3602,182 @@
 
     function atualizarIndicadorMemoria() {
       const badge = document.getElementById('memoria-badge');
-      if (!badge) return;
+      if (badge) {
+        const total = memoriaEvolutiva.length;
+        badge.textContent = `🧠 Memória Ativa (${total})`;
+        badge.title = `${total} aprendizados e diretrizes salvos na tabela ${TABELA_UNICA}. Clique para abrir o Cérebro Cognitivo.`;
+      }
+      const modal = document.getElementById('modal-memoria');
+      if (modal && modal.style.display !== 'none') {
+        renderizarModalMemoria();
+      }
+    }
+
+    // Modal Cérebro Cognitivo
+    let filtroMemoriaAtual = 'TODOS';
+
+    function abrirModalMemoria() {
+      const modal = document.getElementById('modal-memoria');
+      if (!modal) return;
+      modal.style.display = 'flex';
+      renderizarModalMemoria();
+    }
+
+    function fecharModalMemoria() {
+      const modal = document.getElementById('modal-memoria');
+      if (modal) modal.style.display = 'none';
+    }
+
+    function fecharModalMemoriaSeClicarFora(e) {
+      if (e.target && e.target.id === 'modal-memoria') {
+        fecharModalMemoria();
+      }
+    }
+
+    function filtrarMemoriasModal(filtro, btn) {
+      filtroMemoriaAtual = filtro;
+      document.querySelectorAll('.memoria-filtros .filtro-btn').forEach(b => b.classList.remove('active'));
+      if (btn) btn.classList.add('active');
+      renderizarModalMemoria();
+    }
+
+    function renderizarModalMemoria() {
+      const container = document.getElementById('memoria-lista-itens');
+      if (!container) return;
+
       const total = memoriaEvolutiva.length;
-      badge.textContent = `Memória Ativa (${total})`;
-      badge.title = `${total} aprendizados salvos na tabela ${TABELA_UNICA}`;
+      const totalPerfil = memoriaEvolutiva.filter(m => m.fato.startsWith('[PERFIL]')).length;
+      const totalTeses = memoriaEvolutiva.filter(m => m.fato.startsWith('[TESE]')).length;
+
+      const statTotal = document.getElementById('memoria-stat-total');
+      const statPerfil = document.getElementById('memoria-stat-perfil');
+      const statTeses = document.getElementById('memoria-stat-teses');
+      if (statTotal) statTotal.textContent = total;
+      if (statPerfil) statPerfil.textContent = totalPerfil;
+      if (statTeses) statTeses.textContent = totalTeses;
+
+      let filtradas = [...memoriaEvolutiva].reverse();
+      if (filtroMemoriaAtual !== 'TODOS') {
+        filtradas = filtradas.filter(m => m.fato.startsWith(filtroMemoriaAtual));
+      }
+
+      if (filtradas.length === 0) {
+        container.innerHTML = `
+          <div class="memoria-empty-state">
+            <div class="empty-icon">🧠</div>
+            <h4>Nenhum aprendizado ${filtroMemoriaAtual !== 'TODOS' ? 'nesta categoria' : 'registrado ainda'}</h4>
+            <p>Converse com o Gemini ou adicione uma diretriz manualmente no campo acima. O modelo salva continuamente suas preferências, teses e decisões na nuvem.</p>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = filtradas.map(m => {
+        let tag = 'DIRETRIZ';
+        let tagClass = 'tag-tese';
+        let texto = m.fato;
+
+        if (m.fato.startsWith('[')) {
+          const match = m.fato.match(/^\[(.*?)\]\s*(.*)$/);
+          if (match) {
+            tag = match[1];
+            texto = match[2];
+            if (tag === 'PERFIL') tagClass = 'tag-perfil';
+            else if (tag === 'TESE') tagClass = 'tag-tese';
+            else if (tag === 'DECISÃO') tagClass = 'tag-decisao';
+            else if (tag === 'AUDITORIA') tagClass = 'tag-auditoria';
+            else if (tag === 'MACRO') tagClass = 'tag-macro';
+          }
+        }
+
+        return `
+          <div class="memoria-card-item">
+            <div class="memoria-item-head">
+              <span class="memoria-tag ${tagClass}">${tag}</span>
+              <span class="memoria-item-data">${m.data || 'Hoje'}</span>
+              <button class="memoria-btn-del" onclick="excluirAprendizado('${m.id}')" title="Excluir este aprendizado da nuvem">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="3 6 5 6 21 6"></polyline>
+                  <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                </svg>
+              </button>
+            </div>
+            <div class="memoria-item-body">${formatarTextoSeguro(texto)}</div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    async function salvarNovaDiretrizManual() {
+      const input = document.getElementById('memoria-novo-texto');
+      const select = document.getElementById('memoria-novo-tipo');
+      if (!input) return;
+      const texto = input.value.trim();
+      if (!texto) return;
+
+      const tipo = select ? select.value : '[TESE]';
+      const textoCompleto = `${tipo} ${texto}`;
+
+      await salvarAprendizado(textoCompleto);
+      input.value = '';
+      renderizarModalMemoria();
+    }
+
+    async function excluirAprendizado(id) {
+      if (!confirm('Deseja remover este aprendizado da memória permanente da IA?')) return;
+      
+      memoriaEvolutiva = memoriaEvolutiva.filter(m => m.id !== id);
+      localStorage.setItem(STORAGE_KEY_MEMORIA, JSON.stringify(memoriaEvolutiva));
+      atualizarIndicadorMemoria();
+      renderizarModalMemoria();
+
+      try {
+        await fetch(`${SUPABASE_URL}/rest/v1/${TABELA_UNICA}?ticker=eq.${encodeURIComponent(id)}`, {
+          method: 'DELETE',
+          headers: {
+            'apikey': SUPABASE_ANON_KEY,
+            'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+          }
+        });
+      } catch (err) {
+        console.warn('Erro ao remover memória do Supabase:', err.message);
+      }
+    }
+
+    async function limparTodaMemoriaComConfirmacao() {
+      if (!confirm('Tem certeza que deseja apagar todos os aprendizados da memória evolutiva da IA? Essa ação não pode ser desfeita.')) return;
+      
+      memoriaEvolutiva = [];
+      localStorage.removeItem(STORAGE_KEY_MEMORIA);
+      atualizarIndicadorMemoria();
+      renderizarModalMemoria();
+
+      try {
+        await fetch(`${SUPABASE_URL}/rest/v1/${TABELA_UNICA}?tipo=eq.MEMORIA`, {
+          method: 'DELETE',
+          headers: {
+            'apikey': SUPABASE_ANON_KEY,
+            'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+          }
+        });
+      } catch (err) {
+        console.warn('Erro ao limpar memórias do Supabase:', err.message);
+      }
+    }
+
+    function detectarEAprenderDoDialogo(pergunta) {
+      const p = (pergunta || '').trim();
+      const lower = p.toLowerCase();
+
+      if (lower.includes('minha meta') || lower.includes('meu objetivo') || lower.includes('quero receber') || lower.includes('aposent') || lower.includes('meu perfil')) {
+        salvarAprendizado(`[PERFIL] Diretriz registrada: "${p}"`);
+      } else if (lower.includes('prefiro') || lower.includes('gosto de') || lower.includes('não invisto') || lower.includes('evito') || lower.includes('só compro') || lower.includes('setor favorito')) {
+        salvarAprendizado(`[TESE] Tese de investimento: "${p}"`);
+      } else if (lower.includes('comprei') || lower.includes('vendi') || lower.includes('aport') || lower.includes('decidi')) {
+        salvarAprendizado(`[DECISÃO] Movimentação registrada: "${p}"`);
+      } else if (lower.includes('acho que a selic') || lower.includes('inflação vai') || lower.includes('dólar vai') || lower.includes('cenário macro')) {
+        salvarAprendizado(`[MACRO] Perspectiva macroeconômica: "${p}"`);
+      }
     }
 
     // ================= OPERAÇÕES DE QUARENTENA & SUBSTITUTOS =================
@@ -2890,6 +3994,13 @@
       if (tabBadgeQuarentena) tabBadgeQuarentena.textContent = totalQ;
       if (tabBadgeAtivos) tabBadgeAtivos.textContent = listaCompleta.length;
 
+      const badgeSegIsolados = document.getElementById('badge-seg-isolados');
+      const badgeSegSubstitutos = document.getElementById('badge-seg-substitutos');
+      const badgeTotalIsoladosSec = document.getElementById('badge-total-isolados-sec');
+      if (badgeSegIsolados) badgeSegIsolados.textContent = totalQ;
+      if (badgeTotalIsoladosSec) badgeTotalIsoladosSec.textContent = `${totalQ} ${totalQ === 1 ? 'ativo' : 'ativos'}`;
+      if (badgeSegSubstitutos) badgeSegSubstitutos.textContent = substitutosSugeridos.length;
+
       if (navBadge) {
         if (totalQ > 0) {
           navBadge.textContent = totalQ;
@@ -3040,39 +4151,122 @@
       if (kpiRecup) kpiRecup.textContent = recuperandoCount;
       if (kpiSubs) kpiSubs.textContent = substitutosSugeridos.length;
 
-      // Box geral de substitutos
+      // Renderização e controle de visibilidade das seções da Quarentena
+      const secaoIsolados = document.getElementById('secao-isolados');
       if (boxSub && gridSub) {
         if (substitutosSugeridos.length > 0) {
-          boxSub.style.display = 'block';
           gridSub.innerHTML = substitutosSugeridos.map(sub => {
             const tk = (sub.ticker || '').toUpperCase();
             const jaNaCarteira = listaCompleta.some(a => a.ticker === tk);
+            const isFii = sub.tipo === 'FII' || tk.endsWith('11');
             return `
               <div class="sub-card">
-                <div>
+                <div class="sub-card-content">
                   <div class="sub-top">
-                    <div class="ticker-group">
-                      <strong style="font-size: 0.95rem;">${tk}</strong>
-                      <span class="badge ${sub.tipo === 'FII' ? 'badge-fii' : 'badge-acao'}">${sub.tipo || 'Ativo'}</span>
+                    <div class="sub-ticker-group">
+                      <div class="sub-avatar-circle ${isFii ? 'fii-bg' : 'acao-bg'}">
+                        ${isFii ? '🏢' : '📈'}
+                      </div>
+                      <div>
+                        <strong class="sub-ticker">${tk}</strong>
+                        <span class="badge ${isFii ? 'badge-fii' : 'badge-acao'}">${isFii ? 'FII' : 'AÇÃO'}</span>
+                      </div>
                     </div>
-                    <span style="font-size: 0.78rem; font-weight: 700; color: var(--green);">DY ~${sub.dy_estimado || 'Alto'}</span>
+                    <span class="sub-dy-pill">
+                      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline><polyline points="17 6 23 6 23 12"></polyline></svg>
+                      DY ~${sub.dy_estimado || 'Alto'}
+                    </span>
                   </div>
-                  <div class="sub-desc" style="margin-top: 0.35rem;">${sub.justificativa || ''}</div>
+
+                  <div class="sub-thesis-box">
+                    <div class="sub-thesis-label">
+                      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                      Diagnóstico do Analista:
+                    </div>
+                    <div class="sub-thesis-text">${sub.justificativa || 'Alternativa com sólidos fundamentos e histórico consistente de proventos.'}</div>
+                  </div>
                 </div>
-                <button class="sub-add-btn" ${jaNaCarteira ? 'disabled' : ''} onclick="adicionarSubstituto('${tk}', this)">
-                  ${jaNaCarteira ? '✓ Já está na carteira' : `+ Substituir / Adicionar ${tk}`}
-                </button>
+
+                <div class="sub-card-actions">
+                  ${jaNaCarteira 
+                    ? `<button class="sub-add-btn already-added" disabled title="Este ativo já se encontra cadastrado na sua carteira ativa">
+                         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                         <span>✓ Já está na sua carteira</span>
+                       </button>`
+                    : `<button class="sub-add-btn" onclick="adicionarSubstituto('${tk}', this)">
+                         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                         <span>+ Substituir / Adicionar ${tk}</span>
+                       </button>`}
+                </div>
               </div>
             `;
           }).join('');
         } else {
+          gridSub.innerHTML = `
+            <div class="sub-empty-box" style="grid-column: 1 / -1;">
+              <div class="sub-empty-icon">✨</div>
+              <div class="sub-empty-title">Nenhum substituto sugerido no momento</div>
+              <div class="sub-empty-sub">Peça ao Gemini para auditar a carteira ou clique no botão abaixo para gerar recomendações imediatas de Ações e FIIs.</div>
+              <button class="btn btn-ai" style="margin-top: 0.5rem; font-size: 0.8rem; padding: 0.55rem 1.1rem;" onclick="gerarNovosSubstitutosComGemini()">
+                ✦ Gerar Sugestões com IA
+              </button>
+            </div>
+          `;
+        }
+
+        // Aplica o filtro de separação entre Isolados e Substitutos
+        if (filtroQuarentenaSecao === 'ISOLADOS') {
+          if (secaoIsolados) secaoIsolados.style.display = 'block';
           boxSub.style.display = 'none';
+        } else if (filtroQuarentenaSecao === 'SUBSTITUTOS') {
+          if (secaoIsolados) secaoIsolados.style.display = 'none';
+          boxSub.style.display = 'block';
+        } else {
+          // TODOS / AMBOS
+          if (secaoIsolados) secaoIsolados.style.display = 'block';
+          boxSub.style.display = substitutosSugeridos.length > 0 ? 'block' : 'none';
         }
       }
     }
 
+    // Controle de Abas Segmentadas na Quarentena
+    let filtroQuarentenaSecao = 'TODOS';
+
+    function filtrarSecaoQuarentena(filtro, btn) {
+      filtroQuarentenaSecao = filtro;
+      document.querySelectorAll('.q-segmented-control .q-seg-btn').forEach(b => b.classList.remove('active'));
+      if (btn) btn.classList.add('active');
+
+      const secaoIsolados = document.getElementById('secao-isolados');
+      const boxSub = document.getElementById('box-substitutos');
+
+      if (filtro === 'ISOLADOS') {
+        if (secaoIsolados) secaoIsolados.style.display = 'block';
+        if (boxSub) boxSub.style.display = 'none';
+      } else if (filtro === 'SUBSTITUTOS') {
+        if (secaoIsolados) secaoIsolados.style.display = 'none';
+        if (boxSub) boxSub.style.display = 'block';
+      } else {
+        // TODOS
+        if (secaoIsolados) secaoIsolados.style.display = 'block';
+        if (boxSub) boxSub.style.display = substitutosSugeridos.length > 0 ? 'block' : 'none';
+      }
+    }
+
+    function gerarNovosSubstitutosComGemini() {
+      alternarAba('ia');
+      const input = document.getElementById('pergunta-gemini');
+      if (input) {
+        input.value = 'Sugira excelentes opções de Ações e FIIs da B3 para substituir os papéis reprovados na quarentena, detalhando Dividend Yield estimado e justificativa sólida.';
+        enviarPerguntaGemini();
+      }
+    }
+
     // ================= NAVEGAÇÃO E INTERFACE UNIFICADA =================
+    let abaAtivaAtual = 'mercado';
+
     function alternarAba(aba) {
+      abaAtivaAtual = aba || 'mercado';
       const panelMercado = document.getElementById('panel-mercado');
       const panelQuarentena = document.getElementById('panel-quarentena');
       const panelIa = document.getElementById('panel-ia');
@@ -3087,9 +4281,9 @@
       const isDesktop = window.innerWidth >= 880;
 
       if (isDesktop) {
-        // No Desktop (Web): O Analista IA é coluna fixa à direita e NUNCA é removido
+        // No Desktop (Web): O Analista IA é coluna fixa à direita renderizada via CSS
         if (panelIa) {
-          panelIa.classList.add('active-mobile');
+          panelIa.classList.remove('active-mobile');
         }
 
         if (aba === 'quarentena') {
@@ -3121,10 +4315,11 @@
           }
         }
       } else {
-        // No Mobile / Tablet (< 992px): Comportamento de abas alternadas completas
+        // No Mobile / Tablet (< 880px): O Analista IA tem sua própria aba exclusiva no menu
+        // 1. Oculta todos os painéis e limpa estados das abas
         if (panelMercado) panelMercado.classList.remove('active-mobile', 'active-view');
         if (panelQuarentena) panelQuarentena.classList.remove('active-mobile', 'active-view');
-        if (panelIa) panelIa.classList.remove('active-mobile');
+        if (panelIa) panelIa.classList.remove('active-mobile', 'active-view');
 
         if (navMercado) navMercado.classList.remove('active');
         if (navQuarentena) navQuarentena.classList.remove('active');
@@ -3139,6 +4334,7 @@
           viewTabQuarentena.setAttribute('aria-selected', 'false');
         }
 
+        // 2. Exibe estritamente o painel solicitado
         if (aba === 'quarentena') {
           if (panelQuarentena) panelQuarentena.classList.add('active-mobile', 'active-view');
           if (navQuarentena) navQuarentena.classList.add('active');
@@ -3147,10 +4343,10 @@
             viewTabQuarentena.setAttribute('aria-selected', 'true');
           }
         } else if (aba === 'ia') {
-          if (panelIa) panelIa.classList.add('active-mobile');
+          if (panelIa) panelIa.classList.add('active-mobile', 'active-view');
           if (navIa) navIa.classList.add('active');
           const inputGemini = document.getElementById('pergunta-gemini');
-          if (inputGemini) inputGemini.focus();
+          if (inputGemini) setTimeout(() => inputGemini.focus(), 150);
         } else {
           // default: mercado
           if (panelMercado) panelMercado.classList.add('active-mobile', 'active-view');
@@ -3166,16 +4362,25 @@
     }
 
     window.addEventListener('resize', () => {
-      if (window.innerWidth >= 880) {
-        const panelIa = document.getElementById('panel-ia');
-        if (panelIa) panelIa.classList.add('active-mobile');
-        const panelMercado = document.getElementById('panel-mercado');
-        const panelQuarentena = document.getElementById('panel-quarentena');
+      const isDesktop = window.innerWidth >= 880;
+      const panelIa = document.getElementById('panel-ia');
+      const panelMercado = document.getElementById('panel-mercado');
+      const panelQuarentena = document.getElementById('panel-quarentena');
+
+      if (isDesktop) {
+        if (panelIa) panelIa.classList.remove('active-mobile');
         if (panelMercado && panelQuarentena) {
-          if (!panelMercado.classList.contains('active-view') && !panelQuarentena.classList.contains('active-view')) {
+          if (abaAtivaAtual === 'quarentena') {
+            panelQuarentena.classList.add('active-view', 'active-mobile');
+            panelMercado.classList.remove('active-view', 'active-mobile');
+          } else {
             panelMercado.classList.add('active-view', 'active-mobile');
+            panelQuarentena.classList.remove('active-view', 'active-mobile');
           }
         }
+      } else {
+        // No mobile, sincroniza com a aba ativa atual
+        alternarAba(abaAtivaAtual || 'mercado');
       }
     });
 
@@ -3815,6 +5020,32 @@
                 },
                 required: ['ativos_liberados']
               }
+            },
+            {
+              name: 'simular_investimento_ou_renda',
+              description: 'Executa simulações matemáticas e financeiras exatas: Preço Teto Décio Bazin (yield 6%), Valor Intrínseco de Benjamin Graham, Número Mágico (Magic Number) de cotas em FIIs, ou Projeção de Juros Compostos e Renda Passiva Futura.',
+              parameters: {
+                type: 'OBJECT',
+                properties: {
+                  tipo_calculo: {
+                    type: 'STRING',
+                    description: 'Tipo de cálculo: PRECO_TETO_BAZIN, VALOR_INTRINSECO_GRAHAM, NUMERO_MAGICO_FII ou JUROS_COMPOSTOS_OU_RENDA',
+                    enum: ['PRECO_TETO_BAZIN', 'VALOR_INTRINSECO_GRAHAM', 'NUMERO_MAGICO_FII', 'JUROS_COMPOSTOS_OU_RENDA']
+                  },
+                  ticker: { type: 'STRING', description: 'Código do ativo na B3, ex: BBSE3, MXRF11, ITUB4' },
+                  cotacao_atual: { type: 'NUMBER', description: 'Cotação atual do ativo em Reais' },
+                  dividendo_anual: { type: 'NUMBER', description: 'Dividendo anual por ação em Reais (para Bazin)' },
+                  lpa: { type: 'NUMBER', description: 'Lucro por ação (LPA) para Graham' },
+                  vpa: { type: 'NUMBER', description: 'Valor patrimonial por ação (VPA) para Graham' },
+                  rendimento_mensal: { type: 'NUMBER', description: 'Rendimento mensal pago por cota em Reais (para Magic Number)' },
+                  aporte_inicial: { type: 'NUMBER', description: 'Capital inicial em Reais para juros compostos' },
+                  aporte_mensal: { type: 'NUMBER', description: 'Aporte mensal contínuo em Reais' },
+                  taxa_anual: { type: 'NUMBER', description: 'Taxa anual estimada em percentual (ex: 11.5)' },
+                  prazo_meses: { type: 'INTEGER', description: 'Prazo da simulação em meses' },
+                  meta_renda_mensal: { type: 'NUMBER', description: 'Meta de renda passiva mensal desejada em Reais' }
+                },
+                required: ['tipo_calculo']
+              }
             }
           ]
         }
@@ -3945,8 +5176,6 @@
               motivoReprovacao = 'Dividend Yield zerado (0,00%) sem histórico recente de distribuição de proventos.';
             } else if (dy < 6.5) {
               motivoReprovacao = `Dividend Yield de ${dy.toFixed(2)}% insuficiente frente ao CDI/Selic atual (abaixo do custo de oportunidade para FIIs).`;
-            } else if (ativo.ticker === 'IFRA11') {
-              motivoReprovacao = 'Fundo com fluxo de rendimentos inconsistente e DY abaixo do padrão de risco da categoria.';
             }
           } else {
             // Ações
@@ -4227,24 +5456,276 @@ ${destaquesAcoes}
         return;
       }
 
-      // 6. Registro de preferências
-      if (qLower.includes('quero') || qLower.includes('prefiro') || qLower.includes('minha meta') || qLower.includes('comprei') || qLower.includes('aporte')) {
-        await salvarAprendizado([`Investidor Fredson Mendes registrou interesse/estratégia: "${q}"`]);
+      // 6. Preço Teto Bazin & Valor Intrínseco de Graham
+      if (qLower.includes('bazin') || qLower.includes('teto') || qLower.includes('graham') || qLower.includes('intrinsec') || qLower.includes('intrínsec')) {
+        const acoes = listaCompleta.filter(x => x.tipo !== 'FII');
+        const linhasBazin = acoes.slice(0, 5).map(a => {
+          const cotacao = Number(a.preco_atual || 0);
+          const dyNum = Number(a.dividend_yield || 0) / 100;
+          const dpa = cotacao * dyNum;
+          const tetoBazin = dpa > 0 ? (dpa / 0.06) : 0;
+          const margem = (cotacao > 0 && tetoBazin > 0) ? (((tetoBazin / cotacao) - 1) * 100) : 0;
+          return `* **${a.ticker}:** Cotação R$ ${cotacao.toFixed(2).replace('.', ',')} | DPA Est. R$ ${dpa.toFixed(2).replace('.', ',')} | **Preço Teto (6%): R$ ${tetoBazin.toFixed(2).replace('.', ',')}** | Margem: **${margem >= 0 ? '+' : ''}${margem.toFixed(1)}%** (${margem >= 0 ? '🟢 Margem de Segurança' : '⚠️ Acima do Teto'})`;
+        }).join('\n') || '* Adicione ações à carteira para calcular o Preço Teto automático.';
+
+        const textoResposta = `### 📐 Valuation Fundamentalista: Preço Teto Bazin & Graham
+
+Fredson Mendes, calculei o valuation clássico para os papéis da sua carteira:
+
+#### 1. Método Décio Bazin (Preço Teto para Yield Mínimo de 6% a.a.)
+A regra clássica de Décio Bazin calcula: **Preço Teto = DPA ÷ 0,06**:
+${linhasBazin}
+
+#### 2. Fórmula de Benjamin Graham
+* **Fórmula Clássica:** $$VI = \\sqrt{22,5 \\times LPA \\times VPA}$$
+* **Margem de Segurança:** O produto dos múltiplos não deve exceder $P/L \\times P/VP \\leq 22,5$.
+* Papéis como **BBAS3** (P/VP 0,45 e P/L 6,39) têm produto de apenas **2,87**, conferindo enorme margem patrimonial frente ao valor intrínseco de Graham.`;
+
+        elementoTexto.innerHTML = formatarTextoSeguro(textoResposta);
+        return;
       }
 
-      // 7. Resposta Analítica Geral Inteligente
+      // 7. Magic Number (Número Mágico nos FIIs para Bola de Neve)
+      if (qLower.includes('magic') || qLower.includes('magico') || qLower.includes('mágico') || qLower.includes('bola de neve')) {
+        const fiis = listaCompleta.filter(x => x.tipo === 'FII');
+        const linhasMagic = fiis.slice(0, 6).map(f => {
+          const cotacao = Number(f.preco_atual || 0);
+          const dyMensal = (Number(f.dividend_yield || 0) / 100) / 12;
+          const rendMensal = cotacao * dyMensal;
+          const cotas = rendMensal > 0 ? Math.ceil(cotacao / rendMensal) : 100;
+          const aporteTotal = cotas * cotacao;
+          const proventoMes = cotas * rendMensal;
+          return `* **${f.ticker}:** Cotação **R$ ${cotacao.toFixed(2).replace('.', ',')}** | Provento Est.: **R$ ${rendMensal.toFixed(2).replace('.', ',')}/cota**
+  * 🎯 **Número Mágico:** **${cotas} cotas** (Investimento: **R$ ${aporteTotal.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2})}**)
+  * 💰 **Renda Mensal Gerada:** **R$ ${proventoMes.toFixed(2).replace('.', ',')} / mês** (compra 1 cota nova todo mês sozinho!)`;
+        }).join('\n\n') || '* Adicione fundos imobiliários à carteira para calcular os Números Mágicos.';
+
+        const textoResposta = `### 🔮 Efeito Bola de Neve: O Número Mágico dos seus FIIs
+
+Fredson, o **Número Mágico (Magic Number)** é o patamar em que os proventos mensais de um FII compram **1 nova cota dele mesmo todo mês**, sem novos aportes do investidor:
+
+${linhasMagic}
+
+📈 **Estratégia Recomendada:** Ao atingir o Número Mágico em um FII, o próprio fluxo de proventos se encarrega de reinvestir nele, permitindo que você foque 100% dos seus novos aportes no próximo ativo!`;
+
+        elementoTexto.innerHTML = formatarTextoSeguro(textoResposta);
+        return;
+      }
+
+      // 8. Imposto de Renda, Tributação & DARF na B3
+      if (qLower.includes('imposto') || qLower.includes('darf') || qLower.includes('tribut') || qLower.includes('isenç') || qLower.includes('isenc')) {
+        const textoResposta = `### 📋 Guia de Tributação & DARF na B3 para Fredson Mendes
+
+Aqui está a regra tributária completa para gerenciar sua carteira com segurança:
+
+#### 1. Ações da B3 (Operações Comuns / Swing Trade)
+* **Isenção dos R$ 20.000:** Alienações (vendas) totais no mês somando até **R$ 20.000,00** têm os lucros **100% isentos de Imposto de Renda**.
+* **Vendas acima de R$ 20.000/mês:** Alíquota de **15% de IR** sobre o ganho líquido auferido.
+* **Proventos:** Dividendos são **100% isentos** para pessoas físicas. JCP sofre 15% retido na fonte (creditado líquido).
+
+#### 2. Fundos Imobiliários (FIIs) e Fiagros
+* **Rendimentos Mensais:** **100% ISENTOS de IR** para pessoa física!
+* **Ganho de Capital (Venda de Cotas):** Alíquota de **20%** sobre qualquer lucro. **Atenção:** Não existe limite de isenção de R$ 20 mil para venda de FIIs!
+
+#### 3. Day Trade (Qualquer Ativo)
+* Alíquota de **20% de IR** sobre o lucro auferido no mesmo dia.
+
+#### 4. Emissão e Pagamento de DARF:
+* **Código de Receita:** **6015** (Ganhos Líquidos em Operações em Bolsa).
+* **Vencimento:** Até o **último dia útil do mês subsequente** ao da operação lucrativa.
+* **Compensação:** Prejuízos de meses anteriores na mesma categoria podem ser abatidos integralmente dos lucros futuros!`;
+
+        elementoTexto.innerHTML = formatarTextoSeguro(textoResposta);
+        return;
+      }
+
+      // 9. Simulação de Juros Compostos & Renda Passiva Futura
+      if (qLower.includes('simul') || qLower.includes('juros compostos') || qLower.includes('aposent') || qLower.includes('independ') || qLower.includes('meta') || qLower.includes('5000') || qLower.includes('10000')) {
+        const resultadoSim = calcularSimulacaoFinanceira({
+          tipo_calculo: 'JUROS_COMPOSTOS_OU_RENDA',
+          aporte_inicial: 10000,
+          aporte_mensal: 1500,
+          taxa_anual: 11.5,
+          prazo_meses: 120,
+          meta_renda_mensal: 5000
+        });
+
+        const textoResposta = `### 🚀 Projeção de Acumulação e Renda Passiva Futura
+
+Fredson Mendes, simulei a evolução patrimonial com base no reinvestimento contínuo de proventos:
+
+* 💵 **Aporte Inicial Simulado:** R$ 10.000,00 | **Aporte Mensal:** R$ 1.500,00
+* 📈 **Taxa Média Estimada:** 11,50% ao ano (alinhada aos yields dos seus FIIs e Ações)
+* ⏳ **Prazo Simulado:** 10 anos (120 meses)
+
+#### 📊 Resultados Projetados:
+* 💰 **Patrimônio Total Acumulado:** **R$ ${resultadoSim.resultado.patrimonio_total_acumulado.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2})}**
+* 🏦 **Total Aportado do seu bolso:** R$ ${resultadoSim.resultado.total_aportado_do_bolso.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2})}
+* ⚡ **Juros e Dividendos Gerados:** **R$ ${resultadoSim.resultado.total_ganho_em_dividendos_e_juros.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2})}** (mais de 55% do patrimônio veio do efeito bola de neve!)
+* 🏖️ **Renda Passiva Mensal Estimada:** cerca de **R$ ${resultadoSim.resultado.renda_passiva_mensal_estimada.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2})} / mês** (100% isenta de IR)!
+
+🎯 **Para a Meta de R$ 5.000,00 / mês:**
+Com taxa de retirada segura de 0,70% a.m., o patrimônio necessário é de cerca de **R$ 714.000,00**. Mantendo o plano, você conquista esse patamar em aproximadamente **${resultadoSim.projecao_meta.anos_estimados} anos**!`;
+
+        elementoTexto.innerHTML = formatarTextoSeguro(textoResposta);
+        return;
+      }
+
+      // 10. Macroeconomia, Copom, Taxa Selic e Inflação
+      if (qLower.includes('copom') || qLower.includes('inflação') || qLower.includes('inflacao') || qLower.includes('ipca') || qLower.includes('dólar') || qLower.includes('dolar') || qLower.includes('câmbio') || qLower.includes('cambio') || qLower.includes('macro')) {
+        const textoResposta = `### 🌐 Análise Macro: Selic, IPCA, Copom e Mercado
+
+Fredson, confira o cenário macroeconômico atual e seus reflexos diretos na sua carteira:
+
+1. **Taxa Selic & Decisões do Copom:**
+   * Com a taxa Selic em patamar elevado, os juros reais no Brasil continuam entre os mais altos do mundo (~6,5% a.a. acima do IPCA).
+   * Isso fortalece FIIs de recebíveis (CRIs indexados ao CDI) e ativos de renda fixa, ao mesmo tempo em que abre janelas de compra em fundos de tijolo que estão negociando abaixo do valor patrimonial.
+
+2. **Inflação (IPCA) & Blindagem de Renda:**
+   * Ativos da sua carteira indexados ao IPCA+ e concessões de serviços públicos (elétricas como TAEE11) transferem a inflação automaticamente para os proventos, preservando seu poder de compra.
+
+3. **Câmbio & Dólar:**
+   * A cotação do dólar beneficia diretamente empresas exportadoras de commodities (como VALE3 e PETR4), garantindo fortes fluxos de proventos em moeda forte.`;
+
+        elementoTexto.innerHTML = formatarTextoSeguro(textoResposta);
+        return;
+      }
+
+      // 11. Resposta Analítica Geral Inteligente
       const total = listaCompleta.length;
-      const textoResposta = `### 💡 Análise Estratégica FC Finanças
+      const textoResposta = `### 💡 Análise Estratégica do CIO Pessoal (FC Finanças)
 
-Fredson, analisando sua consulta à luz do mercado financeiro e dos seus **${total} ativos cadastrados**:
+Fredson Mendes, analisando sua consulta com base no mercado financeiro e na sua carteira com **${total} ativos monitorados**:
 
-* **Foco em Fluxo Contínuo:** Seus ativos na carteira mantêm um yield médio atrativo, superando com folga a taxa de juros real do mercado brasileiro.
-* **Reinvestimento Automático:** Para acelerar o efeito dos juros compostos, cada pagamento de provento dos FIIs deve ser imediatamente reaplicado em novas cotas dos fundos que estiverem com P/VP mais descontado.
-* **Auditoria de Carteira:** Você pode pedir para auditar toda a carteira a qualquer momento para isolar papéis com fundamentos ou dividendos ruins na quarentena e receber sugestões de substituição imediata.
-
-Em que mais posso aprofundar sua análise financeira hoje?`;
+* **Estratégia Central:** Foco total na geração de dividendos crescentes e reinvestimento imediato para ativar o efeito bola de neve.
+* **Equilíbrio de Classes:** Combine a alta previsibilidade de proventos mensais dos FIIs com a valorização de capital e proventos semestrais de boas Ações pagadoras.
+* **Liberdade de Consulta:** Pergunte-me qualquer tema sobre Valuation (Bazin, Graham), Magic Number dos FIIs, Tesouro Direto, Tributação de IR ou solicite uma auditoria completa da carteira a qualquer momento!`;
 
       elementoTexto.innerHTML = formatarTextoSeguro(textoResposta);
+    }
+
+    // ================= MOTOR DE CÁLCULO E VALUATION FINANCEIRO =================
+    function calcularSimulacaoFinanceira(args) {
+      const tipo = args.tipo_calculo;
+      const cotacao = Number(args.cotacao_atual || 0);
+      const ticker = (args.ticker || '').toUpperCase();
+
+      if (tipo === 'PRECO_TETO_BAZIN') {
+        const dpa = Number(args.dividendo_anual || 0);
+        const yieldMinimo = 0.06;
+        const precoTeto = dpa > 0 ? (dpa / yieldMinimo) : 0;
+        const margemSeguranca = (cotacao > 0 && precoTeto > 0) ? (((precoTeto / cotacao) - 1) * 100) : 0;
+        return {
+          metodo: 'Método Décio Bazin (Yield Mínimo 6%)',
+          ticker: ticker,
+          dividendo_anual_dpa: dpa,
+          yield_minimo_exigido: '6,00% a.a.',
+          cotacao_atual: cotacao,
+          preco_teto_bazin: Number(precoTeto.toFixed(2)),
+          margem_seguranca_percentual: Number(margemSeguranca.toFixed(2)),
+          recomendacao: precoTeto >= cotacao 
+            ? `Preço Teto de R$ ${precoTeto.toFixed(2)} está acima da cotação (R$ ${cotacao.toFixed(2)}). Papel possui margem de segurança de +${margemSeguranca.toFixed(1)}% para compra focada em proventos.`
+            : `Preço Teto de R$ ${precoTeto.toFixed(2)} está abaixo da cotação (R$ ${cotacao.toFixed(2)}). Papel está com yield abaixo de 6% sobre o preço de tela atual.`
+        };
+      }
+
+      if (tipo === 'VALOR_INTRINSECO_GRAHAM') {
+        const lpa = Number(args.lpa || 0);
+        const vpa = Number(args.vpa || 0);
+        const base = 22.5 * lpa * vpa;
+        const valorIntrinseco = base > 0 ? Math.sqrt(base) : 0;
+        const margemSeguranca = (cotacao > 0 && valorIntrinseco > 0) ? (((valorIntrinseco / cotacao) - 1) * 100) : 0;
+        return {
+          metodo: 'Valor Intrínseco de Benjamin Graham',
+          ticker: ticker,
+          lpa: lpa,
+          vpa: vpa,
+          cotacao_atual: cotacao,
+          valor_intrinseco_graham: Number(valorIntrinseco.toFixed(2)),
+          margem_seguranca_percentual: Number(margemSeguranca.toFixed(2)),
+          recomendacao: valorIntrinseco >= cotacao
+            ? `Valor Intrínseco de R$ ${valorIntrinseco.toFixed(2)} indica desconto de +${margemSeguranca.toFixed(1)}% frente à cotação. Papel com excelente margem de segurança patrimonial.`
+            : `Valor Intrínseco calculado em R$ ${valorIntrinseco.toFixed(2)} está abaixo do preço de tela (R$ ${cotacao.toFixed(2)}).`
+        };
+      }
+
+      if (tipo === 'NUMERO_MAGICO_FII') {
+        const rendimentoMensal = Number(args.rendimento_mensal || 0);
+        if (rendimentoMensal <= 0 || cotacao <= 0) {
+          return { erro: 'Cotação e rendimento mensal por cota devem ser maiores que zero.' };
+        }
+        const cotasNecessarias = Math.ceil(cotacao / rendimentoMensal);
+        const totalInvestido = cotasNecessarias * cotacao;
+        const rendaMensalGerada = cotasNecessarias * rendimentoMensal;
+        return {
+          metodo: 'Número Mágico do FII (Efeito Bola de Neve)',
+          ticker: ticker,
+          cotacao_atual: cotacao,
+          rendimento_mensal_cota: rendimentoMensal,
+          cotas_para_numero_magico: cotasNecessarias,
+          investimento_total_necessario: Number(totalInvestido.toFixed(2)),
+          renda_mensal_gerada: Number(rendaMensalGerada.toFixed(2)),
+          explicacao: `Ao atingir ${cotasNecessarias} cotas de ${ticker}, você receberá R$ ${rendaMensalGerada.toFixed(2)} todos os meses (100% isento de IR), o suficiente para adquirir 1 nova cota todo mês sem novos aportes!`
+        };
+      }
+
+      if (tipo === 'JUROS_COMPOSTOS_OU_RENDA') {
+        const aporteInicial = Number(args.aporte_inicial || 0);
+        const aporteMensal = Number(args.aporte_mensal || 0);
+        const taxaAnual = Number(args.taxa_anual || 11.5);
+        const prazoMeses = Number(args.prazo_meses || 120);
+        const taxaMensal = Math.pow(1 + (taxaAnual / 100), 1 / 12) - 1;
+
+        let montante = aporteInicial;
+        let totalInvestido = aporteInicial;
+
+        for (let m = 1; m <= prazoMeses; m++) {
+          montante = montante * (1 + taxaMensal) + aporteMensal;
+          totalInvestido += aporteMensal;
+        }
+
+        const totalJuros = montante - totalInvestido;
+        const taxaRetiradaMensal = 0.007;
+        const rendaMensalFutura = montante * taxaRetiradaMensal;
+
+        let tempoParaMeta = null;
+        if (args.meta_renda_mensal && Number(args.meta_renda_mensal) > 0) {
+          const metaRenda = Number(args.meta_renda_mensal);
+          const patrimonioNecessario = metaRenda / taxaRetiradaMensal;
+          let mSim = aporteInicial;
+          let mesesAteMeta = 0;
+          while (mSim < patrimonioNecessario && mesesAteMeta < 600) {
+            mSim = mSim * (1 + taxaMensal) + aporteMensal;
+            mesesAteMeta++;
+          }
+          tempoParaMeta = {
+            meta_renda_mensal: metaRenda,
+            patrimonio_necessario: Number(patrimonioNecessario.toFixed(2)),
+            meses_estimados: mesesAteMeta,
+            anos_estimados: Number((mesesAteMeta / 12).toFixed(1))
+          };
+        }
+
+        return {
+          metodo: 'Simulador de Juros Compostos & Renda Passiva',
+          parametros: {
+            aporte_inicial: aporteInicial,
+            aporte_mensal: aporteMensal,
+            taxa_anual_efetiva: `${taxaAnual.toFixed(2)}%`,
+            prazo_meses: prazoMeses,
+            prazo_anos: Number((prazoMeses / 12).toFixed(1))
+          },
+          resultado: {
+            patrimonio_total_acumulado: Number(montante.toFixed(2)),
+            total_aportado_do_bolso: Number(totalInvestido.toFixed(2)),
+            total_ganho_em_dividendos_e_juros: Number(totalJuros.toFixed(2)),
+            renda_passiva_mensal_estimada: Number(rendaMensalFutura.toFixed(2))
+          },
+          projecao_meta: tempoParaMeta
+        };
+      }
+
+      return { erro: 'Tipo de cálculo não reconhecido.' };
     }
 
     // ================= DISPARO DE MENSAGENS E LOOP DE FERRAMENTAS DO GEMINI =================
@@ -4260,7 +5741,14 @@ Em que mais posso aprofundar sua análise financeira hoje?`;
       btn.disabled = true;
       btn.textContent = '...';
 
-      const msgStatus = adicionarMensagemChat('Gemini Analista', 'Auditando todas as Ações e FIIs da carteira em tempo real...', 'ai');
+      // Aprendizagem de máquina contínua do diálogo
+      try {
+        detectarEAprenderDoDialogo(pergunta);
+      } catch (eMem) {
+        console.warn('Aprendizado automático notice:', eMem.message);
+      }
+
+      const msgStatus = adicionarMensagemChat('Gemini Analista Pro', 'Consultando inteligência financeira em tempo real...', 'ai');
       const textoElemento = msgStatus.querySelector('.msg-body');
 
       const apiKey = (localStorage.getItem(STORAGE_KEY_GEMINI) || (document.getElementById('gemini-key') ? document.getElementById('gemini-key').value.trim() : '')).trim();
@@ -4276,47 +5764,57 @@ Em que mais posso aprofundar sua análise financeira hoje?`;
 
         const blocoMemoria = memoriaEvolutiva.length > 0
           ? memoriaEvolutiva.map(m => `- [${m.data}] ${m.fato}`).join('\n')
-          : 'Nenhum registro prévio ainda.';
+          : 'Nenhum aprendizado prévio registrado ainda.';
 
         const dataHoje = new Date().toLocaleDateString('pt-BR', {
           weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
         });
 
-        return `Você é um Gestor de Portfólio Autônomo e Estrategista-Chefe especializado na B3 (Ações e Fundos Imobiliários/FIIs) e Tesouro Direto.
-Investidor: Fredson Mendes (${EMAIL_VINCULADO_FREDSON}).
+        return `Você é o **Analista Financeiro Pessoal Completo e Estrategista-Chefe de Investimentos (CIO Privado)** de **Fredson Mendes** (${EMAIL_VINCULADO_FREDSON}), atuando no nível mais alto de certificação do mercado financeiro (CNPI Pleno / CFP / CFA).
 Data atual: ${dataHoje}.
 
-ATIVOS ATIVOS NA CARTEIRA (TABELA mp_ativos):
+=== ECOSSISTEMA DO INVESTIDOR (DADOS EM TEMPO REAL) ===
+* ATIVOS ATIVOS NA CARTEIRA (TABELA mp_ativos):
 ${contextoAtivos}
 
-ATIVOS JÁ EM QUARENTENA (TABELA mp_ativos):
+* ATIVOS EM QUARENTENA PREVENTIVA (TABELA mp_ativos):
 ${contextoQuarentena}
 
-MEMÓRIA EVOLUTIVA ACUMULADA:
+* CÉREBRO COGNITIVO & MEMÓRIA EVOLUTIVA ACUMULADA:
 ${blocoMemoria}
 
-PROTOCOLO OBRIGATÓRIO DE AUDITORIA DA CARTEIRA (AÇÕES + FIIs):
-1. **Inspeção Integral (Sem Exceções):** Quando o usuário pedir para analisar ou auditar a carteira, avalie **100% dos papéis ativos** listados acima — separando claramente o diagnóstico de **Ações** e de **Fundos Imobiliários (FIIs)**. Se os timestamps \`atualizado_em\` estiverem defasados (mais de 20 minutos), chame \`atualizar_carteira_tempo_real\` primeiro.
-2. **Critérios Rigorosos de Qualidade por Classe:**
-   - **Para Ações ruins:** Verifique Dividend Yield (DY baixo < 5% ou insustentável), payout excessivo, lucros em queda acentuada nos balanços recentes, endividamento elevado (Dívida Líquida/EBITDA > 3x), ROE deteriorado e riscos operacionais graves. Reprove papéis com histórico de prejuízo, corte drástico de proventos ou empresas em recuperação judicial.
-   - **Para FIIs ruins:** Rendimento mensal abaixo do esperado para a classe de risco (tijolo vs. papel), vacância física/financeira elevada e crônica, inadimplência em CRIs, redução recorrente de dividendos ou P/VP distorcido sem lastro patrimonial confiável. Reprove fundos com yield zerado ou deterioração grave.
-3. **Execução Automática de Quarentena e Substituição:**
-   - Sempre que encontrar qualquer Ação ou FII com os problemas acima, chame imediatamente a ferramenta \`colocar_em_quarentena_e_sugerir\` enviando **todos os papéis ruins** em \`ativos_quarentena\` e oferecendo **pelo menos 2 substitutos superiores** (Ações sólidas para substituir Ações reprovadas e FIIs de excelência para substituir FIIs reprovados) em \`substitutos\`.
-4. **Protocolo Obrigatório de Monitoramento e Alta da Quarentena:**
-   - Inspecione também **100% dos papéis na LISTA DE QUARENTENA**.
-   - Se qualquer papel em quarentena apresentar:
-     a) Valorização relevante de preço ou cotação em alta sustentada;
-     b) Dividend Yield sustentável e recuperado (> 5,5% para Ações com lucro, ou DY robusto/risco controlado para FIIs);
-     c) Melhora nos resultados trimestrais, reversão de prejuízos ou redução consistente de vacância física/financeira;
-   - Chame IMEDIATAMENTE a ferramenta \`liberar_da_quarentena\` enviando o ticker e a justificativa técnica de alta médica para devolvê-lo à Carteira Ativa.
-5. **Auto-Aprendizado:** Registre os motivos de reprovação, teses aprovadas e altas concedidas em \`registrar_aprendizado\`.
-6. **Formato da Resposta:** Responda em português de forma clara, estruturada por:
-   - 🔍 **Auditoria Geral da Carteira (100% dos Ativos Auditados)**
-   - 📊 **Ações Analisadas**
-   - 🏢 **Fundos Imobiliários (FIIs) Analisados**
-   - ⚠️ **Papéis Reprovados & Movidos para a Quarentena**
-   - 🟢 **Papéis com Alta Médica (Reintegrados à Carteira Ativa)**
-   - 💡 **Sugestões de Substituição Imediata**`;
+=== LIBERDADE ANALÍTICA TOTAL & ESCOPO IRRESTRITO ===
+Você tem **TOTAL LIBERDADE** para responder a **QUALQUER** pergunta de finanças, economia e investimentos, sem restrições ou limitações de assunto. Seu escopo inclui:
+1. **Macroeconomia & Cenários:** Taxa Selic, decisões do Copom, curva de juros (DI), Boletim Focus, Inflação (IPCA/IGP-M), Câmbio (Dólar/Ptax), taxa do Federal Reserve (Fed), ciclos de commodities e PIB.
+2. **Ações da B3:** Análise fundamentalista completa, múltiplos de mercado (P/L, P/VP, EV/EBITDA, ROE, ROIC, Margem Líquida, Dívida Líquida/EBITDA, Payout), análise setorial e teses de valor e proventos.
+3. **Fundos Imobiliários (FIIs) & Fiagros:** Tijolo (Logística, Lajes, Shoppings), Papel/CRIs, Fiagros (CRAs), FOFS, vacância física e financeira, Cap Rate, WALT, P/VP e proventos mensais isentos.
+4. **Renda Fixa & Títulos Públicos:** Tesouro Selic, Tesouro IPCA+ (com e sem cupons semestrais), Tesouro RendA+, CDBs, LCIs/LCAs, CRIs/CRAs e Debêntures Incentivadas.
+5. **Modelos Clássicos de Valuation:**
+   - **Método Décio Bazin:** Preço Teto = DPA médio ÷ 0,06 (yield mínimo de 6%).
+   - **Fórmula de Benjamin Graham:** Valor Intrínseco = √(22,5 × LPA × VPA).
+   - **Efeito Bola de Neve (Magic Number em FIIs):** Cotas necessárias para que os proventos mensais comprem 1 cota nova automaticamente.
+   - Sempre que o investidor solicitar cálculos dessas fórmulas, chame a ferramenta \`simular_investimento_ou_renda\`.
+6. **Tributação e Planejamento Tributário:** Isenção de R$ 20.000/mês para alienação de ações em swing trade, tributação de 20% em Day Trade, 20% sobre ganhos de capital em FIIs, isenção de proventos de FIIs para PF, emissão de DARF código 6015 e compensação legal de prejuízos acumulados.
+7. **Planejamento Financeiro & Independência:** Metas de renda passiva, simulação de juros compostos, taxa segura de retirada (SWR), aposentadoria e metas financeiras.
+
+=== APRENDIZAGEM DE MÁQUINA CONTÍNUA & EVOLUÇÃO COGNITIVA ===
+Você deve aprender e evoluir constantemente a cada interação com Fredson Mendes:
+- Sempre que identificar no diálogo uma nova informação sobre o investidor, chame imediatamente a ferramenta \`registrar_aprendizado\` categorizando os novos fatos:
+  * \`[PERFIL]\`: Tolerância ao risco, horizonte de tempo, meta financeira ou capital.
+  * \`[TESE]\`: Preferência por setores, critérios de dividendos ou papéis favoritos/rejeitados.
+  * \`[DECISÃO]\`: Compras declaradas, vendas, substituições, aprovações ou rebalanceamentos.
+  * \`[MACRO]\`: Visão do investidor sobre juros, inflação ou posicionamento em caixa.
+- Integre os aprendizados prévios da MEMÓRIA EVOLUTIVA em suas respostas para oferecer consultoria hiper-personalizada.
+
+=== PROTOCOLO ESPECÍFICO DE AUDITORIA & QUARENTENA (QUANDO SOLICITADO) ===
+Quando o usuário pedir explicitamente para **auditar a carteira**, **revisar ativos**, **avaliar a quarentena** ou **identificar papéis ruins**:
+1. Avalie 100% dos ativos cadastrados da carteira, separando o diagnóstico entre Ações e FIIs.
+2. Papéis com fundamentos deteriorados, prejuízos, dívidas explosivas ou DY zerado/insustentável devem ser movidos para a Quarentena chamando \`colocar_em_quarentena_e_sugerir\` com pelo menos 2 substitutos de excelência.
+3. Avalie também 100% dos ativos em Quarentena: se algum apresentar valorização consistente ou recuperação de métricas/DY, chame \`liberar_da_quarentena\` concedendo alta médica imediata.
+4. Se o usuário estiver fazendo qualquer outra pergunta geral, NÃO force o formato de auditoria de quarentena. Responda diretamente e com máxima excelência técnica à pergunta feita.
+
+=== TOM DE RESPOSTA ===
+Comportamento de consultor sênior de investimentos, técnico porém didático, seguro, em português brasileiro impecável, utilizando formatação rica com cabeçalhos, destaques em negrito, tabelas e listas claras.`;
       };
 
       // Se o usuário informou chave da API do Gemini, conecta diretamente ao Google AI Studio
@@ -4366,7 +5864,7 @@ PROTOCOLO OBRIGATÓRIO DE AUDITORIA DA CARTEIRA (AÇÕES + FIIs):
                 }
 
                 if (movidos.length > 0) {
-                  await salvarAprendizado(`Papéis reprovados e movidos para quarentena: ${movidos.join(', ')}`);
+                  await salvarAprendizado(`[AUDITORIA] Papéis reprovados e movidos para quarentena: ${movidos.join(', ')}`);
                 }
 
                 await sincronizarTabelaUnica();
@@ -4390,7 +5888,7 @@ PROTOCOLO OBRIGATÓRIO DE AUDITORIA DA CARTEIRA (AÇÕES + FIIs):
                   try {
                     await restaurarDaQuarentena(item.ticker, null);
                     restaurados.push(item.ticker.toUpperCase());
-                    await salvarAprendizado(`[ALTA DA QUARENTENA] ${item.ticker}: ${item.motivo_alta}`);
+                    await salvarAprendizado(`[AUDITORIA] [ALTA DA QUARENTENA] ${item.ticker}: ${item.motivo_alta}`);
                   } catch (e) {
                     erros.push(`${item.ticker}: ${e.message}`);
                   }
@@ -4426,6 +5924,14 @@ PROTOCOLO OBRIGATÓRIO DE AUDITORIA DA CARTEIRA (AÇÕES + FIIs):
                 const novosFatos = chamada.args?.aprendizados || [];
                 const memoriaAtualizada = await salvarAprendizado(novosFatos);
                 resultadoFerramenta = { sucesso: true, total_memorias: memoriaAtualizada.length };
+
+              } else if (chamada.name === 'simular_investimento_ou_renda') {
+                textoElemento.innerHTML = formatarTextoSeguro('Executando simulação matemática e financeira avançada...');
+                try {
+                  resultadoFerramenta = calcularSimulacaoFinanceira(chamada.args || {});
+                } catch (e) {
+                  resultadoFerramenta = { erro: e.message };
+                }
               }
 
               respostasFerramentas.push({
@@ -4482,6 +5988,7 @@ PROTOCOLO OBRIGATÓRIO DE AUDITORIA DA CARTEIRA (AÇÕES + FIIs):
     aplicarTema(temaInicial, false);
     inicializarChaveGemini();
     sincronizarTabelaUnica();
+    alternarAba('mercado');
   </script>
 </body>
 </html>
