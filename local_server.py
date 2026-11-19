@@ -13,6 +13,7 @@ DIRECTORY = os.path.dirname(os.path.abspath(__file__))
 
 SUPABASE_URL = os.environ.get('SUPABASE_URL', 'https://zwcvaqxdfurmexyuxtvv.supabase.co')
 SUPABASE_KEY = os.environ.get('SUPABASE_SERVICE_KEY', os.environ.get('SUPABASE_ANON_KEY', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp3Y3ZhcXhkZnVybWV4eXV4dHZ2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM4NzI3ODUsImV4cCI6MjA5OTQ0ODc4NX0.lKmjdZznodxT6QPZ8QyZOTpc_DrRROAyjKA1muPtS-Y'))
+BOLSAI_TOKEN = os.environ.get('BOLSAI_TOKEN')
 
 def buscar_cotacao_precisa(ticker):
     ticker = ticker.upper().strip()
@@ -49,6 +50,24 @@ def buscar_cotacao_precisa(ticker):
         'variacao_12m': None,
         'atualizado_em': datetime.datetime.now(datetime.timezone.utc).isoformat()
     }
+
+    # 0. Tenta Bolsai se houver token configurado
+    if BOLSAI_TOKEN:
+        try:
+            req_bolsa = urllib.request.Request(
+                f"https://api.bolsai.com.br/v1/ativos/{ticker}",
+                headers={'Authorization': f"Bearer {BOLSAI_TOKEN}", 'User-Agent': headers['User-Agent']}
+            )
+            with urllib.request.urlopen(req_bolsa, timeout=4) as resp_b:
+                d_bolsa = json.loads(resp_b.read().decode('utf-8'))
+                if d_bolsa.get('preco') or d_bolsa.get('cotacao'):
+                    dados['preco_atual'] = float(d_bolsa.get('preco') or d_bolsa.get('cotacao') or 0)
+                if d_bolsa.get('dividend_yield') or d_bolsa.get('dy'):
+                    dados['dividend_yield'] = float(d_bolsa.get('dividend_yield') or d_bolsa.get('dy') or 0)
+                if d_bolsa.get('nome'):
+                    dados['nome'] = d_bolsa.get('nome')
+        except Exception:
+            pass
 
     # 1. Tenta StatusInvest (dados mais completos e precisos da B3: Ações, FIIs, FI-Infras e Fiagros)
     si_urls = []

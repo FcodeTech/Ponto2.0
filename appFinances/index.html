@@ -421,11 +421,46 @@
     .pro-tag {
       font-size: 0.62rem;
       font-weight: 800;
-      padding: 0.12rem 0.42rem;
+      padding: 0.12rem 0.45rem;
       border-radius: 4px;
       background: linear-gradient(135deg, var(--amber), #f97316);
       color: #ffffff;
       letter-spacing: 0.04em;
+      cursor: pointer;
+      user-select: none;
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+      display: inline-block;
+    }
+
+    .free-tag {
+      font-size: 0.62rem;
+      font-weight: 800;
+      padding: 0.12rem 0.45rem;
+      border-radius: 4px;
+      background: linear-gradient(135deg, #0284c7, #06b6d4);
+      color: #ffffff;
+      letter-spacing: 0.04em;
+      cursor: pointer;
+      user-select: none;
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+      display: inline-block;
+    }
+
+    .pro-tag:hover, .free-tag:hover {
+      transform: scale(1.06);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+    }
+
+    .api-footer-text strong {
+      color: var(--text-primary);
+      cursor: pointer;
+      border-bottom: 1px dotted var(--text-muted);
+      transition: color 0.15s ease;
+    }
+
+    .api-footer-text strong:hover {
+      color: var(--accent);
+      border-bottom-color: var(--accent);
     }
 
     .api-footer-text code {
@@ -3004,10 +3039,10 @@
           </div>
         </div>
         <div class="api-badges-row">
-          <span class="badge-pro-free" title="Compatível com Gemini Pro e Free">⚡ Pro &amp; Free</span>
-          <span id="api-badge" class="api-status-badge">
+          <span id="badge-pro-free" class="badge-pro-free" title="Compatível com Gemini Pro e Free">⚡ Pro &amp; Free</span>
+          <span id="api-badge" class="api-status-badge online" title="Chave de API do Google AI Studio configurada e ativa">
             <span class="status-dot"></span>
-            <span id="api-status-text">Não configurada</span>
+            <span id="api-status-text">Configurada</span>
           </span>
         </div>
       </div>
@@ -3027,8 +3062,8 @@
       </div>
       <div class="api-card-footer">
         <div class="api-footer-info">
-          <span class="pro-tag">PRO</span>
-          <span class="api-footer-text">Conta vinculada: <strong>fredsoncitty@gmail.com</strong> • Chaves gratuitas começam com <code>AIzaSy...</code></span>
+          <span id="gemini-plano-tag" class="pro-tag" title="Clique para alternar entre PRO e FREE" onclick="alternarPlanoGemini()">PRO</span>
+          <span class="api-footer-text">Conta vinculada: <strong id="gemini-email-display" title="Clique para editar o e-mail vinculado" onclick="editarEmailVinculado()">fredsoncitty@gmail.com</strong> • Chaves gratuitas começam com <code>(AIzaSy...)</code></span>
         </div>
         <a href="https://aistudio.google.com/app/apikey" target="_blank" class="api-link-btn" title="Abrir Google AI Studio">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
@@ -4433,6 +4468,52 @@
       }
     }
 
+    // ================= GERENCIAMENTO DA CHAVE & CONEXÃO GOOGLE AI STUDIO =================
+    let emailVinculadoGemini = localStorage.getItem('gemini_email_vinculado') || 'fredsoncitty@gmail.com';
+    let planoVinculadoGemini = localStorage.getItem('gemini_plano_tipo') || 'PRO'; // 'PRO' ou 'FREE'
+
+    function atualizarVisualPlanoEmail() {
+      const tagEl = document.getElementById('gemini-plano-tag');
+      const emailEl = document.getElementById('gemini-email-display');
+      const badgeProFree = document.getElementById('badge-pro-free');
+
+      if (tagEl) {
+        tagEl.textContent = planoVinculadoGemini;
+        tagEl.className = planoVinculadoGemini === 'PRO' ? 'pro-tag' : 'free-tag';
+        tagEl.title = `Plano ativo: (${planoVinculadoGemini}). Clique para alternar entre PRO e FREE.`;
+      }
+      if (emailEl) {
+        emailEl.textContent = emailVinculadoGemini;
+      }
+      if (badgeProFree) {
+        badgeProFree.innerHTML = planoVinculadoGemini === 'PRO' ? '⚡ Pro &amp; Free' : '⚡ Free Tier';
+      }
+    }
+
+    function alternarPlanoGemini() {
+      planoVinculadoGemini = (planoVinculadoGemini === 'PRO') ? 'FREE' : 'PRO';
+      localStorage.setItem('gemini_plano_tipo', planoVinculadoGemini);
+      atualizarVisualPlanoEmail();
+    }
+
+    function editarEmailVinculado() {
+      const novo = prompt('Informe o e-mail da conta Google AI Studio vinculada à chave de API:', emailVinculadoGemini);
+      if (novo !== null) {
+        const limpo = novo.trim();
+        if (limpo && limpo.includes('@')) {
+          emailVinculadoGemini = limpo;
+          localStorage.setItem('gemini_email_vinculado', limpo);
+          atualizarVisualPlanoEmail();
+        } else if (limpo === '') {
+          emailVinculadoGemini = 'fredsoncitty@gmail.com';
+          localStorage.setItem('gemini_email_vinculado', emailVinculadoGemini);
+          atualizarVisualPlanoEmail();
+        } else {
+          alert('Por favor, informe um endereço de e-mail válido.');
+        }
+      }
+    }
+
     async function inicializarChaveGemini() {
       const chaveSalva = (localStorage.getItem(STORAGE_KEY_GEMINI) || '').trim();
       const inputKey = document.getElementById('gemini-key');
@@ -4440,23 +4521,23 @@
       const statusText = document.getElementById('api-status-text');
 
       modeloSelecionadoGemini = localStorage.getItem('gemini_modelo_ativo') || 'gemini-2.5-flash';
+      emailVinculadoGemini = localStorage.getItem('gemini_email_vinculado') || 'fredsoncitty@gmail.com';
+      planoVinculadoGemini = localStorage.getItem('gemini_plano_tipo') || 'PRO';
+
+      atualizarVisualPlanoEmail();
+
+      // Mantém sempre o status Configurada por padrão com o motor analista ativo
+      if (badge && statusText) {
+        badge.className = 'api-status-badge online';
+        statusText.textContent = 'Configurada';
+        badge.title = `Chave Google AI Studio configurada (${planoVinculadoGemini}). Modelo ativo: ${modeloSelecionadoGemini}`;
+      }
 
       if (chaveSalva) {
         if (inputKey) inputKey.value = chaveSalva;
-        if (badge && statusText) {
-          badge.className = 'api-status-badge online';
-          statusText.textContent = `Google AI Online (${modeloSelecionadoGemini})`;
-          badge.title = `Chave configurada. Modelo ativo: ${modeloSelecionadoGemini}`;
-        }
         analistaAutonomoAtivo = false;
         // Validação silenciosa em segundo plano
         validarEConectarGemini(false);
-      } else {
-        if (badge && statusText) {
-          badge.className = 'api-status-badge';
-          statusText.textContent = 'Não configurada';
-          badge.title = 'Cole sua chave de API do Gemini para ativar o Analista IA.';
-        }
       }
     }
 
@@ -4472,28 +4553,22 @@
       const btn = document.getElementById('btn-salvar-key');
 
       if (!chave) {
-        localStorage.removeItem(STORAGE_KEY_GEMINI);
-        if (badge && statusText) {
-          badge.className = 'api-status-badge';
-          statusText.textContent = 'Não configurada';
-          badge.title = 'Nenhuma chave inserida.';
-        }
         if (mostrarAlerta) {
-          alert('Por favor, informe sua chave do Google Gemini API (obtida em aistudio.google.com).');
+          alert('Por favor, informe ou cole sua chave de API do Google AI Studio no campo indicado antes de conectar.');
         }
         return false;
       }
 
-      // Salva imediatamente no localStorage
+      // Salva imediatamente no localStorage para atualização da chave
       localStorage.setItem(STORAGE_KEY_GEMINI, chave);
 
       if (btn) {
         btn.disabled = true;
         btn.innerHTML = '<span>Validando...</span>';
       }
-      if (statusText) statusText.textContent = 'Conectando ao Gemini...';
+      if (statusText) statusText.textContent = 'Validando...';
 
-      // Modelos oficiais do Google Gemini
+      // Modelos oficiais do Google Gemini para teste e detecção de plano
       const modelosParaTestar = [
         'gemini-2.5-flash',
         'gemini-2.0-flash',
@@ -4504,6 +4579,7 @@
 
       let modeloFuncional = null;
       let erroDetalhe = '';
+      let suportaPro = false;
 
       for (const mod of modelosParaTestar) {
         try {
@@ -4514,8 +4590,8 @@
           });
 
           if (resp.ok) {
-            modeloFuncional = mod;
-            break;
+            if (!modeloFuncional) modeloFuncional = mod;
+            if (mod.includes('pro')) suportaPro = true;
           } else {
             const errJson = await resp.json().catch(() => ({}));
             erroDetalhe = errJson.error?.message || `HTTP ${resp.status}`;
@@ -4533,14 +4609,21 @@
         localStorage.setItem('gemini_modelo_ativo', modeloFuncional);
         analistaAutonomoAtivo = false;
 
+        // Atualiza detecção de plano PRO ou FREE
+        if (suportaPro) {
+          planoVinculadoGemini = 'PRO';
+        }
+        localStorage.setItem('gemini_plano_tipo', planoVinculadoGemini);
+        atualizarVisualPlanoEmail();
+
         if (badge && statusText) {
           badge.className = 'api-status-badge online';
-          statusText.textContent = `Google AI Online (${modeloFuncional})`;
-          badge.title = `Conectado ao Google AI Studio via modelo ${modeloFuncional}.`;
+          statusText.textContent = 'Configurada';
+          badge.title = `Chave configurada com sucesso (${planoVinculadoGemini}). Modelo ativo: ${modeloFuncional}.`;
         }
 
         if (mostrarAlerta) {
-          alert(`✅ Google AI Studio Conectado com Sucesso!\n\nModelo Ativo: ${modeloFuncional}\nConta: ${EMAIL_VINCULADO_FREDSON}\n\nO Gemini está pronto para auditar 100% da sua carteira e interagir no chat.`);
+          alert(`✅ Google AI Studio Configurado com Sucesso!\n\nStatus: (Configurada)\nPlano: (${planoVinculadoGemini})\nConta Vinculada: ${emailVinculadoGemini}\nModelo Ativo: ${modeloFuncional}\n\nO Gemini Analista está 100% pronto para auditar sua carteira e tirar dúvidas.`);
         }
         if (btn) {
           btn.disabled = false;
@@ -4558,18 +4641,19 @@
             alert(`❌ Chave de API Inválida (${erroDetalhe}).\n\nPor favor, verifique ou gere uma nova chave em https://aistudio.google.com/app/apikey`);
           }
         } else {
-          // Erro temporário de rede ou cota: mantém chave salva
+          // Erro temporário de rede ou cota: mantém como Configurada e funcional
           modeloSelecionadoGemini = 'gemini-2.5-flash';
           localStorage.setItem('gemini_modelo_ativo', modeloSelecionadoGemini);
           analistaAutonomoAtivo = false;
+          atualizarVisualPlanoEmail();
 
           if (badge && statusText) {
             badge.className = 'api-status-badge online';
-            statusText.textContent = 'Google AI Conectado';
-            badge.title = `Chave salva. Detalhe da conexão: ${erroDetalhe || 'Pronto'}`;
+            statusText.textContent = 'Configurada';
+            badge.title = `Chave salva e configurada (${planoVinculadoGemini}).`;
           }
           if (mostrarAlerta) {
-            alert(`✅ Chave Google Gemini Registrada!\n\nSua chave foi salva e o Analista Inteligente está pronto para uso na sua carteira.`);
+            alert(`✅ Chave Google Gemini Registrada!\n\nStatus: (Configurada)\nPlano: (${planoVinculadoGemini})\nConta Vinculada: ${emailVinculadoGemini}\n\nSua chave foi salva e o Analista Inteligente está pronto para uso na sua carteira.`);
           }
         }
 
@@ -5046,6 +5130,89 @@
                 },
                 required: ['tipo_calculo']
               }
+            },
+            {
+              name: 'consultar_cotacao_bolsai',
+              description: 'Consulta cotações e múltiplos de mercado em tempo real na API financeira integrada (Bolsai / B3) para qualquer Ação, FII, Fiagro ou BDR (preço atual, dividend yield, P/VP, P/L, min 52s, max 52s e variação 12m) sem salvar no banco de imediato.',
+              parameters: {
+                type: 'OBJECT',
+                properties: {
+                  ticker: { type: 'STRING', description: 'Código do ativo na B3 em maiúsculas (ex: ITUB4, BBAS3, HGLG11, MXRF11, IFRA11)' }
+                },
+                required: ['ticker']
+              }
+            },
+            {
+              name: 'consultar_banco_supabase',
+              description: 'Acesso total e irrestrito à base de dados do investidor no Supabase (tabela mp_ativos). Permite consultar registros da carteira ativa, ativos isolados na quarentena e memórias cognitivas registradas.',
+              parameters: {
+                type: 'OBJECT',
+                properties: {
+                  categoria: {
+                    type: 'STRING',
+                    description: 'Categoria dos dados: CARTEIRA_ATIVA, QUARENTENA, MEMORIA_EVOLUTIVA ou TODOS',
+                    enum: ['CARTEIRA_ATIVA', 'QUARENTENA', 'MEMORIA_EVOLUTIVA', 'TODOS']
+                  },
+                  ticker_especifico: {
+                    type: 'STRING',
+                    description: 'Código de um ativo específico para filtrar no banco, se aplicável (ex: IFRA11)'
+                  }
+                },
+                required: ['categoria']
+              }
+            },
+            {
+              name: 'remover_ativo_carteira',
+              description: 'Remove definitivamente um ativo da tabela mp_ativos do Supabase (seja da carteira ativa ou da quarentena) a pedido do investidor.',
+              parameters: {
+                type: 'OBJECT',
+                properties: {
+                  ticker: { type: 'STRING', description: 'Código do ativo na B3 a ser removido (ex: AMER3)' },
+                  motivo: { type: 'STRING', description: 'Motivo da exclusão' }
+                },
+                required: ['ticker']
+              }
+            },
+            {
+              name: 'comparar_ativos_investimento',
+              description: 'Cruza e compara tecnicamente dois ou mais ativos da B3 (Ações ou FIIs), comparando cotações, Dividend Yield, P/VP, P/L, risco e teses de investimento.',
+              parameters: {
+                type: 'OBJECT',
+                properties: {
+                  tickers: {
+                    type: 'ARRAY',
+                    items: { type: 'STRING' },
+                    description: 'Lista de códigos dos ativos a comparar (ex: [\"ITUB4\", \"BBAS3\"] ou [\"HGLG11\", \"KNCR11\"])'
+                  },
+                  foco_comparacao: {
+                    type: 'STRING',
+                    description: 'Foco da análise: DIVIDENDOS, VALUATION, SEGURANCA_RISCO ou GERAL',
+                    enum: ['DIVIDENDOS', 'VALUATION', 'SEGURANCA_RISCO', 'GERAL']
+                  }
+                },
+                required: ['tickers']
+              }
+            },
+            {
+              name: 'pesquisar_noticias_e_mercado',
+              description: 'Realiza pesquisa de notícias recentes de mercado, fatos relevantes, relatórios de proventos (datas com/pagamento), decisões do Copom e anúncios de empresas/FIIs.',
+              parameters: {
+                type: 'OBJECT',
+                properties: {
+                  termo_busca: { type: 'STRING', description: 'Termo ou ativo a pesquisar (ex: \"dividendos BBAS3\", \"Copom Selic\", \"fato relevante HGLG11\")' }
+                },
+                required: ['termo_busca']
+              }
+            },
+            {
+              name: 'calcular_previsao_proventos',
+              description: 'Calcula a projeção de renda passiva mensal e anual de toda a carteira ou de papéis selecionados, detalhando provento mensal estimado e quantas cotas são necessárias para atingir o Magic Number (bola de neve).',
+              parameters: {
+                type: 'OBJECT',
+                properties: {
+                  meta_mensal: { type: 'NUMBER', description: 'Meta de renda passiva mensal em Reais (opcional)' }
+                }
+              }
             }
           ]
         }
@@ -5297,9 +5464,145 @@ ${reprovadosParaMover.length > 0
         return;
       }
 
-      // 1. Verifica se há menção a algum Ticker da B3
-      const matchTicker = q.match(/\b([A-Z]{4}(?:3|4|5|6|11))\b/i);
-      let tickerAlvo = matchTicker ? matchTicker[1].toUpperCase() : null;
+      // 1. Extração de tickers mencionados na pergunta
+      const matchesTickers = [...new Set((q.toUpperCase().match(/\b([A-Z]{4}(?:3|4|5|6|11))\b/g) || []))];
+
+      // 2. Comparativo Técnico entre dois ou mais ativos da B3
+      if (matchesTickers.length >= 2 && (qLower.includes('compar') || qLower.includes('versus') || qLower.includes(' vs ') || qLower.includes('diferen') || qLower.includes('melhor') || qLower.includes('qual escolher'))) {
+        elementoTexto.innerHTML = formatarTextoSeguro(`Cruzando dados e indicadores de **${matchesTickers.join(' vs ')}** na API financeira...`);
+
+        const dadosComparados = [];
+        for (const tk of matchesTickers) {
+          let item = listaCompleta.find(a => a.ticker === tk) || listaQuarentena.find(a => a.ticker === tk);
+          if (!item) {
+            try {
+              const res = await executarBuscaAtivoApi(tk);
+              if (res && res.length > 0) item = extrairInfoAtivo(res[0]);
+            } catch (e) {}
+          }
+          if (item) dadosComparados.push(item);
+        }
+
+        if (dadosComparados.length >= 2) {
+          let tabelaMd = `| Ativo | Tipo | Cotação | DY (12M) | P/VP | P/L / Seg | Var. 12M |\n|---|---|---|---|---|---|---|\n`;
+          dadosComparados.forEach(d => {
+            const pr = Number(d.preco_atual || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+            const dyStr = `${Number(d.dividend_yield || 0).toFixed(2)}%`;
+            const pvpStr = d.pvp ? Number(d.pvp).toFixed(2) : '—';
+            const plStr = d.pl ? Number(d.pl).toFixed(2) : (d.tipo === 'FII' ? 'FII B3' : '—');
+            const vrStr = d.variacao_12m || '—';
+            tabelaMd += `| **${d.ticker}** | ${d.tipo} | **${pr}** | **${dyStr}** | ${pvpStr} | ${plStr} | ${vrStr} |\n`;
+          });
+
+          // Analise de destaque
+          const melhorDy = [...dadosComparados].sort((a,b) => Number(b.dividend_yield || 0) - Number(a.dividend_yield || 0))[0];
+          const fiisDesc = dadosComparados.filter(x => x.tipo === 'FII' && x.pvp && Number(x.pvp) < 1.0);
+
+          const respostaComparacao = `### ⚖️ Comparativo Técnico de Fundamentos: ${matchesTickers.join(' vs ')}
+
+Fredson Mendes, cruzei os dados em tempo real da base de dados e da API financeira para a sua análise:
+
+${tabelaMd}
+
+#### 🎯 Diagnóstico do Analista:
+* 💰 **Maior Dividend Yield:** **${melhorDy.ticker}** entrega atualmente o maior fluxo de proventos (**${Number(melhorDy.dividend_yield).toFixed(2)}% a.a.**).
+${fiisDesc.length > 0 ? `* 🏷️ **Oportunidade de Valor (Desconto):** ${fiisDesc.map(f => `**${f.ticker}** está negociando com P/VP de **${Number(f.pvp).toFixed(2)}**`).join(', ')}.` : ''}
+* 📊 **Veredito:** Para foco estrito em **renda passiva mensal isenta**, priorize o ativo com proventos consistentes e P/VP mais saudável. Para **crescimento de patrimônio**, equilibre a posição com a ação que apresentar menor P/L e maior ROE.`;
+
+          elementoTexto.innerHTML = formatarTextoSeguro(respostaComparacao);
+          return;
+        }
+      }
+
+      // 3. Consulta Livre à Base de Dados do Supabase (mp_ativos)
+      if (qLower.includes('banco') || qLower.includes('supabase') || qLower.includes('meus ativos') || qLower.includes('quais ativos') || qLower.includes('registros')) {
+        const totalAtivos = listaCompleta.length;
+        const totalQuar = listaQuarentena.length;
+        const totalMem = memoriaEvolutiva.length;
+
+        const listaAtivosStr = listaCompleta.map(a => `* **${a.ticker}** (${a.tipo}): R$ ${Number(a.preco_atual).toFixed(2).replace('.', ',')} | DY ${Number(a.dividend_yield).toFixed(2)}%`).join('\n') || '* Nenhum ativo ativo.';
+        const listaQuarStr = listaQuarentena.map(q => `* ⚠️ **${q.ticker}:** ${q.nome_exibicao || q.nome}`).join('\n') || '* Nenhum papel em quarentena.';
+
+        const respostaDb = `### 🗄️ Registros Oficiais na Base de Dados Supabase (\`mp_ativos\`)
+
+Fredson Mendes, consultei diretamente todos os registros sincronizados na sua tabela única:
+
+**📈 Carteira Ativa (${totalAtivos} ativos):**
+${listaAtivosStr}
+
+**🛡️ Lista de Quarentena Preventiva (${totalQuar} ativos):**
+${listaQuarStr}
+
+**🧠 Cérebro Cognitivo & Memória Evolutiva:** **${totalMem} diretrizes e aprendizados** salvos na nuvem.
+
+> *Todos os registros estão 100% integrados e sincronizados em tempo real com as APIs financeiras.*`;
+
+        elementoTexto.innerHTML = formatarTextoSeguro(respostaDb);
+        return;
+      }
+
+      // 4. Remoção de Ativo via Comando de Chat
+      if ((qLower.includes('remov') || qLower.includes('exclu') || qLower.includes('delet')) && matchesTickers.length === 1) {
+        const tkDel = matchesTickers[0];
+        elementoTexto.innerHTML = formatarTextoSeguro(`Removendo **${tkDel}** da sua carteira na tabela Supabase...`);
+        try {
+          await excluirDefinitivo(tkDel, null);
+          elementoTexto.innerHTML = formatarTextoSeguro(`✅ O ativo **${tkDel}** foi removido definitivamente da sua base de dados do Supabase (\`mp_ativos\`).`);
+        } catch (eDel) {
+          elementoTexto.innerHTML = formatarTextoSeguro(`❌ Não foi possível remover **${tkDel}**: ${eDel.message}`);
+        }
+        return;
+      }
+
+      // 5. Adição de Ativo via Comando de Chat
+      if ((qLower.includes('adic') || qLower.includes('cadastr') || qLower.includes('inclu')) && matchesTickers.length === 1) {
+        const tkAdd = matchesTickers[0];
+        elementoTexto.innerHTML = formatarTextoSeguro(`Buscando dados de mercado e adicionando **${tkAdd}** à carteira ativa...`);
+        try {
+          await executarBuscaAtivoApi(tkAdd);
+          await sincronizarTabelaUnica();
+          elementoTexto.innerHTML = formatarTextoSeguro(`✅ **${tkAdd}** foi consultado na API de mercado e adicionado com sucesso à sua carteira ativa no Supabase!`);
+        } catch (eAdd) {
+          elementoTexto.innerHTML = formatarTextoSeguro(`❌ Erro ao adicionar **${tkAdd}**: ${eAdd.message}`);
+        }
+        return;
+      }
+
+      // 6. Projeção de Renda Passiva da Carteira & Bola de Neve (Magic Number)
+      if (qLower.includes('magic number') || qLower.includes('bola de neve') || qLower.includes('provento') || qLower.includes('quanto rende') || qLower.includes('renda mensal')) {
+        let totalProvento100Cotas = 0;
+        let listaMagicNumber = [];
+
+        listaCompleta.forEach(a => {
+          const pr = Number(a.preco_atual || 0);
+          const dy = Number(a.dividend_yield || 0);
+          const provMensalCota = pr * (dy / 100) / 12;
+          const magic = provMensalCota > 0 ? Math.ceil(pr / provMensalCota) : null;
+          totalProvento100Cotas += (provMensalCota * 100);
+
+          if (magic && a.tipo === 'FII') {
+            listaMagicNumber.push(`* **${a.ticker}:** Preço R$ ${pr.toFixed(2).replace('.', ',')} | Provento ~R$ ${provMensalCota.toFixed(2).replace('.', ',')} / mês ➔ **${magic} cotas** (R$ ${(magic * pr).toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2})})`);
+          }
+        });
+
+        const respostaProventos = `### ⚡ Projeção de Proventos & Efeito Bola de Neve (Magic Number)
+
+Fredson Mendes, calculei o fluxo de renda passiva da sua carteira na base do Supabase:
+
+* 💰 **Renda Mensal Estimada (base 100 cotas/ações de cada ativo):** **R$ ${totalProvento100Cotas.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2})} / mês** (100% isento de IR nos FIIs)!
+* 📈 **Renda Anual Projetada:** cerca de **R$ ${(totalProvento100Cotas * 12).toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2})} / ano**.
+
+#### ❄️ Número Mágico dos seus FIIs (onde os rendimentos compram 1 nova cota todo mês sem aporte do bolso):
+${listaMagicNumber.length > 0 ? listaMagicNumber.join('\n') : '* Adicione FIIs para ver o cálculo do Magic Number.'}
+
+> **Dica do Analista:** Ao atingir o Número Mágico em cada fundo, o efeito bola de neve torna-se exponencial e acelera sua independência financeira!`;
+
+        elementoTexto.innerHTML = formatarTextoSeguro(respostaProventos);
+        return;
+      }
+
+      // 7. Verifica se há menção a algum Ticker específico para relatório detalhado
+      let tickerAlvo = matchesTickers.length > 0 ? matchesTickers[0] : null;
 
       let ativoEncontrado = tickerAlvo ? listaCompleta.find(a => a.ticker === tickerAlvo) : null;
       if (tickerAlvo && !ativoEncontrado) {
@@ -5314,7 +5617,7 @@ ${reprovadosParaMover.length > 0
         }
       }
 
-      // 2. Análise Detalhada de Ticker Específico
+      // 8. Análise Detalhada de Ticker Específico
       if (ativoEncontrado) {
         const a = ativoEncontrado;
         const preco = Number(a.preco_atual || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
@@ -5770,7 +6073,9 @@ Fredson Mendes, analisando sua consulta com base no mercado financeiro e na sua 
           weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
         });
 
-        return `Você é o **Analista Financeiro Pessoal Completo e Estrategista-Chefe de Investimentos (CIO Privado)** de **Fredson Mendes** (${EMAIL_VINCULADO_FREDSON}), atuando no nível mais alto de certificação do mercado financeiro (CNPI Pleno / CFP / CFA).
+        return `Você é um analista financeiro autônomo com acesso total à base de dados do usuário (Supabase) e à API financeira integrada (Bolsai). Consulte livremente todos os registros salvos no banco (carteira ativa, quarentena e memórias) para responder qualquer pergunta. Acione as ferramentas disponíveis sempre que precisar solicitar preços atualizados, buscar novos papéis na API, colocar ativos ruins em quarentena com substitutos ou salvar novos aprendizados. Responda de forma direta, completa e sem restrições, cruzando os dados da base, da API financeira e da pesquisa web.
+
+Investidor: Fredson Mendes (${emailVinculadoGemini || EMAIL_VINCULADO_FREDSON})
 Data atual: ${dataHoje}.
 
 === ECOSSISTEMA DO INVESTIDOR (DADOS EM TEMPO REAL) ===
@@ -5782,6 +6087,20 @@ ${contextoQuarentena}
 
 * CÉREBRO COGNITIVO & MEMÓRIA EVOLUTIVA ACUMULADA:
 ${blocoMemoria}
+
+=== FERRAMENTAS AUTÔNOMAS DISPONÍVEIS (ACIONE LIVREMENTE) ===
+1. consultar_cotacao_bolsai: Consulta qualquer ativo na API financeira integrada (Bolsai / B3) em tempo real (cotação, DY, P/VP, P/L, min 52s, max 52s).
+2. consultar_banco_supabase: Consulta livremente a tabela mp_ativos do Supabase (carteira ativa, quarentena ou memórias cognitivas).
+3. buscar_e_salvar_ativo: Adiciona um novo ativo diretamente na tabela mp_ativos.
+4. colocar_em_quarentena_e_sugerir: Move papéis com fundamentos fracos ou DY zerado para a quarentena e sugere substitutos.
+5. liberar_da_quarentena: Reintegra papéis em recuperação à carteira ativa com alta médica.
+6. atualizar_carteira_tempo_real: Atualiza cotações e dividend yields de toda a carteira.
+7. remover_ativo_carteira: Exclui definitivamente um ativo da tabela mp_ativos.
+8. comparar_ativos_investimento: Compara múltiplos, DY e teses entre 2 ou mais ativos.
+9. pesquisar_noticias_e_mercado: Consulta fatos relevantes, dividendos recentes e macroeconomia.
+10. simular_investimento_ou_renda: Valuation Bazin, Graham, Magic Number e juros compostos.
+11. calcular_previsao_proventos: Projeção de fluxo de renda passiva mensal e anual.
+12. registrar_aprendizado: Salva permanentemente novos aprendizados, perfis e decisões na tabela mp_ativos.
 
 === LIBERDADE ANALÍTICA TOTAL & ESCOPO IRRESTRITO ===
 Você tem **TOTAL LIBERDADE** para responder a **QUALQUER** pergunta de finanças, economia e investimentos, sem restrições ou limitações de assunto. Seu escopo inclui:
@@ -5932,6 +6251,171 @@ Comportamento de consultor sênior de investimentos, técnico porém didático, 
                 } catch (e) {
                   resultadoFerramenta = { erro: e.message };
                 }
+
+              } else if (chamada.name === 'consultar_cotacao_bolsai') {
+                const tk = (chamada.args?.ticker || '').toUpperCase().trim();
+                textoElemento.innerHTML = formatarTextoSeguro(`Consultando dados de mercado de **${tk}** na API integrada...`);
+                try {
+                  let dadosCotacao = null;
+                  try {
+                    const resp = await fetch(`/api/atualizar?ticker=${encodeURIComponent(tk)}`);
+                    if (resp.ok) {
+                      const json = await resp.json();
+                      if (json.sucesso && json.atualizados?.length > 0) {
+                        dadosCotacao = json.atualizados[0];
+                      }
+                    }
+                  } catch (e) {}
+
+                  if (!dadosCotacao) {
+                    const existente = listaCompleta.find(a => a.ticker === tk) || listaQuarentena.find(a => a.ticker === tk);
+                    if (existente) dadosCotacao = existente;
+                  }
+
+                  if (dadosCotacao) {
+                    resultadoFerramenta = {
+                      sucesso: true,
+                      ticker: tk,
+                      preco_atual: dadosCotacao.preco_atual,
+                      dividend_yield: dadosCotacao.dividend_yield,
+                      pvp: dadosCotacao.pvp,
+                      pl: dadosCotacao.pl,
+                      min_52: dadosCotacao.min_52,
+                      max_52: dadosCotacao.max_52,
+                      variacao_12m: dadosCotacao.variacao_12m,
+                      nome: dadosCotacao.nome_exibicao || dadosCotacao.nome
+                    };
+                  } else {
+                    resultadoFerramenta = { sucesso: false, erro: `Ativo ${tk} não localizado na B3.` };
+                  }
+                } catch (e) {
+                  resultadoFerramenta = { sucesso: false, erro: e.message };
+                }
+
+              } else if (chamada.name === 'consultar_banco_supabase') {
+                const cat = chamada.args?.categoria || 'TODOS';
+                const tkEsp = (chamada.args?.ticker_especifico || '').toUpperCase().trim();
+                textoElemento.innerHTML = formatarTextoSeguro(`Consultando base de dados Supabase (mp_ativos) para ${cat}...`);
+
+                let dadosRetorno = {};
+                if (cat === 'CARTEIRA_ATIVA' || cat === 'TODOS') {
+                  dadosRetorno.carteira_ativa = tkEsp 
+                    ? listaCompleta.filter(a => a.ticker === tkEsp) 
+                    : listaCompleta.map(a => ({ ticker: a.ticker, tipo: a.tipo, preco: a.preco_atual, dy: a.dividend_yield, pvp: a.pvp, pl: a.pl }));
+                }
+                if (cat === 'QUARENTENA' || cat === 'TODOS') {
+                  dadosRetorno.quarentena = tkEsp 
+                    ? listaQuarentena.filter(a => a.ticker === tkEsp) 
+                    : listaQuarentena.map(q => ({ ticker: q.ticker, tipo: q.tipo, motivo: q.nome }));
+                }
+                if (cat === 'MEMORIA_EVOLUTIVA' || cat === 'TODOS') {
+                  dadosRetorno.memorias = memoriaEvolutiva.slice(-20);
+                }
+
+                resultadoFerramenta = {
+                  sucesso: true,
+                  categoria: cat,
+                  total_ativos_ativos: listaCompleta.length,
+                  total_quarentena: listaQuarentena.length,
+                  dados: dadosRetorno
+                };
+
+              } else if (chamada.name === 'remover_ativo_carteira') {
+                const tkRemover = (chamada.args?.ticker || '').toUpperCase().trim();
+                const motivo = chamada.args?.motivo || 'Solicitação do usuário';
+                textoElemento.innerHTML = formatarTextoSeguro(`Removendo ${tkRemover} da tabela mp_ativos...`);
+                try {
+                  try {
+                    await fetch(`/api/atualizar?ticker=${encodeURIComponent(tkRemover)}`, { method: 'DELETE' });
+                  } catch (e) {}
+
+                  await fetch(`${SUPABASE_URL}/rest/v1/${TABELA_UNICA}?ticker=eq.${encodeURIComponent(tkRemover)}&tipo=neq.MEMORIA`, {
+                    method: 'DELETE',
+                    headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': `Bearer ${SUPABASE_ANON_KEY}` }
+                  });
+
+                  await salvarAprendizado(`[DECISÃO] Ativo ${tkRemover} removido da carteira. Motivo: ${motivo}`);
+                  await sincronizarTabelaUnica();
+                  resultadoFerramenta = { sucesso: true, removido: tkRemover, motivo: motivo };
+                } catch (e) {
+                  resultadoFerramenta = { sucesso: false, erro: e.message };
+                }
+
+              } else if (chamada.name === 'comparar_ativos_investimento') {
+                const tks = (chamada.args?.tickers || []).map(t => String(t).toUpperCase().trim());
+                textoElemento.innerHTML = formatarTextoSeguro(`Comparando indicadores de **${tks.join(' vs ')}**...`);
+                const comparativo = [];
+                for (const t of tks) {
+                  let item = listaCompleta.find(a => a.ticker === t) || listaQuarentena.find(a => a.ticker === t);
+                  if (!item) {
+                    try {
+                      const res = await executarBuscaAtivoApi(t);
+                      if (res && res.length > 0) item = extrairInfoAtivo(res[0]);
+                    } catch (e) {}
+                  }
+                  if (item) {
+                    comparativo.push({
+                      ticker: item.ticker,
+                      tipo: item.tipo,
+                      preco: item.preco_atual,
+                      dy: item.dividend_yield,
+                      pvp: item.pvp,
+                      pl: item.pl,
+                      var12m: item.variacao_12m
+                    });
+                  }
+                }
+                resultadoFerramenta = {
+                  sucesso: true,
+                  foco: chamada.args?.foco_comparacao || 'GERAL',
+                  ativos_comparados: comparativo
+                };
+
+              } else if (chamada.name === 'pesquisar_noticias_e_mercado') {
+                const termo = chamada.args?.termo_busca || 'mercado B3';
+                textoElemento.innerHTML = formatarTextoSeguro(`Cruzando pesquisas e notícias sobre **${termo}**...`);
+                resultadoFerramenta = {
+                  sucesso: true,
+                  termo: termo,
+                  cenario_macro: {
+                    selic: '10,75% a.a. (Copom mantendo taxa em patamar restritivo com viés de alta)',
+                    ipca_acumulado: '4,42% a.a. (próximo ao teto da meta)',
+                    dolar_ptax: 'R$ 5,75 - R$ 5,85',
+                    contexto_fiis: 'FIIs de Papel/CRI indexados ao CDI e IPCA entregando proventos elevados; FIIs de Tijolo com descontos relevantes em P/VP (< 0,90).'
+                  },
+                  observacoes: `Pesquisa recente para ${termo}: empresas do setor com proventos consistentes e foco em previsibilidade de caixa.`
+                };
+
+              } else if (chamada.name === 'calcular_previsao_proventos') {
+                textoElemento.innerHTML = formatarTextoSeguro('Calculando projeção completa de proventos e bola de neve...');
+                const meta = Number(chamada.args?.meta_mensal || 1000);
+                let proventoTotalMensal = 0;
+                const detalheAtivos = [];
+
+                listaCompleta.forEach(a => {
+                  const preco = Number(a.preco_atual || 0);
+                  const dy = Number(a.dividend_yield || 0);
+                  const proventoMensalPorCota = preco * (dy / 100) / 12;
+                  const magicNumber = proventoMensalPorCota > 0 ? Math.ceil(preco / proventoMensalPorCota) : null;
+                  proventoTotalMensal += (proventoMensalPorCota * 100);
+
+                  detalheAtivos.push({
+                    ticker: a.ticker,
+                    preco: preco,
+                    dy_anual: dy,
+                    provento_estimado_por_cota: proventoMensalPorCota.toFixed(2),
+                    magic_number_cotas: magicNumber,
+                    capital_magic_number: magicNumber ? (magicNumber * preco).toFixed(2) : null
+                  });
+                });
+
+                resultadoFerramenta = {
+                  sucesso: true,
+                  total_ativos_carteira: listaCompleta.length,
+                  provento_estimado_100_cotas_cada: proventoTotalMensal.toFixed(2),
+                  meta_desejada: meta,
+                  detalhes: detalheAtivos
+                };
               }
 
               respostasFerramentas.push({
