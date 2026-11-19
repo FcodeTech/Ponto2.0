@@ -291,7 +291,7 @@ class CustomHandler(http.server.SimpleHTTPRequestHandler):
         self.wfile.write(payload)
 
 if __name__ == '__main__':
-    socketserver.TCPServer.allow_reuse_address = True
-    with socketserver.TCPServer(("", PORT), CustomHandler) as httpd:
+    socketserver.ThreadingTCPServer.allow_reuse_address = True
+    with socketserver.ThreadingTCPServer(("", PORT), CustomHandler) as httpd:
         print(f"Servidor Ponto2.0 com cotações precisas ativo em http://localhost:{PORT}")
         httpd.serve_forever()
