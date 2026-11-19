@@ -135,37 +135,82 @@
 
     .api-card {
       background: var(--bg-elevated);
-      border: 1px solid var(--border);
+      border: 1px solid rgba(168, 85, 247, 0.24);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.28);
       border-radius: var(--radius-md);
-      padding: 0.75rem;
+      padding: 0.85rem 1rem;
       display: flex;
       flex-direction: column;
-      gap: 0.55rem;
+      gap: 0.65rem;
     }
 
     .api-card-header {
       display: flex;
+      flex-wrap: wrap;
       justify-content: space-between;
       align-items: center;
-      font-size: 0.76rem;
-      color: var(--text-secondary);
+      gap: 0.6rem 0.85rem;
+      width: 100%;
+    }
+
+    .api-header-left {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 0.5rem 0.75rem;
+      min-width: 0;
+    }
+
+    .api-brand-title {
+      font-size: 0.88rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      white-space: nowrap;
+    }
+
+    .badge-pro-free {
+      font-size: 0.72rem;
+      padding: 0.22rem 0.65rem;
+      border-radius: 99px;
+      background: rgba(168, 85, 247, 0.16);
+      border: 1px solid rgba(168, 85, 247, 0.38);
+      color: #d8b4fe;
       font-weight: 600;
+      white-space: nowrap;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+      letter-spacing: 0.01em;
+    }
+
+    .api-header-right {
+      display: flex;
+      align-items: center;
+      flex-shrink: 0;
     }
 
     .api-status-badge {
       display: inline-flex;
       align-items: center;
-      gap: 0.4rem;
-      font-size: 0.72rem;
-      padding: 0.15rem 0.55rem;
+      gap: 0.45rem;
+      font-size: 0.74rem;
+      padding: 0.25rem 0.75rem;
       border-radius: 99px;
       background: rgba(245, 158, 11, 0.12);
+      border: 1px solid rgba(245, 158, 11, 0.28);
       color: var(--amber);
+      white-space: nowrap;
+      font-weight: 600;
+      letter-spacing: 0.01em;
     }
 
     .api-status-badge.online {
-      background: var(--green-bg);
-      color: var(--green);
+      background: rgba(16, 185, 129, 0.15);
+      border-color: rgba(16, 185, 129, 0.35);
+      color: #34d399;
     }
 
     .status-dot {
@@ -173,6 +218,18 @@
       height: 7px;
       border-radius: 50%;
       background: currentColor;
+      box-shadow: 0 0 6px currentColor;
+    }
+
+    .api-card-footer {
+      margin-top: 2px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.74rem;
+      color: var(--text-muted);
+      flex-wrap: wrap;
+      gap: 6px;
     }
 
     .api-input-row {
@@ -369,38 +426,45 @@
       background: var(--bg-card);
       border: 1px solid var(--border);
       border-radius: var(--radius-lg);
-      padding: 1.05rem;
+      padding: 1rem;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
-      transition: border-color 0.2s, background-color 0.2s;
+      gap: 0.65rem;
+      transition: all 0.22s ease;
+      position: relative;
     }
 
     .asset-card:hover {
-      border-color: rgba(56, 189, 248, 0.35);
+      border-color: rgba(56, 189, 248, 0.4);
       background: var(--bg-card-hover);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.28);
+      transform: translateY(-2px);
     }
 
     .card-top {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 0.3rem;
+      margin-bottom: 0.25rem;
     }
 
     .ticker-group {
       display: flex;
       align-items: center;
-      gap: 0.5rem;
+      flex-wrap: wrap;
+      gap: 0.45rem;
     }
 
     .ticker-symbol {
-      font-size: 1.15rem;
+      font-size: 1.22rem;
       font-weight: 800;
+      letter-spacing: -0.01em;
+      color: var(--text-primary);
     }
 
     .badge {
-      font-size: 0.66rem;
+      font-size: 0.68rem;
       font-weight: 700;
       padding: 0.18rem 0.55rem;
       border-radius: 99px;
@@ -411,19 +475,43 @@
     .badge-acao {
       background: rgba(56, 189, 248, 0.14);
       color: var(--accent);
-      border: 1px solid rgba(56, 189, 248, 0.25);
+      border: 1px solid rgba(56, 189, 248, 0.28);
     }
 
     .badge-fii {
       background: var(--amber-bg);
       color: var(--amber);
-      border: 1px solid rgba(245, 158, 11, 0.25);
+      border: 1px solid rgba(245, 158, 11, 0.28);
+    }
+
+    .badge-var {
+      font-size: 0.68rem;
+      font-weight: 700;
+      padding: 0.18rem 0.5rem;
+      border-radius: 99px;
+      white-space: nowrap;
+      font-variant-numeric: tabular-nums;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.2rem;
+    }
+
+    .badge-var.var-pos {
+      background: rgba(16, 185, 129, 0.14);
+      color: #34d399;
+      border: 1px solid rgba(16, 185, 129, 0.32);
+    }
+
+    .badge-var.var-neg {
+      background: rgba(244, 63, 94, 0.14);
+      color: #fb7185;
+      border: 1px solid rgba(244, 63, 94, 0.32);
     }
 
     .refresh-btn {
-      width: 36px;
-      height: 36px;
-      border-radius: 9px;
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
       background: rgba(255, 255, 255, 0.04);
       border: 1px solid var(--border);
       color: var(--text-secondary);
@@ -431,64 +519,137 @@
       place-items: center;
       cursor: pointer;
       font-size: 1rem;
+      transition: all 0.2s;
     }
 
-    .refresh-btn:active {
-      background: rgba(56, 189, 248, 0.15);
+    .refresh-btn:hover {
+      background: rgba(56, 189, 248, 0.14);
       color: var(--accent);
+      border-color: rgba(56, 189, 248, 0.3);
+      transform: rotate(90deg);
     }
 
     .asset-desc {
-      font-size: 0.82rem;
+      font-size: 0.8rem;
       color: var(--text-secondary);
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
-      margin-bottom: 0.9rem;
+      margin-bottom: 0.4rem;
+      font-weight: 500;
     }
 
-    .card-metrics {
+    /* Bloco Principal: Preço e Dividend Yield */
+    .card-hero-metrics {
       display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 0.5rem;
-      padding-top: 0.75rem;
-      border-top: 1px solid var(--border);
+      grid-template-columns: 1.15fr 1fr;
+      align-items: center;
+      gap: 0.6rem;
+      padding: 0.75rem 0.85rem;
+      background: rgba(255, 255, 255, 0.025);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      margin-bottom: 0.2rem;
+    }
+
+    .hero-metric-box {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+    }
+
+    .hero-dy-box {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      text-align: right;
+      min-width: 0;
     }
 
     .m-label {
-      font-size: 0.7rem;
+      font-size: 0.68rem;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
       color: var(--text-muted);
       display: block;
-      margin-bottom: 0.15rem;
+      margin-bottom: 0.2rem;
+      white-space: nowrap;
     }
 
     .m-price {
-      font-size: 1.1rem;
-      font-weight: 700;
+      font-size: clamp(1.15rem, 3.2vw, 1.35rem);
+      font-weight: 800;
       font-variant-numeric: tabular-nums;
+      color: var(--text-primary);
     }
 
-    .m-dy-col {
-      text-align: right;
-    }
-
-    .m-dy {
+    .m-dy-tag {
+      font-size: clamp(1.05rem, 3vw, 1.22rem);
+      font-weight: 800;
+      color: #34d399;
+      background: rgba(16, 185, 129, 0.14);
+      border: 1px solid rgba(16, 185, 129, 0.35);
+      padding: 0.22rem 0.65rem;
+      border-radius: 8px;
+      font-variant-numeric: tabular-nums;
+      box-shadow: 0 0 12px rgba(16, 185, 129, 0.12);
       display: inline-block;
-      font-size: 0.98rem;
+      white-space: nowrap;
+    }
+
+    /* Grid com 4 Indicadores Complementares */
+    .card-indicators-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 0.4rem;
+      margin-top: 0.35rem;
+      margin-bottom: 0.2rem;
+    }
+
+    .ind-card {
+      background: var(--bg-input);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 0.45rem 0.35rem;
+      text-align: center;
+      min-width: 0;
+    }
+
+    .ind-label {
+      font-size: 0.62rem;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      color: var(--text-muted);
+      display: block;
+      margin-bottom: 0.18rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .ind-val {
+      font-size: 0.8rem;
       font-weight: 700;
       font-variant-numeric: tabular-nums;
-      color: var(--green);
-      background: var(--green-bg);
-      padding: 0.14rem 0.55rem;
-      border-radius: 7px;
+      color: var(--text-primary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      display: block;
+    }
+
+    .ind-val.pvp-desconto {
+      color: #34d399;
     }
 
     .card-meta {
-      margin-top: 0.75rem;
-      font-size: 0.7rem;
+      padding-top: 0.55rem;
+      border-top: 1px solid var(--border);
+      font-size: 0.69rem;
       color: var(--text-muted);
       display: flex;
       justify-content: space-between;
+      align-items: center;
     }
 
     /* ================= PAINEL ANALISTA IA (GEMINI) ================= */
@@ -694,14 +855,12 @@
       }
 
       .api-card {
-        flex-direction: row;
-        align-items: center;
-        justify-content: space-between;
-        padding: 0.75rem 1rem;
+        flex-direction: column;
+        padding: 0.95rem 1.25rem;
       }
 
       .api-input-row {
-        max-width: 420px;
+        max-width: 100%;
       }
 
       .app-shell {
@@ -811,15 +970,30 @@
   <section class="api-section">
     <div class="api-card">
       <div class="api-card-header">
-        <span>Chave de API do Google Gemini</span>
-        <span id="api-badge" class="api-status-badge">
-          <span class="status-dot"></span>
-          <span id="api-status-text">Não configurada</span>
-        </span>
+        <div class="api-header-left">
+          <div class="api-brand-title">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color: var(--ai-primary); flex-shrink: 0;"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            <span>Google AI Studio • Analista Gemini</span>
+          </div>
+          <span class="badge-pro-free">
+            <span style="font-size: 0.65rem;">⚡</span>
+            <span>Suporta Pro &amp; Free</span>
+          </span>
+        </div>
+        <div class="api-header-right">
+          <span id="api-badge" class="api-status-badge">
+            <span class="status-dot"></span>
+            <span id="api-status-text">Não configurada</span>
+          </span>
+        </div>
       </div>
       <div class="api-input-row">
-        <input type="password" id="gemini-key" placeholder="Cole sua Gemini API Key aqui...">
-        <button class="btn btn-ai" onclick="salvarChaveGemini()">Salvar</button>
+        <input type="password" id="gemini-key" placeholder="Cole sua Gemini API Key (AIzaSy...) aqui..." onkeydown="if(event.key==='Enter') validarEConectarGemini(true)">
+        <button id="btn-salvar-key" class="btn btn-ai" onclick="validarEConectarGemini(true)">Validar &amp; Conectar</button>
+      </div>
+      <div class="api-card-footer">
+        <span>💡 <strong>Assinatura Pro:</strong> Sua chave no <a href="https://aistudio.google.com/app/apikey" target="_blank" style="color: var(--accent); text-decoration: underline;">aistudio.google.com</a> ativa o <strong>gemini-2.5-pro</strong> com alta capacidade.</span>
+        <a href="javascript:void(0)" onclick="alternarVisibilidadeChave()" style="color: var(--text-secondary); text-decoration: none; font-weight: 600; white-space: nowrap;">👁️ Mostrar/Ocultar</a>
       </div>
     </div>
   </section>
@@ -929,6 +1103,39 @@
     let filtroAtual = 'TODOS';
     let historicoSessao = [];
 
+    // ================= DESCOMPACTAÇÃO DE METADADOS RICOS DO ATIVO =================
+    function extrairInfoAtivo(item) {
+      if (!item) return item;
+      let nomeExibicao = item.nome || item.ticker;
+      let min52 = item.min_52 !== undefined ? item.min_52 : null;
+      let max52 = item.max_52 !== undefined ? item.max_52 : null;
+      let pvp = item.pvp !== undefined ? item.pvp : null;
+      let pl = item.pl !== undefined ? item.pl : null;
+      let var12m = item.variacao_12m !== undefined ? item.variacao_12m : null;
+
+      if (item.nome && typeof item.nome === 'string' && item.nome.trim().startsWith('{')) {
+        try {
+          const parsed = JSON.parse(item.nome);
+          nomeExibicao = parsed.n || parsed.nome || item.ticker;
+          if (parsed.min !== undefined && parsed.min !== null) min52 = parsed.min;
+          if (parsed.max !== undefined && parsed.max !== null) max52 = parsed.max;
+          if (parsed.pvp !== undefined && parsed.pvp !== null) pvp = parsed.pvp;
+          if (parsed.pl !== undefined && parsed.pl !== null) pl = parsed.pl;
+          if (parsed.var !== undefined && parsed.var !== null) var12m = parsed.var;
+        } catch (e) {}
+      }
+
+      return {
+        ...item,
+        nome_exibicao: nomeExibicao,
+        min_52: min52,
+        max_52: max52,
+        pvp: pvp,
+        pl: pl,
+        variacao_12m: var12m
+      };
+    }
+
     // ================= CARREGAMENTO UNIFICADO DA TABELA ÚNICA =================
     async function sincronizarTabelaUnica() {
       const container = document.getElementById('lista-ativos');
@@ -954,8 +1161,10 @@
 
         const todosRegistros = await resp.json();
 
-        // Separa o que é Ativo de Mercado do que é Memória Evolutiva da IA
-        listaCompleta = todosRegistros.filter(item => item.tipo !== 'MEMORIA');
+        // Separa o que é Ativo de Mercado do que é Memória Evolutiva da IA e extrai os indicadores completos
+        listaCompleta = todosRegistros
+          .filter(item => item.tipo !== 'MEMORIA')
+          .map(extrairInfoAtivo);
 
         const registrosMemoria = todosRegistros
           .filter(item => item.tipo === 'MEMORIA' && item.nome)
@@ -1064,29 +1273,107 @@
       }
     }
 
-    function inicializarChaveGemini() {
+    let modeloSelecionadoGemini = localStorage.getItem('gemini_modelo_ativo') || 'gemini-2.5-pro';
+
+    function alternarVisibilidadeChave() {
+      const input = document.getElementById('gemini-key');
+      if (input) input.type = input.type === 'password' ? 'text' : 'password';
+    }
+
+    async function inicializarChaveGemini() {
       const chaveSalva = localStorage.getItem(STORAGE_KEY_GEMINI);
       const inputKey = document.getElementById('gemini-key');
 
       if (chaveSalva) {
         inputKey.value = chaveSalva;
-        atualizarVisualStatusKey(true);
+        await validarEConectarGemini(false);
       } else {
         atualizarVisualStatusKey(false);
       }
     }
 
-    function salvarChaveGemini() {
+    async function validarEConectarGemini(mostrarAlerta = false) {
       const chave = document.getElementById('gemini-key').value.trim();
+      const badge = document.getElementById('api-badge');
+      const statusText = document.getElementById('api-status-text');
+      const btn = document.getElementById('btn-salvar-key');
 
       if (!chave) {
         localStorage.removeItem(STORAGE_KEY_GEMINI);
         atualizarVisualStatusKey(false);
-        return;
+        if (mostrarAlerta) alert('Por favor, cole sua chave de API do Gemini.');
+        return false;
       }
 
-      localStorage.setItem(STORAGE_KEY_GEMINI, chave);
-      atualizarVisualStatusKey(true);
+      if (btn) {
+        btn.disabled = true;
+        btn.textContent = 'Validando...';
+      }
+      if (statusText) statusText.textContent = 'Verificando conta...';
+
+      try {
+        // Consulta lista de modelos autorizados na conta Google
+        const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${encodeURIComponent(chave)}`);
+        const dados = await resp.json();
+
+        if (!resp.ok) {
+          const msg = dados.error?.message || 'Erro ao validar chave';
+          if (resp.status === 400 || msg.includes('API key not valid')) {
+            throw new Error('Chave de API inválida. Verifique os caracteres informados no Google AI Studio.');
+          } else if (resp.status === 429 || msg.includes('quota') || msg.includes('exceeded')) {
+            throw new Error('Cota da chave esgotada. Vincule a chave a um projeto com sua assinatura no Google Cloud.');
+          }
+          throw new Error(msg);
+        }
+
+        const modelosDisponiveis = (dados.models || [])
+          .filter(m => m.supportedGenerationMethods?.includes('generateContent'))
+          .map(m => m.name.replace('models/', ''));
+
+        console.log('[Gemini] Modelos autorizados na conta:', modelosDisponiveis);
+
+        const prioridade = [
+          'gemini-2.5-pro',
+          'gemini-1.5-pro',
+          'gemini-2.5-flash',
+          'gemini-2.0-flash',
+          'gemini-2.5-flash-lite',
+          'gemini-2.0-flash-lite',
+          'gemini-1.5-flash'
+        ];
+
+        modeloSelecionadoGemini = prioridade.find(p => modelosDisponiveis.includes(p)) || modelosDisponiveis[0] || 'gemini-2.5-pro';
+        const isPro = modeloSelecionadoGemini.includes('pro');
+
+        localStorage.setItem(STORAGE_KEY_GEMINI, chave);
+        localStorage.setItem('gemini_modelo_ativo', modeloSelecionadoGemini);
+
+        if (badge && statusText) {
+          badge.className = 'api-status-badge online';
+          statusText.textContent = isPro 
+            ? `Pro Validada (${modeloSelecionadoGemini})` 
+            : `Conectada (${modeloSelecionadoGemini})`;
+        }
+
+        if (mostrarAlerta) {
+          alert(`✅ Conta Google AI Studio conectada com sucesso!\nModelo ativo: ${modeloSelecionadoGemini}${isPro ? ' (Assinatura Pro)' : ''}`);
+        }
+        return true;
+      } catch (err) {
+        if (badge && statusText) {
+          badge.className = 'api-status-badge';
+          statusText.textContent = 'Erro na validação';
+        }
+        if (mostrarAlerta) {
+          alert(`⚠️ Falha ao validar conta: ${err.message}`);
+        }
+        return false;
+      } finally {
+        if (btn) {
+          btn.disabled = false;
+          btn.textContent = 'Validar & Conectar';
+        }
+      }
     }
 
     function atualizarKPIs() {
@@ -1143,6 +1430,47 @@
         });
         const classeBadge = ativo.tipo === 'FII' ? 'badge-fii' : 'badge-acao';
 
+        // Badge de Valorização 12M
+        let varBadgeHtml = '';
+        if (ativo.variacao_12m) {
+          const varStr = String(ativo.variacao_12m).trim();
+          const isNeg = varStr.includes('-');
+          const icon = isNeg ? '▼' : '▲';
+          const cls = isNeg ? 'var-neg' : 'var-pos';
+          varBadgeHtml = `<span class="badge-var ${cls}" title="Valorização nos últimos 12 meses">${icon} ${varStr}</span>`;
+        }
+
+        // Mínima e Máxima 52 semanas
+        const min52Html = ativo.min_52 
+          ? Number(ativo.min_52).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
+          : '—';
+        const max52Html = ativo.max_52 
+          ? Number(ativo.max_52).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
+          : '—';
+
+        // P/VP (com destaque verde caso esteja com desconto em FIIs)
+        let pvpHtml = '—';
+        let pvpClass = '';
+        if (ativo.pvp !== null && ativo.pvp !== undefined) {
+          const pvpNum = Number(ativo.pvp);
+          pvpHtml = pvpNum.toFixed(2).replace('.', ',');
+          if (ativo.tipo === 'FII' && pvpNum < 1.0) {
+            pvpClass = 'pvp-desconto';
+            pvpHtml += ' <span style="font-size:0.6rem; font-weight:700;">(desconto)</span>';
+          }
+        }
+
+        // P/L (Ações) ou Segmento (FII / Fiagro)
+        const lblInd4 = ativo.tipo === 'FII' ? 'Segmento' : 'P/L';
+        let valInd4 = '—';
+        if (ativo.tipo === 'Ação' && ativo.pl !== null && ativo.pl !== undefined) {
+          valInd4 = Number(ativo.pl).toFixed(2).replace('.', ',');
+        } else if (ativo.tipo === 'FII') {
+          valInd4 = ativo.ticker.startsWith('SNAG') ? 'Fiagro' : 'FII B3';
+        }
+
+        const nomeDesc = ativo.nome_exibicao || ativo.nome || 'Ativo B3';
+
         return `
           <article class="asset-card">
             <div>
@@ -1150,27 +1478,46 @@
                 <div class="ticker-group">
                   <span class="ticker-symbol">${ativo.ticker}</span>
                   <span class="badge ${classeBadge}">${ativo.tipo}</span>
+                  ${varBadgeHtml}
                 </div>
                 <button class="refresh-btn" title="Atualizar ${ativo.ticker}" onclick="atualizarCardIndividual('${ativo.ticker}', this)">↻</button>
               </div>
-              <div class="asset-desc" title="${ativo.nome || ''}">${ativo.nome || 'Ativo B3'}</div>
+              <div class="asset-desc" title="${nomeDesc}">${nomeDesc}</div>
             </div>
 
-            <div>
-              <div class="card-metrics">
-                <div>
-                  <span class="m-label">Cotação</span>
-                  <span class="m-price">${preco}</span>
-                </div>
-                <div class="m-dy-col">
-                  <span class="m-label">Dividend Yield</span>
-                  <span class="m-dy">${dy}%</span>
-                </div>
+            <div class="card-hero-metrics">
+              <div class="hero-metric-box">
+                <span class="m-label">Cotação Atual</span>
+                <span class="m-price">${preco}</span>
               </div>
-              <div class="card-meta">
-                <span>B3 • À vista</span>
-                <span>Atualizado ${dataHora}</span>
+              <div class="hero-dy-box">
+                <span class="m-label">Dividend Yield (12M)</span>
+                <span class="m-dy-tag">${dy}%</span>
               </div>
+            </div>
+
+            <div class="card-indicators-grid">
+              <div class="ind-card">
+                <span class="ind-label">Mín. 52s</span>
+                <span class="ind-val">${min52Html}</span>
+              </div>
+              <div class="ind-card">
+                <span class="ind-label">Máx. 52s</span>
+                <span class="ind-val">${max52Html}</span>
+              </div>
+              <div class="ind-card">
+                <span class="ind-label">P/VP</span>
+                <span class="ind-val ${pvpClass}">${pvpHtml}</span>
+              </div>
+              <div class="ind-card">
+                <span class="ind-label">${lblInd4}</span>
+                <span class="ind-val">${valInd4}</span>
+              </div>
+            </div>
+
+            <div class="card-meta">
+              <span>B3 • À vista</span>
+              <span>Atualizado ${dataHora}</span>
             </div>
           </article>
         `;
@@ -1247,10 +1594,11 @@
 
             // Atualiza localmente para visualização imediata
             const idx = listaCompleta.findIndex(a => a.ticker === ticker);
+            const ativoFormatado = extrairInfoAtivo(novoAtivo);
             if (idx >= 0) {
-              listaCompleta[idx] = novoAtivo;
+              listaCompleta[idx] = ativoFormatado;
             } else {
-              listaCompleta.push(novoAtivo);
+              listaCompleta.push(ativoFormatado);
             }
             atualizarKPIs();
             renderizar();
@@ -1364,24 +1712,24 @@
               }
             }
           ]
-        },
-        {
-          googleSearch: {}
         }
       ];
 
-      // Modelos em ordem de recomendação da Google AI Studio
-      const MODELOS = [
-        'gemini-3.8-flash',
-        'gemini-3.5-flash-lite',
-        'gemini-3.6-flash',
+      // Modelos em ordem de preferência Pro & Free
+      let modelosParaTentar = [
+        modeloSelecionadoGemini,
+        'gemini-2.5-pro',
+        'gemini-1.5-pro',
+        'gemini-2.0-flash',
         'gemini-2.5-flash-lite',
-        'gemini-2.5-flash'
-      ];
+        'gemini-2.0-flash-lite',
+        'gemini-3.5-flash-lite'
+      ].filter((m, i, self) => m && self.indexOf(m) === i);
 
       let ultimoErro = null;
 
-      for (const modelo of MODELOS) {
+      // Tentativa 1: Com ferramentas completas
+      for (const modelo of modelosParaTentar) {
         try {
           const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelo}:generateContent?key=${encodeURIComponent(apiKey)}`, {
             method: 'POST',
@@ -1402,18 +1750,41 @@
           const msg = dados.error?.message || '';
           console.warn(`[Gemini] Modelo ${modelo} retornou:`, msg);
 
-          if (resp.status === 404 || msg.includes('not available') || msg.includes('no longer available') || msg.includes('not found')) {
+          // Se for erro de cota ou modelo indisponível, tenta o próximo modelo da lista
+          if (resp.status === 429 || resp.status === 404 || msg.includes('quota') || msg.includes('exceeded') || msg.includes('not available') || msg.includes('not found')) {
             ultimoErro = new Error(msg);
             continue;
           }
 
-          throw new Error(msg || 'Erro ao comunicar com a API do Gemini');
-        } catch (e) {
-          if (e.message.includes('API key not valid') || e.message.includes('permission') || e.message.includes('quota')) {
-            throw e;
+          if (msg.includes('API key not valid')) {
+            throw new Error('Chave de API do Gemini inválida. Verifique a chave informada no topo.');
           }
+
+          throw new Error(msg || 'Erro na API do Gemini');
+        } catch (e) {
+          if (e.message.includes('API key not valid')) throw e;
           ultimoErro = e;
         }
+      }
+
+      // Tentativa 2: Modo leve sem ferramentas (consome muito menos cota e bypassa limites de tools)
+      for (const modelo of modelosParaTentar) {
+        try {
+          const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelo}:generateContent?key=${encodeURIComponent(apiKey)}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              systemInstruction: { parts: [{ text: instrucaoSistema }] },
+              contents: contents
+            })
+          });
+
+          const dados = await resp.json();
+          if (resp.ok) {
+            modeloSelecionadoGemini = modelo;
+            return dados;
+          }
+        } catch {}
       }
 
       throw ultimoErro || new Error('Não foi possível conectar aos modelos do Gemini. Verifique sua chave de API.');
@@ -1537,7 +1908,16 @@ DIRETRIZES DE LIBERDADE ANALÍTICA E APRENDIZADO CONTÍNUO:
         textoElemento.innerHTML = formatarTextoSeguro(partesTexto);
 
       } catch (erro) {
-        textoElemento.innerHTML = `<span style="color: var(--red);">Erro: ${erro.message}</span>`;
+        if (erro.message.includes('quota') || erro.message.includes('exceeded') || erro.message.includes('rate-limit') || erro.message.includes('RESOURCE_EXHAUSTED')) {
+          textoElemento.innerHTML = `<div style="color: var(--amber); line-height: 1.5; font-size: 0.88rem;">
+            <strong>⚠️ Limite de cota atingido na sua chave Gemini:</strong><br>
+            A chave informada atingiu temporariamente o limite de requisições por minuto da conta gratuita do Google AI Studio.<br><br>
+            • Aguarde cerca de 1 minuto e envie a pergunta novamente.<br>
+            • Ou crie uma nova chave gratuita em um novo projeto no <a href="https://aistudio.google.com/app/apikey" target="_blank" style="color:var(--accent); text-decoration:underline;">Google AI Studio</a> e cole no campo acima.
+          </div>`;
+        } else {
+          textoElemento.innerHTML = `<span style="color: var(--red);">Erro: ${erro.message}</span>`;
+        }
       } finally {
         btn.disabled = false;
         btn.textContent = 'Analisar';

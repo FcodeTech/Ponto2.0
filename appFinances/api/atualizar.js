@@ -10,78 +10,169 @@ export default async function handler(req, res) {
 
   const SUPABASE_URL = process.env.SUPABASE_URL || 'https://zwcvaqxdfurmexyuxtvv.supabase.co';
   const SUPABASE_KEY = process.env.SUPABASE_SERVICE_KEY || process.env.SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp3Y3ZhcXhkZnVybWV4eXV4dHZ2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM4NzI3ODUsImV4cCI6MjA5OTQ0ODc4NX0.lKmjdZznodxT6QPZ8QyZOTpc_DrRROAyjKA1muPtS-Y';
-  const API_TOKEN = process.env.BOLSAI_TOKEN || process.env.BRAPI_TOKEN || '';
 
   const tickerUnico = req.query?.ticker?.toUpperCase()?.trim();
   const tickers = tickerUnico ? [tickerUnico] : ['BBAS3', 'PETR4', 'VALE3', 'HGLG11', 'MXRF11'];
 
   try {
     const resultados = [];
+    const sbPayload = [];
 
     for (const ticker of tickers) {
       if (!ticker) continue;
-      const tipo = ticker.endsWith('11') ? 'FII' : 'Ação';
-      let ativoObtido = null;
+      const isFii = ticker.endsWith('11');
+      const tipo = isFii ? 'FII' : 'Ação';
 
-      // 1. Tenta Google Finance (preço exato em tempo real para Ações e FIIs da B3)
-      try {
-        const respGf = await fetch(`https://www.google.com/finance/quote/${ticker}:BVMF`, {
-          headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)' }
-        });
-        if (respGf.ok) {
-          const html = await respGf.text();
-          const matchPreco = html.match(/class="[^"]*YMlKec[^"]*fxKbKc[^"]*">R\$([0-9\.,]+)</i) || html.match(/R\$([0-9]+(?:\.[0-9]+)?)/);
-          const matchNome = html.match(/class="zzDege">([^<]+)</i);
-          if (matchPreco) {
-            const precoLimpo = parseFloat(matchPreco[1].replace(',', '.'));
-            if (precoLimpo > 0) {
-              ativoObtido = {
-                ticker: ticker,
-                tipo: tipo,
-                nome: matchNome ? matchNome[1].trim() : `${ticker} (B3)`,
-                preco_atual: precoLimpo,
-                dividend_yield: tipo === 'FII' ? 11.5 : 7.0, // Estimativa de base para DY caso não informada
-                atualizado_em: new Date().toISOString()
-              };
-            }
-          }
-        }
-      } catch (errGf) {
-        console.warn(`[API] Google Finance falhou para ${ticker}:`, errGf.message);
+      const ativo = {
+        ticker: ticker,
+        tipo: tipo,
+        nome: ticker,
+        preco_atual: 0.0,
+        dividend_yield: 0.0,
+        min_52: null,
+        max_52: null,
+        pvp: null,
+        pl: null,
+        variacao_12m: null,
+        atualizado_em: new Date().toISOString()
+      };
+
+      // 1. Tenta StatusInvest (dados mais completos e precisos da B3: Ações, FIIs e Fiagros)
+      const urlsSi = [];
+      if (isFii) {
+        urlsSi.push(`https://statusinvest.com.br/fundos-imobiliarios/${ticker.toLowerCase()}`);
+        urlsSi.push(`https://statusinvest.com.br/fiagros/${ticker.toLowerCase()}`);
+      } else {
+        urlsSi.push(`https://statusinvest.com.br/acoes/${ticker.toLowerCase()}`);
       }
 
-      // 2. Consulta via brapi.dev
-      if (!ativoObtido) {
+      for (const urlSi of urlsSi) {
         try {
-          const urlBrapi = API_TOKEN
-            ? `https://brapi.dev/api/quote/${ticker}?token=${API_TOKEN}`
-            : `https://brapi.dev/api/quote/${ticker}`;
-
-          const respBrapi = await fetch(urlBrapi, {
-            headers: { 'User-Agent': 'Mozilla/5.0' }
+          const respSi = await fetch(urlSi, {
+            headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)' }
           });
 
-          if (respBrapi.ok) {
-            const dados = await respBrapi.json();
-            const item = dados.results?.[0];
-            if (item && item.regularMarketPrice !== undefined) {
-              ativoObtido = {
-                ticker: ticker,
-                tipo: tipo,
-                nome: item.longName || item.shortName || ticker,
-                preco_atual: Number(item.regularMarketPrice) || 0,
-                dividend_yield: Number(item.dividendYield || 0),
-                atualizado_em: new Date().toISOString()
-              };
+          if (respSi.ok) {
+            const htmlSi = await respSi.text();
+            const mPreco = htmlSi.match(/title="Valor atual[^"]*"[\s\S]*?<strong class="value">([\d,\.]+)/i) ||
+                           htmlSi.match(/<strong class="value">([\d,\.]+)/i);
+            if (mPreco) {
+              ativo.preco_atual = parseFloat(mPreco[1].replace(/\./g, '').replace(',', '.'));
             }
+
+            const mDy = htmlSi.match(/title="Dividend Yield[^"]*"[\s\S]*?<strong class="value">([\d,\.]+)/i);
+            if (mDy) {
+              ativo.dividend_yield = parseFloat(mDy[1].replace(/\./g, '').replace(',', '.'));
+            }
+
+            const mMin = htmlSi.match(/Min\. 52 semanas[\s\S]*?<strong class="value">([\d,\.]+)/i);
+            if (mMin) ativo.min_52 = parseFloat(mMin[1].replace(/\./g, '').replace(',', '.'));
+
+            const mMax = htmlSi.match(/M[áa]x\. 52 semanas[\s\S]*?<strong class="value">([\d,\.]+)/i);
+            if (mMax) ativo.max_52 = parseFloat(mMax[1].replace(/\./g, '').replace(',', '.'));
+
+            const mVar = htmlSi.match(/Valoriza[çc][ãa]o \(12m\)[\s\S]*?<strong class="value">([^<]+)/i);
+            if (mVar) ativo.variacao_12m = mVar[1].trim();
+
+            const mNome = htmlSi.match(/<small[^>]*>([^<]+)<\/small>/i);
+            if (mNome) ativo.nome = mNome[1].trim();
+
+            if (ativo.preco_atual > 0 && ativo.dividend_yield > 0) break;
           }
-        } catch (errBrapi) {
-          console.warn(`[API] Brapi falhou para ${ticker}:`, errBrapi.message);
+        } catch (errSi) {
+          // Continua para o próximo endpoint
         }
       }
 
-      if (ativoObtido) {
-        resultados.push(ativoObtido);
+      // 2. Tenta Fundamentus para enriquecer P/L, P/VP e complementar dados
+      try {
+        const respFund = await fetch(`https://www.fundamentus.com.br/detalhes.php?papel=${ticker}`, {
+          headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)' }
+        });
+        if (respFund.ok) {
+          const buf = await respFund.arrayBuffer();
+          const decoder = new TextDecoder('iso-8859-1');
+          const textFund = decoder.decode(buf);
+
+          const getLabel = (label) => {
+            const rx = new RegExp(`>${label}<[\\s\\S]{1,200}?<span class="txt">([^<]+)</span>`, 'i');
+            const m = textFund.match(rx);
+            return m ? m[1].trim() : null;
+          };
+
+          if (ativo.preco_atual <= 0) {
+            const c = getLabel('Cotação');
+            if (c) ativo.preco_atual = parseFloat(c.replace(/\./g, '').replace(',', '.'));
+          }
+
+          if (ativo.dividend_yield <= 0) {
+            const d = getLabel('Div. Yield');
+            if (d) ativo.dividend_yield = parseFloat(d.replace('%', '').replace(/\./g, '').replace(',', '.'));
+          }
+
+          const pvp = getLabel('P/VP');
+          if (pvp && pvp !== '-') {
+            try { ativo.pvp = parseFloat(pvp.replace(/\./g, '').replace(',', '.')); } catch {}
+          }
+
+          const pl = getLabel('P/L');
+          if (pl && pl !== '-') {
+            try { ativo.pl = parseFloat(pl.replace(/\./g, '').replace(',', '.')); } catch {}
+          }
+
+          if (!ativo.min_52) {
+            const mn = getLabel('Min 52 sem');
+            if (mn) ativo.min_52 = parseFloat(mn.replace(/\./g, '').replace(',', '.'));
+          }
+          if (!ativo.max_52) {
+            const mx = getLabel('Max 52 sem');
+            if (mx) ativo.max_52 = parseFloat(mx.replace(/\./g, '').replace(',', '.'));
+          }
+
+          if (ativo.nome === ticker) {
+            const nm = getLabel('Empresa') || getLabel('Fundo');
+            if (nm) ativo.nome = nm;
+          }
+        }
+      } catch (errFund) {
+        console.warn(`[API] Fundamentus aviso para ${ticker}:`, errFund.message);
+      }
+
+      // 3. Fallback Google Finance se preço ainda não encontrado
+      if (ativo.preco_atual <= 0) {
+        try {
+          const respGf = await fetch(`https://www.google.com/finance/quote/${ticker}:BVMF`, {
+            headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)' }
+          });
+          if (respGf.ok) {
+            const html = await respGf.text();
+            const matchPreco = html.match(/class="[^"]*YMlKec[^"]*fxKbKc[^"]*">R\$([0-9\.,]+)</i) || html.match(/R\$([0-9]+(?:\.[0-9]+)?)/);
+            if (matchPreco) {
+              ativo.preco_atual = parseFloat(matchPreco[1].replace(',', '.'));
+            }
+          }
+        } catch (errGf) {
+          console.warn(`[API] Google Finance aviso para ${ticker}:`, errGf.message);
+        }
+      }
+
+      if (ativo.preco_atual > 0) {
+        resultados.push(ativo);
+        sbPayload.push({
+          ticker: ativo.ticker,
+          tipo: ativo.tipo,
+          nome: JSON.stringify({
+            n: ativo.nome,
+            min: ativo.min_52,
+            max: ativo.max_52,
+            pvp: ativo.pvp,
+            pl: ativo.pl,
+            var: ativo.variacao_12m
+          }),
+          preco_atual: ativo.preco_atual,
+          dividend_yield: ativo.dividend_yield,
+          atualizado_em: ativo.atualizado_em
+        });
       }
     }
 
@@ -93,7 +184,7 @@ export default async function handler(req, res) {
     }
 
     // Persiste os resultados na tabela mp_ativos do Supabase
-    if (resultados.length > 0) {
+    if (sbPayload.length > 0) {
       try {
         await fetch(`${SUPABASE_URL}/rest/v1/mp_ativos`, {
           method: 'POST',
@@ -103,10 +194,10 @@ export default async function handler(req, res) {
             'Content-Type': 'application/json',
             'Prefer': 'resolution=merge-duplicates'
           },
-          body: JSON.stringify(resultados)
+          body: JSON.stringify(sbPayload)
         });
-      } catch (errDb) {
-        console.warn(`[API] Erro ao gravar no Supabase:`, errDb.message);
+      } catch (errSb) {
+        console.warn('[API] Aviso ao salvar no Supabase:', errSb.message);
       }
     }
 
@@ -114,11 +205,10 @@ export default async function handler(req, res) {
       sucesso: true,
       atualizados: resultados
     });
-
-  } catch (erro) {
+  } catch (error) {
     return res.status(500).json({
       sucesso: false,
-      erro: erro.message
+      erro: error.message || 'Erro interno no servidor ao consultar cotações.'
     });
   }
 }
