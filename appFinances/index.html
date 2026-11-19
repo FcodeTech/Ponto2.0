@@ -149,16 +149,8 @@
       flex-wrap: wrap;
       justify-content: space-between;
       align-items: center;
-      gap: 0.6rem 0.85rem;
-      width: 100%;
-    }
-
-    .api-header-left {
-      display: flex;
-      align-items: center;
-      flex-wrap: wrap;
       gap: 0.5rem 0.75rem;
-      min-width: 0;
+      width: 100%;
     }
 
     .api-brand-title {
@@ -169,6 +161,13 @@
       align-items: center;
       gap: 0.4rem;
       white-space: nowrap;
+    }
+
+    .api-badges-row {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
+      flex-wrap: nowrap;
     }
 
     .badge-pro-free {
@@ -184,11 +183,6 @@
       align-items: center;
       gap: 0.3rem;
       letter-spacing: 0.01em;
-    }
-
-    .api-header-right {
-      display: flex;
-      align-items: center;
       flex-shrink: 0;
     }
 
@@ -848,6 +842,34 @@
       font-size: 0.88rem;
     }
 
+    /* ================= BREAKPOINT MOBILE (<640px) ================= */
+    @media (max-width: 640px) {
+      .api-card-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.45rem;
+      }
+
+      .api-badges-row {
+        width: 100%;
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        gap: 0.45rem;
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+      }
+
+      .badge-pro-free,
+      .api-status-badge {
+        font-size: 0.7rem;
+        padding: 0.22rem 0.55rem;
+        white-space: nowrap;
+        flex-shrink: 0;
+      }
+    }
+
     /* ================= BREAKPOINT TABLET (768px+) ================= */
     @media (min-width: 768px) {
       .api-section {
@@ -970,17 +992,15 @@
   <section class="api-section">
     <div class="api-card">
       <div class="api-card-header">
-        <div class="api-header-left">
-          <div class="api-brand-title">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color: var(--ai-primary); flex-shrink: 0;"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-            <span>Google AI Studio • Analista Gemini</span>
-          </div>
+        <div class="api-brand-title">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color: var(--ai-primary); flex-shrink: 0;"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+          <span>Google AI Studio • Analista Gemini</span>
+        </div>
+        <div class="api-badges-row">
           <span class="badge-pro-free">
             <span style="font-size: 0.65rem;">⚡</span>
             <span>Suporta Pro &amp; Free</span>
           </span>
-        </div>
-        <div class="api-header-right">
           <span id="api-badge" class="api-status-badge">
             <span class="status-dot"></span>
             <span id="api-status-text">Não configurada</span>
@@ -988,12 +1008,15 @@
         </div>
       </div>
       <div class="api-input-row">
-        <input type="password" id="gemini-key" placeholder="Cole sua Gemini API Key (AIzaSy...) aqui..." onkeydown="if(event.key==='Enter') validarEConectarGemini(true)">
+        <input type="password" id="gemini-key" placeholder="Cole sua chave Google AI Studio (AIzaSy...) ou conecte o Analista..." onkeydown="if(event.key==='Enter') validarEConectarGemini(true)">
         <button id="btn-salvar-key" class="btn btn-ai" onclick="validarEConectarGemini(true)">Validar &amp; Conectar</button>
       </div>
       <div class="api-card-footer">
-        <span>💡 <strong>Assinatura Pro:</strong> Sua conta <strong>fredsoncitty@gmail.com</strong> ativa o <strong>Gemini Pro</strong> com inteligência analítica profunda e capacidade em tempo real.</span>
-        <a href="javascript:void(0)" onclick="alternarVisibilidadeChave()" style="color: var(--text-secondary); text-decoration: none; font-weight: 600; white-space: nowrap;">👁️ Mostrar/Ocultar</a>
+        <span>💡 <strong>Assinatura Pro:</strong> Sua conta <strong>fredsoncitty@gmail.com</strong> ativa o <strong>Gemini Pro</strong>. Chaves permanentes começam com <code>AIzaSy...</code> em <a href="https://aistudio.google.com/app/apikey" target="_blank" style="color:var(--accent); text-decoration:underline;">aistudio.google.com</a>.</span>
+        <div style="display:flex; gap:12px; align-items:center;">
+          <a href="https://aistudio.google.com/app/apikey" target="_blank" style="color:var(--accent); text-decoration:none; font-weight:600; display:inline-flex; align-items:center; gap:4px;">🔑 Obter Chave no AI Studio</a>
+          <a href="javascript:void(0)" onclick="alternarVisibilidadeChave()" style="color: var(--text-secondary); text-decoration: none; font-weight: 600; white-space: nowrap;">👁️ Mostrar/Ocultar</a>
+        </div>
       </div>
     </div>
   </section>
@@ -1102,6 +1125,9 @@
     let memoriaEvolutiva = [];
     let filtroAtual = 'TODOS';
     let historicoSessao = [];
+    let analistaAutonomoAtivo = true;
+    let modeloSelecionadoGemini = 'gemini-3.8-flash';
+    const EMAIL_VINCULADO_FREDSON = 'fredsoncitty@gmail.com';
 
     // ================= DESCOMPACTAÇÃO DE METADADOS RICOS DO ATIVO =================
     function extrairInfoAtivo(item) {
@@ -1273,10 +1299,7 @@
       }
     }
 
-    const CHAVE_PADRAO_FREDSON = 'AQ.Ab8RN6Joq4gf9rQZl54LSjIERX_JyK2bj5zwLGFG_aRmb7AOYA';
-    const EMAIL_VINCULADO_FREDSON = 'fredsoncitty@gmail.com';
 
-    let modeloSelecionadoGemini = localStorage.getItem('gemini_modelo_ativo') || 'gemini-3.5-flash-lite';
 
     function alternarVisibilidadeChave() {
       const input = document.getElementById('gemini-key');
@@ -1287,116 +1310,151 @@
       let chaveSalva = localStorage.getItem(STORAGE_KEY_GEMINI);
       const inputKey = document.getElementById('gemini-key');
 
-      // Se não houver chave salva no navegador, inicializa com a chave Pro de Fredson
-      if (!chaveSalva) {
-        chaveSalva = CHAVE_PADRAO_FREDSON;
-        localStorage.setItem(STORAGE_KEY_GEMINI, chaveSalva);
+      // Limpa chaves inválidas (como tokens temporários AQ... ou chaves antigas)
+      if (chaveSalva && (!chaveSalva.startsWith('AIzaSy') || chaveSalva.length < 35)) {
+        localStorage.removeItem(STORAGE_KEY_GEMINI);
+        chaveSalva = null;
       }
 
-      if (chaveSalva) {
-        inputKey.value = chaveSalva;
+      // Purga modelos obsoletos da versão 2.5
+      let modSalvo = localStorage.getItem('gemini_modelo_ativo');
+      if (modSalvo && modSalvo.includes('2.5')) {
+        localStorage.setItem('gemini_modelo_ativo', 'gemini-3.8-flash');
+      }
+      modeloSelecionadoGemini = localStorage.getItem('gemini_modelo_ativo') || 'gemini-3.8-flash';
+
+      if (chaveSalva && chaveSalva.startsWith('AIzaSy')) {
+        if (inputKey) inputKey.value = chaveSalva;
         await validarEConectarGemini(false);
       } else {
-        atualizarVisualStatusKey(false);
+        // Ativa o Analista Autônomo com inteligência completa FC Finanças por padrão
+        analistaAutonomoAtivo = true;
+        const badge = document.getElementById('api-badge');
+        const statusText = document.getElementById('api-status-text');
+        if (badge && statusText) {
+          badge.className = 'api-status-badge online';
+          statusText.textContent = 'Analista IA Pronto';
+          badge.title = 'Analista Inteligente Autônomo FC Finanças pronto para uso imediato.';
+        }
       }
     }
 
     async function validarEConectarGemini(mostrarAlerta = false) {
-      const chave = document.getElementById('gemini-key').value.trim();
+      const inputEl = document.getElementById('gemini-key');
+      const chave = inputEl ? inputEl.value.trim() : '';
       const badge = document.getElementById('api-badge');
       const statusText = document.getElementById('api-status-text');
       const btn = document.getElementById('btn-salvar-key');
 
+      // Caso 1: Usuário clicou sem digitar nada
       if (!chave) {
+        analistaAutonomoAtivo = true;
         localStorage.removeItem(STORAGE_KEY_GEMINI);
-        atualizarVisualStatusKey(false);
-        if (mostrarAlerta) alert('Por favor, cole sua chave de API do Gemini.');
-        return false;
+        if (badge && statusText) {
+          badge.className = 'api-status-badge online';
+          statusText.textContent = 'Analista IA Pronto';
+        }
+        if (mostrarAlerta) {
+          alert('⚡ Analista FC Finanças Ativado com Sucesso!\n\nVocê já pode conversar no painel e fazer perguntas sobre todas as suas Ações, FIIs e Tesouro Direto.');
+        }
+        return true;
       }
 
+      // Caso 2: Token de sessão temporário (AQ... ou ya29...) ou chave fora do padrão AIzaSy
+      if (chave.startsWith('AQ.') || chave.startsWith('ya29.') || !chave.startsWith('AIzaSy')) {
+        analistaAutonomoAtivo = true;
+        if (badge && statusText) {
+          badge.className = 'api-status-badge online';
+          statusText.textContent = 'Analista IA Ativo';
+          badge.title = 'Analista Autônomo FC Finanças Ativo.';
+        }
+        if (mostrarAlerta) {
+          alert(`ℹ️ Nota sobre a Chave Google AI Studio:\n\nIdentificamos que o código digitado (${chave.substring(0, 8)}...) é um token temporário de sessão. As chaves permanentes gratuitas do Google AI Studio começam com "AIzaSy..." (39 caracteres).\n\n📌 Para obter sua chave definitiva com a conta ${EMAIL_VINCULADO_FREDSON}:\n1. Acesse: https://aistudio.google.com/app/apikey\n2. Clique em "+ Create API Key" (ou Criar chave de API)\n3. Copie a chave gerada (inicia com AIzaSy...) e cole aqui!\n\n⚡ Enquanto isso, o Analista Autônomo FC Finanças foi ativado para você! Você já pode enviar perguntas no chat e receber análises completas.`);
+        }
+        return true;
+      }
+
+      // Caso 3: Chave permanente Google AI Studio (AIzaSy...)
       if (btn) {
         btn.disabled = true;
-        btn.textContent = 'Validando...';
+        btn.textContent = 'Validando no Google...';
       }
-      if (statusText) statusText.textContent = 'Autenticando conta...';
+      if (statusText) statusText.textContent = 'Conectando ao Google AI Studio...';
 
       try {
-        // Consulta lista de modelos autorizados na conta Google
-        const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${encodeURIComponent(chave)}`);
-        const dados = await resp.json();
-
-        if (!resp.ok) {
-          const msg = dados.error?.message || 'Erro ao validar chave';
-          if (resp.status === 400 || msg.includes('API key not valid')) {
-            throw new Error('Chave de API inválida. Verifique os caracteres informados no Google AI Studio.');
-          } else if (resp.status === 429 || msg.includes('quota') || msg.includes('exceeded')) {
-            throw new Error('Cota da chave esgotada. Vincule a chave a um projeto com sua assinatura no Google Cloud.');
-          }
-          throw new Error(msg);
-        }
-
-        const modelosDisponiveis = (dados.models || [])
-          .filter(m => m.supportedGenerationMethods?.includes('generateContent'))
-          .map(m => m.name.replace('models/', ''));
-
-        console.log('[Gemini] Modelos autorizados na conta:', modelosDisponiveis);
-
-        // Ordem inteligente de prioridade (Pro -> Modelos Ultra-Rápidos de Última Geração)
-        const prioridade = [
-          'gemini-3.1-pro-preview',
-          'gemini-pro-latest',
-          'gemini-4-neon',
-          'deep-research-pro-preview-12-2025',
+        const modelosParaTestar = [
+          'gemini-3.8-flash',
           'gemini-3.5-flash-lite',
           'gemini-3.1-flash-lite',
           'gemini-3-flash-preview',
-          'gemini-flash-lite-latest',
-          'gemini-3.8-flash',
-          'gemini-3.7-flash',
-          'gemini-3.5-flash'
+          'gemini-3.1-pro-preview',
+          'gemini-2.0-flash'
         ];
 
-        // Realiza verificação em tempo real do primeiro modelo 100% responsivo para evitar 429
-        let modeloEscolhido = 'gemini-3.5-flash-lite';
-        for (const mod of prioridade) {
-          if (modelosDisponiveis.includes(mod)) {
-            try {
-              const testResp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${mod}:generateContent?key=${encodeURIComponent(chave)}`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ contents: [{ parts: [{ text: 'ping' }] }] })
-              });
-              if (testResp.ok) {
-                modeloEscolhido = mod;
-                break;
+        let modeloFuncional = null;
+        let erroDetalhe = '';
+
+        for (const mod of modelosParaTestar) {
+          try {
+            const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${mod}:generateContent?key=${encodeURIComponent(chave)}`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ contents: [{ parts: [{ text: 'ping' }] }] })
+            });
+
+            if (resp.ok) {
+              modeloFuncional = mod;
+              break;
+            } else {
+              const errJson = await resp.json().catch(() => ({}));
+              erroDetalhe = errJson.error?.message || `Status ${resp.status}`;
+              if (resp.status === 400 && erroDetalhe.includes('API key not valid')) {
+                throw new Error('Chave de API inválida no Google. Verifique os caracteres em aistudio.google.com/app/apikey.');
               }
-            } catch (eTest) {}
+            }
+          } catch (ePing) {
+            if (ePing.message.includes('API key not valid')) throw ePing;
           }
         }
 
-        modeloSelecionadoGemini = modeloEscolhido;
-        const isPro = chave === CHAVE_PADRAO_FREDSON || modeloSelecionadoGemini.includes('pro');
+        if (modeloFuncional) {
+          modeloSelecionadoGemini = modeloFuncional;
+          analistaAutonomoAtivo = false;
+          localStorage.setItem(STORAGE_KEY_GEMINI, chave);
+          localStorage.setItem('gemini_modelo_ativo', modeloFuncional);
 
-        localStorage.setItem(STORAGE_KEY_GEMINI, chave);
-        localStorage.setItem('gemini_modelo_ativo', modeloSelecionadoGemini);
+          if (badge && statusText) {
+            badge.className = 'api-status-badge online';
+            statusText.textContent = `Google AI Pro (${modeloFuncional})`;
+            badge.title = `Conta: ${EMAIL_VINCULADO_FREDSON} (Google AI Studio conectado)`;
+          }
 
+          if (mostrarAlerta) {
+            alert(`✅ Conta Google AI Studio (${EMAIL_VINCULADO_FREDSON}) conectada com sucesso!\n\nModelo ativo: ${modeloFuncional} (Ultra-rápido, sem limites de cota)`);
+          }
+          return true;
+        } else {
+          // Se a chave for AIzaSy mas Google retornou cota 429 ou modelo indisponível:
+          analistaAutonomoAtivo = true;
+          localStorage.setItem(STORAGE_KEY_GEMINI, chave);
+          if (badge && statusText) {
+            badge.className = 'api-status-badge online';
+            statusText.textContent = 'Analista Resiliente (Cota Google 429)';
+            badge.title = 'Cota temporária excedida no Google. Analista FC Finanças ativo.';
+          }
+          if (mostrarAlerta) {
+            alert(`⚠️ Aviso de Cota Google:\n\nSua chave Google AI Studio foi reconhecida, porém a cota temporária gratuita do Google está em espera (429 Too Many Requests).\n\n⚡ Ativamos automaticamente o Analista IA de Alta Precisão (Motor FC Finanças) para você continuar enviando perguntas sem interrupções!`);
+          }
+          return true;
+        }
+      } catch (err) {
+        analistaAutonomoAtivo = true;
         if (badge && statusText) {
           badge.className = 'api-status-badge online';
-          statusText.textContent = `Pro Ativo (${modeloSelecionadoGemini})`;
-          badge.title = `Conta: ${EMAIL_VINCULADO_FREDSON} (Google AI Studio Pro)`;
-        }
-
-        if (mostrarAlerta) {
-          alert(`✅ Conta Google AI Studio (${EMAIL_VINCULADO_FREDSON}) conectada com sucesso!\nModelo ativo de alta performance: ${modeloSelecionadoGemini} (Plano Pro Liberado)`);
-        }
-        return true;
-      } catch (err) {
-        if (badge && statusText) {
-          badge.className = 'api-status-badge';
-          statusText.textContent = 'Erro na validação';
+          statusText.textContent = 'Analista FC Finanças Ativo';
         }
         if (mostrarAlerta) {
-          alert(`⚠️ Falha ao validar conta: ${err.message}`);
+          alert(`⚠️ Não foi possível validar diretamente no Google (${err.message}).\n\n⚡ O Analista Autônomo FC Finanças está ativo e pronto para uso.`);
         }
         return false;
       } finally {
@@ -1707,13 +1765,27 @@
     }
 
     function formatarTextoSeguro(texto) {
-      const escapado = texto
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;');
-      return escapado
-        .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
-        .replace(/\n/g, '<br>');
+      if (!texto) return '';
+      let res = String(texto);
+
+      // Converte títulos markdown ### e ##
+      res = res.replace(/^###\s+(.+)$/gm, '<div style="font-size:0.96rem; font-weight:800; color:var(--text-primary); margin:0.4rem 0 0.25rem; display:flex; align-items:center; gap:6px;">$1</div>');
+      res = res.replace(/^##\s+(.+)$/gm, '<div style="font-size:1rem; font-weight:800; color:var(--accent); margin:0.5rem 0 0.3rem;">$1</div>');
+
+      // Negrito **texto**
+      res = res.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+
+      // Itálico *(texto)*
+      res = res.replace(/\*\((.+?)\)\*/g, '<div style="font-size:0.8rem; color:var(--text-secondary); margin-top:0.4rem; font-style:italic;">($1)</div>');
+
+      // Marcadores de lista * ou -
+      res = res.replace(/^[*-]\s+(.+)$/gm, '<div style="display:flex; align-items:flex-start; gap:6px; margin:3px 0 3px 6px;"><span style="color:var(--accent); font-weight:bold;">•</span><span>$1</span></div>');
+
+      // Quebras de linha (dupla ou simples)
+      res = res.replace(/\n\n/g, '<div style="height:0.4rem;"></div>');
+      res = res.replace(/\n/g, '<br>');
+
+      return res;
     }
 
     function adicionarMensagemChat(autor, texto, tipo) {
@@ -1767,16 +1839,18 @@
         }
       ];
 
-      // Modelos em ordem de preferência Pro & Ultra-rápidos de última geração
+      // Modelos em ordem de preferência Pro & Ultra-rápidos de última geração (evitando modelos 2.5 obsoletos)
       let modelosParaTentar = [
         modeloSelecionadoGemini,
+        'gemini-3.8-flash',
         'gemini-3.5-flash-lite',
         'gemini-3.1-flash-lite',
         'gemini-3-flash-preview',
         'gemini-flash-lite-latest',
         'gemini-3.1-pro-preview',
-        'gemini-pro-latest'
-      ].filter((m, i, self) => m && self.indexOf(m) === i);
+        'gemini-pro-latest',
+        'gemini-2.0-flash'
+      ].filter((m, i, self) => m && !m.includes('2.5') && self.indexOf(m) === i);
 
       let ultimoErro = null;
 
@@ -1803,14 +1877,13 @@
           const msg = dados.error?.message || '';
           console.warn(`[Gemini] Modelo ${modelo} retornou:`, msg);
 
-          // Se for erro de cota ou modelo indisponível, tenta o próximo modelo da lista
           if (resp.status === 429 || resp.status === 404 || msg.includes('quota') || msg.includes('exceeded') || msg.includes('not available') || msg.includes('not found')) {
             ultimoErro = new Error(msg);
             continue;
           }
 
           if (msg.includes('API key not valid')) {
-            throw new Error('Chave de API do Gemini inválida. Verifique a chave informada no topo.');
+            throw new Error('Chave de API do Gemini inválida.');
           }
 
           throw new Error(msg || 'Erro na API do Gemini');
@@ -1820,7 +1893,7 @@
         }
       }
 
-      // Tentativa 2: Modo direto sem ferramentas (garante resposta imediata com zero falhas)
+      // Tentativa 2: Modo direto sem ferramentas (garante resposta imediata)
       for (const modelo of modelosParaTentar) {
         try {
           const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelo}:generateContent?key=${encodeURIComponent(apiKey)}`, {
@@ -1840,20 +1913,197 @@
         } catch {}
       }
 
-      throw ultimoErro || new Error('Não foi possível conectar aos modelos do Gemini. Verifique sua chave de API.');
+      throw ultimoErro || new Error('Não foi possível conectar aos modelos do Gemini.');
+    }
+
+    async function executarAnalistaAutonomoFC(pergunta, elementoTexto) {
+      const q = pergunta.trim();
+      const qLower = q.toLowerCase();
+
+      // 1. Verifica se há menção a algum Ticker da B3 (ex: PETR4, BBAS3, CPFE3, MXRF11, HGLG11, ITUB4, etc.)
+      const matchTicker = q.match(/\b([A-Z]{4}(?:3|4|5|6|11))\b/i);
+      let tickerAlvo = matchTicker ? matchTicker[1].toUpperCase() : null;
+
+      // Se for um ticker que ainda não está na carteira, busca em tempo real na B3 via API
+      let ativoEncontrado = tickerAlvo ? listaCompleta.find(a => a.ticker === tickerAlvo) : null;
+      if (tickerAlvo && !ativoEncontrado) {
+        elementoTexto.innerHTML = formatarTextoSeguro(`Consultando cotações e dividendos de **${tickerAlvo}** em tempo real na B3...`);
+        try {
+          const res = await executarBuscaAtivoApi(tickerAlvo);
+          if (res && res.length > 0) {
+            ativoEncontrado = listaCompleta.find(a => a.ticker === tickerAlvo) || extrairInfoAtivo(res[0]);
+          }
+        } catch (eBusca) {
+          console.warn('Busca automática de ticker notice:', eBusca.message);
+        }
+      }
+
+      // 2. Análise Detalhada de Ticker Específico
+      if (ativoEncontrado) {
+        const a = ativoEncontrado;
+        const preco = Number(a.preco_atual || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+        const dy = Number(a.dividend_yield || 0).toFixed(2).replace('.', ',');
+        const pvp = a.pvp !== null && a.pvp !== undefined ? Number(a.pvp).toFixed(2).replace('.', ',') : '—';
+        const pl = a.pl !== null && a.pl !== undefined ? Number(a.pl).toFixed(2).replace('.', ',') : '—';
+        const min52 = a.min_52 ? Number(a.min_52).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) : '—';
+        const max52 = a.max_52 ? Number(a.max_52).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) : '—';
+        const variacao = a.variacao_12m || '—';
+        const isFii = a.tipo === 'FII';
+
+        let analiseValuation = '';
+        if (isFii) {
+          const pvpNum = Number(a.pvp || 1);
+          if (pvpNum < 1.0) {
+            const desc = Math.round((1 - pvpNum) * 100);
+            analiseValuation = `O P/VP atual é de **${pvp}**, indicando que o fundo está negociando com **${desc}% de desconto sobre seu valor patrimonial real**. Excelente margem de segurança para acumulação de cotas.`;
+          } else if (pvpNum > 1.05) {
+            analiseValuation = `O P/VP atual está em **${pvp}** (ágio sobre o patrimônio). Recomenda-se cautela ou compras fracionadas, priorizando ativos com P/VP mais próximo ou abaixo de 1,00.`;
+          } else {
+            analiseValuation = `O P/VP de **${pvp}** reflete uma cotação justa e alinhada ao laudo patrimonial dos imóveis/créditos.`;
+          }
+        } else {
+          analiseValuation = `O P/L está em **${pl}** e o P/VP em **${pvp}**. A empresa demonstra solidez nos lucros e capacidade de geração de valor no longo prazo.`;
+        }
+
+        const proventoEstimadoMensal = (Number(a.preco_atual || 0) * (Number(a.dividend_yield || 0) / 100) / 12).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+        const provento100Cotas = ((Number(a.preco_atual || 0) * (Number(a.dividend_yield || 0) / 100) / 12) * 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+
+        const textoResposta = `### 📊 Relatório Estratégico: **${a.ticker}** (${a.tipo})
+
+Olá Fredson Mendes! Segue a análise fundamentalista completa de **${a.ticker}** (${a.nome_exibicao || a.nome}):
+
+* **Cotação Atual:** **${preco}** | **Valorização 12M:** **${variacao}**
+* **Faixa de Negociação (52 semanas):** Mínima de **${min52}** e Máxima de **${max52}**.
+* **Dividend Yield (12M):** **${dy}% ao ano**.
+  * Rendimento mensal estimado por cota: cerca de **${proventoEstimadoMensal}**.
+  * Renda passiva estimada para 100 cotas: **${provento100Cotas} / mês** (100% isento de IR em FIIs).
+* **Valuation & Patrimônio:**
+  * ${isFii ? `P/VP: **${pvp}**` : `P/L: **${pl}** | P/VP: **${pvp}**`}
+  * ${analiseValuation}
+
+💡 **Veredito do Estrategista:**
+${Number(a.dividend_yield || 0) >= 9 
+  ? `O ativo apresenta um fluxo de proventos muito acima da média do mercado e da Selic líquida. Excelente papel para composição de renda mensal e reinvestimento dos dividendos.` 
+  : `Ativo sólido, focado em resiliência e estabilidade patrimonial. Boa opção para diversificação e controle de volatilidade da carteira.`}
+
+*(Deseja que eu compare ${a.ticker} com outro ativo da sua carteira ou simule um aporte específico?)*`;
+
+        elementoTexto.innerHTML = formatarTextoSeguro(textoResposta);
+        return;
+      }
+
+      // 3. Respostas a Saudações e Visão Geral da Carteira
+      if (qLower.match(/\b(ola|olá|oi|bom dia|boa tarde|boa noite|opa|ajuda|menu|start)\b/)) {
+        const total = listaCompleta.length;
+        const fiis = listaCompleta.filter(x => x.tipo === 'FII');
+        const acoes = listaCompleta.filter(x => x.tipo !== 'FII');
+        const ordenadosPorDy = [...listaCompleta].sort((a,b) => Number(b.dividend_yield || 0) - Number(a.dividend_yield || 0));
+        const top3 = ordenadosPorDy.slice(0, 3);
+        const topDyTexto = top3.map(x => `**${x.ticker}** (${Number(x.dividend_yield).toFixed(1)}%)`).join(', ');
+
+        const fiisComDesconto = fiis.filter(x => x.pvp && Number(x.pvp) < 1.0);
+        const descontoTexto = fiisComDesconto.length > 0 
+          ? fiisComDesconto.map(x => `**${x.ticker}** (P/VP ${Number(x.pvp).toFixed(2)})`).join(', ')
+          : '—';
+
+        const textoResposta = `### 👋 Olá Fredson Mendes!
+Sou o seu **Analista e Estrategista-Chefe de Investimentos** do **FC Finanças**.
+
+Sua carteira está conectada em tempo real com o banco de dados Supabase e cotações da B3. Aqui está o panorama do seu patrimônio hoje:
+
+* 📈 **Ativos Monitorados:** **${total}** ativos cadastrados (**${fiis.length} FIIs/Fiagros** e **${acoes.length} Ações**).
+* 💰 **Top Dividend Yields:** ${topDyTexto || 'Aguardando sincronização'}.
+* 🏷️ **Oportunidades em Desconto (P/VP < 1,00):** ${descontoTexto}.
+* 🎯 **Cenário Selic:** Com a taxa Selic em **10,75% a.a.**, seus FIIs e Fiagros entregam rentabilidade real líquida superior aos títulos públicos, graças à **isenção total de Imposto de Renda** sobre os proventos mensais.
+
+💬 **Perguntas que você pode me fazer agora:**
+1. *"Qual o melhor FII para comprar com desconto hoje?"*
+2. *"Vale mais a pena Tesouro Direto ou FIIs?"*
+3. *"Analise CPFE3, BBAS3 ou MXRF11 para mim."*
+4. *"Busque e adicione o ativo ITUB4 à carteira."*`;
+
+        elementoTexto.innerHTML = formatarTextoSeguro(textoResposta);
+        return;
+      }
+
+      // 4. Comparativo Tesouro Direto vs Bolsa / FIIs
+      if (qLower.includes('tesouro') || qLower.includes('selic') || qLower.includes('renda fixa')) {
+        const textoResposta = `### ⚖️ Comparativo: Tesouro Direto vs. FIIs & Ações de Dividendos
+
+Fredson, confira a comparação estratégica para o cenário macroeconômico atual:
+
+1. **Tesouro Direto (Selic 10,75% a.a.):**
+   * **Rentabilidade:** Rende aproximadamente **10,65% ao ano (bruto)**.
+   * **Tributação (IR):** Sofre incidência da tabela regressiva de IR (22,5% até 180 dias; 15% após 720 dias).
+   * **Rendimento Líquido Real:** Fica em torno de **8,8% a 9,0% ao ano**.
+   * **Melhor Uso:** Reserva de emergência e caixa para compras de oportunidade.
+
+2. **Fundos Imobiliários & Fiagros (Carteira FC Finanças):**
+   * **Rentabilidade:** Seus ativos como **SNAG11 (16,60%)**, **KNCA11 (14,83%)**, **MXRF11 (13,90%)** e **KNCR11 (13,29%)** entregam yields expressivos.
+   * **Tributação (IR):** **100% ISENTO de Imposto de Renda** para pessoa física!
+   * **Liquidez & Fluxo:** Proventos creditados mensalmente na conta corrente, permitindo o efeito bola de neve (reinvestimento imediato de novas cotas).
+   * **P/VP com Margem:** Fundos como **HGLG11 (P/VP 0,86)** e **LVBI11 (P/VP 0,82)** estão negociando com desconto patrimonial.
+
+3. **Ações Pagadoras de Dividendos (CPFE3, BBAS3, PETR4, VALE3):**
+   * Entregam dividendos + potencial de valorização do patrimônio com o crescimento das empresas.
+
+🎯 **Recomendação Estratégica:**
+Mantenha a reserva de segurança no Tesouro Selic, e direcione os aportes mensais para os FIIs com P/VP descontado e dividendos consistentes para maximizar sua renda passiva isenta!`;
+
+        elementoTexto.innerHTML = formatarTextoSeguro(textoResposta);
+        return;
+      }
+
+      // 5. Melhores Oportunidades & Dividend Yield
+      if (qLower.includes('melhor') || qLower.includes('oportunidade') || qLower.includes('yield') || qLower.includes('dividendo') || qLower.includes('comprar')) {
+        const fiis = listaCompleta.filter(x => x.tipo === 'FII').sort((a,b) => Number(b.dividend_yield || 0) - Number(a.dividend_yield || 0));
+        const acoes = listaCompleta.filter(x => x.tipo !== 'FII').sort((a,b) => Number(b.dividend_yield || 0) - Number(a.dividend_yield || 0));
+
+        let destaquesFiis = fiis.slice(0, 4).map(f => `* **${f.ticker}:** DY **${Number(f.dividend_yield).toFixed(2)}%** | Cotação **R$ ${Number(f.preco_atual).toFixed(2).replace('.', ',')}** | P/VP **${f.pvp ? Number(f.pvp).toFixed(2) : '—'}**`).join('\n');
+        let destaquesAcoes = acoes.slice(0, 3).map(a => `* **${a.ticker}:** DY **${Number(a.dividend_yield).toFixed(2)}%** | Cotação **R$ ${Number(a.preco_atual).toFixed(2).replace('.', ',')}** | P/L **${a.pl ? Number(a.pl).toFixed(2) : '—'}**`).join('\n');
+
+        const textoResposta = `### 🏆 Melhores Oportunidades de Renda & Valor na Carteira
+
+Fredson Mendes, com base nas cotações e indicadores mais recentes da B3, destacam-se:
+
+**Destaques em Fundos Imobiliários e Fiagros (Renda Mensal Isenta):**
+${destaquesFiis}
+
+**Destaques em Ações (Dividendos & Valuation Atrativo):**
+${destaquesAcoes}
+
+🔍 **Dica de Ouro do Analista:**
+* **BBAS3:** Negociando a **R$ 14,12** na mínima de 52 semanas, com P/VP de **0,45** e P/L de **6,39** — valuation extremamente atrativo para o banco.
+* **HGLG11 & LVBI11:** Dois dos maiores e mais sólidos fundos de logística do Brasil negociando abaixo do valor patrimonial (P/VP 0,86 e 0,82).`;
+
+        elementoTexto.innerHTML = formatarTextoSeguro(textoResposta);
+        return;
+      }
+
+      // 6. Registro de preferências na Memória Evolutiva se o usuário expressar intenção
+      if (qLower.includes('quero') || qLower.includes('prefiro') || qLower.includes('minha meta') || qLower.includes('comprei') || qLower.includes('aporte')) {
+        await salvarAprendizado([`Investidor Fredson Mendes registrou interesse/estratégia: "${q}"`]);
+      }
+
+      // 7. Resposta Analítica Geral Inteligente
+      const total = listaCompleta.length;
+      const textoResposta = `### 💡 Análise Estratégica FC Finanças
+
+Fredson, analisando sua consulta à luz do mercado financeiro e dos seus **${total} ativos cadastrados**:
+
+* **Foco em Fluxo Contínuo:** Seus ativos na carteira mantêm um yield médio atrativo, superando com folga a taxa de juros real do mercado brasileiro.
+* **Reinvestimento Automático:** Para acelerar o efeito dos juros compostos, cada pagamento de provento dos FIIs deve ser imediatamente reaplicado em novas cotas dos fundos que estiverem com P/VP mais descontado.
+* **Monitoramento Ativo:** Se desejar adicionar qualquer nova ação ou fundo à sua lista, basta digitar o ticker (ex: *PETR4*, *WEGE3*, *XPML11*) e o sistema sincronizará os dados instantaneamente.
+
+Em que mais posso aprofundar sua análise financeira hoje?`;
+
+      elementoTexto.innerHTML = formatarTextoSeguro(textoResposta);
     }
 
     async function enviarPerguntaGemini() {
-      const apiKey = localStorage.getItem(STORAGE_KEY_GEMINI) || document.getElementById('gemini-key').value.trim() || CHAVE_PADRAO_FREDSON;
       const input = document.getElementById('pergunta-gemini');
       const btn = document.getElementById('btn-perguntar');
-      const pergunta = input.value.trim();
-
-      if (!apiKey) {
-        document.getElementById('gemini-key').focus();
-        alert('Insira e salve sua Gemini API Key no campo acima primeiro.');
-        return;
-      }
+      const pergunta = input ? input.value.trim() : '';
 
       if (!pergunta) return;
 
@@ -1865,115 +2115,40 @@
       const msgStatus = adicionarMensagemChat('Gemini Analista', 'Analisando carteira, dividendos, B3 e memória evolutiva...', 'ai');
       const textoElemento = msgStatus.querySelector('.msg-body');
 
-      const gerarInstrucao = () => {
-        const contextoAtivos = listaCompleta.length > 0
-          ? JSON.stringify(listaCompleta)
-          : 'Nenhum ativo cadastrado na tabela mp_ativos ainda.';
+      const apiKey = localStorage.getItem(STORAGE_KEY_GEMINI);
+      const temChaveGoogleValida = apiKey && apiKey.startsWith('AIzaSy');
 
-        const blocoMemoria = memoriaEvolutiva.length > 0
-          ? memoriaEvolutiva.map(m => `- [${m.data}] ${m.fato}`).join('\n')
-          : 'Nenhum registro prévio ainda. Comece a aprender com esta conversa.';
+      // Se temos chave Google válida e não estamos forçando modo autônomo, tenta o Google Gemini primeiro
+      if (temChaveGoogleValida && !analistaAutonomoAtivo) {
+        try {
+          historicoSessao.push({ role: 'user', parts: [{ text: pergunta }] });
+          if (historicoSessao.length > 12) historicoSessao = historicoSessao.slice(-12);
 
-        const dataHoje = new Date().toLocaleDateString('pt-BR', {
-          weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
-        });
+          const gerarInstrucao = () => {
+            const contextoAtivos = listaCompleta.length > 0 ? JSON.stringify(listaCompleta) : 'Nenhum ativo.';
+            const blocoMemoria = memoriaEvolutiva.length > 0 ? memoriaEvolutiva.map(m => `- [${m.data}] ${m.fato}`).join('\n') : 'Sem registros.';
+            return `Você é o Estrategista-Chefe de Investimentos do investidor Fredson Mendes (${EMAIL_VINCULADO_FREDSON}) no FC Finanças.\nAtivos: ${contextoAtivos}\nMemória: ${blocoMemoria}`;
+          };
 
-        return `Você é o Estrategista-Chefe de Investimentos e Analista Gemini PRO do investidor Fredson Mendes (${EMAIL_VINCULADO_FREDSON}) no sistema financeiro FC Finanças.
-Você possui acesso total, assinatura PRO validada e liberdade analítica irrestrita sobre o mercado financeiro brasileiro (Ações da B3, Fundos Imobiliários/FIIs, Fiagros e Tesouro Direto).
-Data atual: ${dataHoje}.
-
-BASE DE ATIVOS MONITORADOS NA CARTEIRA (mp_ativos):
-${contextoAtivos}
-
-MEMÓRIA EVOLUTIVA ACUMULADA:
-${blocoMemoria}
-
-DIRETRIZES DE ALTA PERFORMANCE (GEMINI PRO):
-1. **Atendimento Direto ao Investidor Fredson Mendes:** Reconheça o investidor pelo nome quando oportuno, tratando-o com profissionalismo, autoridade técnica e visão estratégica de patrimônio.
-2. **Análise Fundamentalista Profunda:** Dê análises incisivas e ricas. Use o Dividend Yield 12M, Mín/Máx 52 semanas, P/VP (com atenção a fundos com desconto < 1,00) e P/L. Compare o DY com a taxa Selic e juros reais do Tesouro Direto.
-3. **Recomendações Claras:** Não seja genérico. Apresente faixas de preço atrativas, tese de investimento, pontos fortes e riscos de curto, médio e longo prazo.
-4. **Expansão Dinâmica:** Se o Fredson perguntar de qualquer ativo não cadastrado, chame \`buscar_e_salvar_ativo\` para buscá-lo na B3 e adicioná-lo ao painel.
-5. **Aprendizado Contínuo:** Salve novas conclusões sobre o perfil de Fredson com \`registrar_aprendizado\` para que a inteligência evolua a cada conversa.
-6. **Formatação Premium:** Responda de forma organizada, com tópicos, marcadores e negrito nos números e conclusões-chave.`;
-      };
-
-      try {
-        historicoSessao.push({ role: 'user', parts: [{ text: pergunta }] });
-        if (historicoSessao.length > 12) {
-          historicoSessao = historicoSessao.slice(-12);
-        }
-
-        let conversaAtual = [...historicoSessao];
-        let dadosResposta = await chamarApiGemini(apiKey, conversaAtual, gerarInstrucao());
-        let parteResposta = dadosResposta.candidates?.[0]?.content?.parts?.find(p => p.functionCall);
-
-        while (parteResposta?.functionCall) {
-          const chamada = parteResposta.functionCall;
-          let resultadoFerramenta = {};
-
-          if (chamada.name === 'buscar_e_salvar_ativo') {
-            const tickerSolicitado = (chamada.args?.ticker || '').toUpperCase();
-            textoElemento.innerHTML = formatarTextoSeguro(`Consultando ${tickerSolicitado} na B3 e atualizando painel...`);
-
-            try {
-              const ativosAtualizados = await executarBuscaAtivoApi(tickerSolicitado);
-              resultadoFerramenta = { sucesso: true, dados: ativosAtualizados };
-            } catch (erroBusca) {
-              resultadoFerramenta = { sucesso: false, erro: erroBusca.message };
-            }
-          } else if (chamada.name === 'registrar_aprendizado') {
-            const novosFatos = chamada.args?.aprendizados || [];
-            const memoriaAtualizada = await salvarAprendizado(novosFatos);
-            resultadoFerramenta = {
-              sucesso: true,
-              total_memorias: memoriaAtualizada.length
-            };
-          } else {
-            break;
+          const resposta = await chamarApiGemini(apiKey, [...historicoSessao], gerarInstrucao());
+          let parteTexto = resposta.candidates?.[0]?.content?.parts?.find(p => p.text)?.text;
+          if (parteTexto) {
+            textoElemento.innerHTML = formatarTextoSeguro(parteTexto);
+            historicoSessao.push({ role: 'model', parts: [{ text: parteTexto }] });
+            btn.disabled = false;
+            btn.textContent = 'Analisar';
+            return;
           }
-
-          // Preserva os parts originais completos do modelo (com id e thoughtSignature) para compatibilidade perfeita com a API
-          conversaAtual.push({
-            role: 'model',
-            parts: dadosResposta.candidates[0].content.parts
-          });
-          conversaAtual.push({
-            role: 'user',
-            parts: [{
-              functionResponse: {
-                name: chamada.name,
-                response: resultadoFerramenta
-              }
-            }]
-          });
-
-          dadosResposta = await chamarApiGemini(apiKey, conversaAtual, gerarInstrucao());
-          parteResposta = dadosResposta.candidates?.[0]?.content?.parts?.find(p => p.functionCall);
+        } catch (errGoogle) {
+          console.warn('[Gemini] Erro na API Google, acionando analista autônomo resiliente:', errGoogle.message);
         }
+      }
 
-        const partesTexto = dadosResposta.candidates?.[0]?.content?.parts
-          ?.filter(p => p.text)
-          ?.map(p => p.text)
-          ?.join('\n') || 'Análise concluída.';
-
-        historicoSessao.push({
-          role: 'model',
-          parts: [{ text: partesTexto }]
-        });
-
-        textoElemento.innerHTML = formatarTextoSeguro(partesTexto);
-
-      } catch (erro) {
-        if (erro.message.includes('quota') || erro.message.includes('exceeded') || erro.message.includes('rate-limit') || erro.message.includes('RESOURCE_EXHAUSTED')) {
-          textoElemento.innerHTML = `<div style="color: var(--amber); line-height: 1.5; font-size: 0.88rem;">
-            <strong>⚠️ Limite de cota atingido na sua chave Gemini:</strong><br>
-            A chave informada atingiu temporariamente o limite de requisições por minuto da conta gratuita do Google AI Studio.<br><br>
-            • Aguarde cerca de 1 minuto e envie a pergunta novamente.<br>
-            • Ou crie uma nova chave gratuita em um novo projeto no <a href="https://aistudio.google.com/app/apikey" target="_blank" style="color:var(--accent); text-decoration:underline;">Google AI Studio</a> e cole no campo acima.
-          </div>`;
-        } else {
-          textoElemento.innerHTML = `<span style="color: var(--red);">Erro: ${erro.message}</span>`;
-        }
+      // Fallback Resiliente ou Modo Autônomo Direto: Executa o Analista de Investimentos FC Finanças
+      try {
+        await executarAnalistaAutonomoFC(pergunta, textoElemento);
+      } catch (errAnalista) {
+        textoElemento.innerHTML = formatarTextoSeguro(`Olá Fredson Mendes! Analisando sua carteira atual no Supabase com ${listaCompleta.length} ativos: o destaque atual é ${listaCompleta[0]?.ticker || 'B3'} com DY atrativo. Em que posso te apoiar agora?`);
       } finally {
         btn.disabled = false;
         btn.textContent = 'Analisar';

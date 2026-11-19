@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="pt-BR" data-theme="light">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -25,6 +26,7 @@
     <!-- SheetJS -->
     <script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
 </head>
+
 <body>
     <!-- Notificações -->
     <div id="toast-container" class="toast-container"></div>
@@ -34,7 +36,8 @@
         <aside class="sidebar" id="sidebar">
             <div class="sidebar-header">
                 <i class="fa-solid fa-clock brand-icon-default"></i>
-                <img class="brand-logo" src="" style="display:none; height: 32px; border-radius: 4px; margin-right: 10px;">
+                <img class="brand-logo" src=""
+                    style="display:none; height: 32px; border-radius: 4px; margin-right: 10px;">
                 <span class="brand">Ponto Eletrônico</span>
                 <button id="btn-close-sidebar" class="btn-icon mobile-only"><i class="fa-solid fa-xmark"></i></button>
             </div>
@@ -47,17 +50,22 @@
             </div>
             <nav class="sidebar-nav">
                 <a href="index.html" class="nav-item"><i class="fa-solid fa-chart-pie"></i> Dashboard</a>
-                <a href="registrar_ponto.html" class="nav-item"><i class="fa-solid fa-fingerprint"></i> Registrar Ponto</a>
-                <a href="relatorios.html" class="nav-item active"><i class="fa-solid fa-file-invoice"></i> Meus Relatórios</a>
+                <a href="registrar_ponto.html" class="nav-item"><i class="fa-solid fa-fingerprint"></i> Registrar
+                    Ponto</a>
+                <a href="relatorios.html" class="nav-item active"><i class="fa-solid fa-file-invoice"></i> Meus
+                    Relatórios</a>
                 <a href="imc.html" class="nav-item"><i class="fa-solid fa-weight-scale"></i> IMC</a>
-                <a href="appFinances.html" class="nav-item"><i class="fa-solid fa-arrow-trend-up"></i> App Financeiro</a>
-                <a href="funcionarios.html" class="nav-item admin-only"><i class="fa-solid fa-users"></i> Funcionários</a>
-                <a href="admin.html" class="nav-item admin-only"><i class="fa-solid fa-shield-halved"></i> Painel Admin</a>
+                <a href="appFinances.html" class="nav-item"><i class="fa-solid fa-chart-line"></i> FC Finanças</a>
+                <a href="funcionarios.html" class="nav-item admin-only"><i class="fa-solid fa-users"></i>
+                    Funcionários</a>
+                <a href="admin.html" class="nav-item admin-only"><i class="fa-solid fa-shield-halved"></i> Painel
+                    Admin</a>
                 <a href="configuracoes.html" class="nav-item"><i class="fa-solid fa-gear"></i> Configurações</a>
                 <a href="perfil.html" class="nav-item"><i class="fa-solid fa-user-pen"></i> Perfil</a>
             </nav>
             <div class="sidebar-footer">
-                <a href="#" id="btn-logout" class="nav-item text-danger"><i class="fa-solid fa-arrow-right-from-bracket"></i> Sair</a>
+                <a href="#" id="btn-logout" class="nav-item text-danger"><i
+                        class="fa-solid fa-arrow-right-from-bracket"></i> Sair</a>
             </div>
         </aside>
 
@@ -83,10 +91,14 @@
                     <div style="max-width: 1000px; margin: 0 auto; width: 100%;">
                         <div class="page-header" style="flex-wrap: wrap; gap: 15px;">
                             <h2>Relatórios</h2>
-                            <div class="export-actions" style="display: flex; gap: 10px; flex-wrap: wrap; flex: 1; justify-content: flex-end;">
-                                <button class="btn btn-export btn-pdf" id="btn-export-pdf"><i class="fa-solid fa-file-pdf"></i> Exportar PDF</button>
-                                <button class="btn btn-export btn-excel" id="btn-export-excel"><i class="fa-solid fa-file-excel"></i> Exportar Excel</button>
-                                <button class="btn btn-danger admin-only" id="btn-clear-all-records"><i class="fa-solid fa-trash-can"></i> Limpar Todos</button>
+                            <div class="export-actions"
+                                style="display: flex; gap: 10px; flex-wrap: wrap; flex: 1; justify-content: flex-end;">
+                                <button class="btn btn-export btn-pdf" id="btn-export-pdf"><i
+                                        class="fa-solid fa-file-pdf"></i> Exportar PDF</button>
+                                <button class="btn btn-export btn-excel" id="btn-export-excel"><i
+                                        class="fa-solid fa-file-excel"></i> Exportar Excel</button>
+                                <button class="btn btn-danger admin-only" id="btn-clear-all-records"><i
+                                        class="fa-solid fa-trash-can"></i> Limpar Todos</button>
                             </div>
                         </div>
 
@@ -94,7 +106,8 @@
                         <div id="rel-employee-info" class="panel mb-20" style="display: none;"></div>
 
                         <!-- Cards de totais do relatório movidos para cima -->
-                        <div class="mb-20" id="relatorio-totais-cards" style="display: flex; flex-direction: column; gap: 15px;">
+                        <div class="mb-20" id="relatorio-totais-cards"
+                            style="display: flex; flex-direction: column; gap: 15px;">
                             <div class="stat-card" style="width: 100%;">
                                 <div class="card-icon bg-info"><i class="fa-solid fa-business-time"></i></div>
                                 <div class="card-info">
@@ -104,7 +117,8 @@
                             </div>
                             <div class="mobile-stack" style="display: flex; gap: 15px; width: 100%;">
                                 <div class="stat-card" style="flex: 1;">
-                                    <div class="card-icon bg-warning"><i class="fa-solid fa-clock-rotate-left"></i></div>
+                                    <div class="card-icon bg-warning"><i class="fa-solid fa-clock-rotate-left"></i>
+                                    </div>
                                     <div class="card-info">
                                         <h3>Extras 50%</h3>
                                         <span class="value" id="rel-tot-extras-50">00:00</span>
@@ -122,57 +136,99 @@
                                 <div class="card-icon bg-danger"><i class="fa-solid fa-percent"></i></div>
                                 <div class="card-info">
                                     <h3>Desconto INSS</h3>
-                                    <span class="value" id="rel-tot-inss" style="color: var(--danger-color, #dc3545);">R$ 0,00</span>
-                                    <small style="display: block; margin-top: 5px; color: var(--text-muted); font-size: 0.85em;">Base (Salário + Extras): <strong id="rel-salario-bruto">R$ 0,00</strong></small>
+                                    <span class="value" id="rel-tot-inss"
+                                        style="color: var(--danger-color, #dc3545);">R$ 0,00</span>
+                                    <small
+                                        style="display: block; margin-top: 5px; color: var(--text-muted); font-size: 0.85em;">Base
+                                        (Salário + Extras): <strong id="rel-salario-bruto">R$ 0,00</strong></small>
                                 </div>
                             </div>
                             <div class="stat-card" id="rel-card-irrf" style="width: 100%; display: none;">
-                                <div class="card-icon" style="background-color: rgba(225, 29, 72, 0.15); color: #e11d48;"><i class="fa-solid fa-receipt"></i></div>
+                                <div class="card-icon"
+                                    style="background-color: rgba(225, 29, 72, 0.15); color: #e11d48;"><i
+                                        class="fa-solid fa-receipt"></i></div>
                                 <div class="card-info">
                                     <h3>Desconto IRRF (2026)</h3>
                                     <span class="value" id="rel-tot-irrf" style="color: #e11d48;">R$ 0,00</span>
-                                    <small style="display: block; margin-top: 5px; color: var(--text-muted); font-size: 0.85em;">Base: <strong id="rel-irrf-bruto">R$ 0,00</strong> &bull; <span id="rel-irrf-regra">Regra 2026</span></small>
+                                    <small
+                                        style="display: block; margin-top: 5px; color: var(--text-muted); font-size: 0.85em;">Base:
+                                        <strong id="rel-irrf-bruto">R$ 0,00</strong> &bull; <span
+                                            id="rel-irrf-regra">Regra 2026</span></small>
                                 </div>
                             </div>
                             <div class="stat-card" id="rel-card-fgts" style="width: 100%; display: none;">
-                                <div class="card-icon" style="background-color: rgba(16, 185, 129, 0.15); color: #10b981;"><i class="fa-solid fa-building-columns"></i></div>
+                                <div class="card-icon"
+                                    style="background-color: rgba(16, 185, 129, 0.15); color: #10b981;"><i
+                                        class="fa-solid fa-building-columns"></i></div>
                                 <div class="card-info">
                                     <h3>FGTS (8% CLT)</h3>
                                     <span class="value" id="rel-tot-fgts" style="color: #10b981;">R$ 0,00</span>
-                                    <small style="display: block; margin-top: 5px; color: var(--text-muted); font-size: 0.85em;">Base (Salário + Extras): <strong id="rel-fgts-bruto">R$ 0,00</strong> &bull; Depósito Empregador</small>
+                                    <small
+                                        style="display: block; margin-top: 5px; color: var(--text-muted); font-size: 0.85em;">Base
+                                        (Salário + Extras): <strong id="rel-fgts-bruto">R$ 0,00</strong> &bull; Depósito
+                                        Empregador</small>
                                 </div>
                             </div>
-                            <div class="stat-card" id="rel-card-13" style="width: 100%; display: none; align-items: flex-start;">
-                                <div class="card-icon" style="background-color: rgba(245, 158, 11, 0.15); color: #f59e0b; flex-shrink: 0;"><i class="fa-solid fa-gift"></i></div>
+                            <div class="stat-card" id="rel-card-13"
+                                style="width: 100%; display: none; align-items: flex-start;">
+                                <div class="card-icon"
+                                    style="background-color: rgba(245, 158, 11, 0.15); color: #f59e0b; flex-shrink: 0;">
+                                    <i class="fa-solid fa-gift"></i>
+                                </div>
                                 <div class="card-info" style="min-width: 0;">
-                                    <div style="display: flex; align-items: center; justify-content: space-between; gap: 6px; flex-wrap: wrap;">
+                                    <div
+                                        style="display: flex; align-items: center; justify-content: space-between; gap: 6px; flex-wrap: wrap;">
                                         <h3 style="margin: 0; font-size: 0.95rem;">13º Salário (CLT)</h3>
-                                        <span id="rel-13-badge" style="display: inline-flex; align-items: center; font-size: 0.72rem; font-weight: 600; padding: 2px 8px; border-radius: 12px; background: rgba(245, 158, 11, 0.12); color: #d97706; white-space: nowrap;">
-                                            <span id="rel-13-avos">0/12</span>&nbsp;&bull;&nbsp;<span id="rel-13-detalhe">Proporcional CLT</span>
+                                        <span id="rel-13-badge"
+                                            style="display: inline-flex; align-items: center; font-size: 0.72rem; font-weight: 600; padding: 2px 8px; border-radius: 12px; background: rgba(245, 158, 11, 0.12); color: #d97706; white-space: nowrap;">
+                                            <span id="rel-13-avos">0/12</span>&nbsp;&bull;&nbsp;<span
+                                                id="rel-13-detalhe">Proporcional CLT</span>
                                         </span>
                                     </div>
-                                    <span class="value" id="rel-tot-13" style="color: #f59e0b; margin-top: 3px; display: block;">R$ 0,00</span>
+                                    <span class="value" id="rel-tot-13"
+                                        style="color: #f59e0b; margin-top: 3px; display: block;">R$ 0,00</span>
                                     <div id="rel-13-detalhes-container" style="margin-top: 8px; font-size: 0.78rem;">
-                                        <div id="rel-13-extras-info" style="display: none; margin-top: 6px; padding: 7px 10px; background: rgba(245, 158, 11, 0.05); border-left: 3px solid #f59e0b; border-radius: 0 6px 6px 0; font-size: 0.76rem; line-height: 1.4;"></div>
-                                        <div id="rel-13-parcelas-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 6px; padding: 7px 10px; background: rgba(0, 0, 0, 0.02); border: 1px solid var(--border-color); border-radius: 6px;"></div>
-                                        <div id="rel-13-rodape" style="display: flex; justify-content: space-between; align-items: center; margin-top: 6px; color: var(--text-muted); font-size: 0.72rem; flex-wrap: wrap; gap: 4px;"></div>
+                                        <div id="rel-13-extras-info"
+                                            style="display: none; margin-top: 6px; padding: 7px 10px; background: rgba(245, 158, 11, 0.05); border-left: 3px solid #f59e0b; border-radius: 0 6px 6px 0; font-size: 0.76rem; line-height: 1.4;">
+                                        </div>
+                                        <div id="rel-13-parcelas-grid"
+                                            style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 6px; padding: 7px 10px; background: rgba(0, 0, 0, 0.02); border: 1px solid var(--border-color); border-radius: 6px;">
+                                        </div>
+                                        <div id="rel-13-rodape"
+                                            style="display: flex; justify-content: space-between; align-items: center; margin-top: 6px; color: var(--text-muted); font-size: 0.72rem; flex-wrap: wrap; gap: 4px;">
+                                        </div>
                                     </div>
                                 </div>
                             </div>
-                            <div class="stat-card" id="rel-card-ferias" style="width: 100%; display: none; align-items: flex-start;">
-                                <div class="card-icon" style="background-color: rgba(6, 182, 212, 0.15); color: #0891b2; flex-shrink: 0;"><i class="fa-solid fa-umbrella-beach"></i></div>
+                            <div class="stat-card" id="rel-card-ferias"
+                                style="width: 100%; display: none; align-items: flex-start;">
+                                <div class="card-icon"
+                                    style="background-color: rgba(6, 182, 212, 0.15); color: #0891b2; flex-shrink: 0;">
+                                    <i class="fa-solid fa-umbrella-beach"></i>
+                                </div>
                                 <div class="card-info" style="min-width: 0;">
-                                    <div style="display: flex; align-items: center; justify-content: space-between; gap: 6px; flex-wrap: wrap;">
+                                    <div
+                                        style="display: flex; align-items: center; justify-content: space-between; gap: 6px; flex-wrap: wrap;">
                                         <h3 style="margin: 0; font-size: 0.95rem;">Férias + 1/3 (CLT)</h3>
-                                        <span id="rel-ferias-badge" style="display: inline-flex; align-items: center; font-size: 0.72rem; font-weight: 600; padding: 2px 8px; border-radius: 12px; background: rgba(6, 182, 212, 0.12); color: #0891b2; white-space: nowrap;">
-                                            <span id="rel-ferias-avos">0/12</span>&nbsp;&bull;&nbsp;<span id="rel-ferias-dias">30 dias (Integral)</span>
+                                        <span id="rel-ferias-badge"
+                                            style="display: inline-flex; align-items: center; font-size: 0.72rem; font-weight: 600; padding: 2px 8px; border-radius: 12px; background: rgba(6, 182, 212, 0.12); color: #0891b2; white-space: nowrap;">
+                                            <span id="rel-ferias-avos">0/12</span>&nbsp;&bull;&nbsp;<span
+                                                id="rel-ferias-dias">30 dias (Integral)</span>
                                         </span>
                                     </div>
-                                    <span class="value" id="rel-tot-ferias" style="color: #0891b2; margin-top: 3px; display: block;">R$ 0,00</span>
-                                    <div id="rel-ferias-detalhes-container" style="margin-top: 8px; font-size: 0.78rem;">
-                                        <div id="rel-ferias-extras-info" style="display: none; margin-top: 6px; padding: 7px 10px; background: rgba(6, 182, 212, 0.05); border-left: 3px solid #0891b2; border-radius: 0 6px 6px 0; font-size: 0.76rem; line-height: 1.4;"></div>
-                                        <div id="rel-ferias-parcelas-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 6px; padding: 7px 10px; background: rgba(0, 0, 0, 0.02); border: 1px solid var(--border-color); border-radius: 6px;"></div>
-                                        <div id="rel-ferias-rodape" style="display: flex; justify-content: space-between; align-items: center; margin-top: 6px; color: var(--text-muted); font-size: 0.72rem; flex-wrap: wrap; gap: 4px;"></div>
+                                    <span class="value" id="rel-tot-ferias"
+                                        style="color: #0891b2; margin-top: 3px; display: block;">R$ 0,00</span>
+                                    <div id="rel-ferias-detalhes-container"
+                                        style="margin-top: 8px; font-size: 0.78rem;">
+                                        <div id="rel-ferias-extras-info"
+                                            style="display: none; margin-top: 6px; padding: 7px 10px; background: rgba(6, 182, 212, 0.05); border-left: 3px solid #0891b2; border-radius: 0 6px 6px 0; font-size: 0.76rem; line-height: 1.4;">
+                                        </div>
+                                        <div id="rel-ferias-parcelas-grid"
+                                            style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 6px; padding: 7px 10px; background: rgba(0, 0, 0, 0.02); border: 1px solid var(--border-color); border-radius: 6px;">
+                                        </div>
+                                        <div id="rel-ferias-rodape"
+                                            style="display: flex; justify-content: space-between; align-items: center; margin-top: 6px; color: var(--text-muted); font-size: 0.72rem; flex-wrap: wrap; gap: 4px;">
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -184,9 +240,10 @@
                                 </div>
                             </div>
                         </div>
-                        
+
                         <div class="panel">
-                            <div class="panel-header filters-header" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; align-items: flex-end;">
+                            <div class="panel-header filters-header"
+                                style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; align-items: flex-end;">
                                 <div id="filter-employee-group" class="filter-group" style="margin-bottom: 0;">
                                     <label>Funcionário</label>
                                     <select id="filter-employee" style="width: 100%;">
@@ -206,7 +263,9 @@
                                     <label>Data Final</label>
                                     <input type="date" id="filter-date-end" style="width: 100%;">
                                 </div>
-                                <button class="btn btn-primary btn-block" style="height: 42px; display: flex; align-items: center; justify-content: center; margin: 0;" id="btn-apply-filters"><i class="fa-solid fa-filter"></i> Filtrar</button>
+                                <button class="btn btn-primary btn-block"
+                                    style="height: 42px; display: flex; align-items: center; justify-content: center; margin: 0;"
+                                    id="btn-apply-filters"><i class="fa-solid fa-filter"></i> Filtrar</button>
                             </div>
                             <div class="panel-body">
                                 <div class="table-responsive">
@@ -252,5 +311,5 @@
     <script src="js/app.js"></script>
     <script src="js/admin.js"></script>
 </body>
-</html>
 
+</html>

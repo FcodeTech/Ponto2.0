@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="pt-BR" data-theme="light">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -24,6 +25,7 @@
     <!-- SheetJS -->
     <script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
 </head>
+
 <body>
     <!-- Notificações -->
     <div id="toast-container" class="toast-container"></div>
@@ -33,7 +35,8 @@
         <aside class="sidebar" id="sidebar">
             <div class="sidebar-header">
                 <i class="fa-solid fa-clock brand-icon-default"></i>
-                <img class="brand-logo" src="" style="display:none; height: 32px; border-radius: 4px; margin-right: 10px;">
+                <img class="brand-logo" src=""
+                    style="display:none; height: 32px; border-radius: 4px; margin-right: 10px;">
                 <span class="brand">Ponto Eletrônico</span>
                 <button id="btn-close-sidebar" class="btn-icon mobile-only"><i class="fa-solid fa-xmark"></i></button>
             </div>
@@ -46,17 +49,21 @@
             </div>
             <nav class="sidebar-nav">
                 <a href="index.html" class="nav-item"><i class="fa-solid fa-chart-pie"></i> Dashboard</a>
-                <a href="registrar_ponto.html" class="nav-item active"><i class="fa-solid fa-fingerprint"></i> Registrar Ponto</a>
+                <a href="registrar_ponto.html" class="nav-item active"><i class="fa-solid fa-fingerprint"></i> Registrar
+                    Ponto</a>
                 <a href="relatorios.html" class="nav-item"><i class="fa-solid fa-file-invoice"></i> Meus Relatórios</a>
                 <a href="imc.html" class="nav-item"><i class="fa-solid fa-weight-scale"></i> IMC</a>
-                <a href="appFinances.html" class="nav-item"><i class="fa-solid fa-arrow-trend-up"></i> App Financeiro</a>
-                <a href="funcionarios.html" class="nav-item admin-only"><i class="fa-solid fa-users"></i> Funcionários</a>
-                <a href="admin.html" class="nav-item admin-only"><i class="fa-solid fa-shield-halved"></i> Painel Admin</a>
+                <a href="appFinances.html" class="nav-item"><i class="fa-solid fa-chart-line"></i> FC Finanças</a>
+                <a href="funcionarios.html" class="nav-item admin-only"><i class="fa-solid fa-users"></i>
+                    Funcionários</a>
+                <a href="admin.html" class="nav-item admin-only"><i class="fa-solid fa-shield-halved"></i> Painel
+                    Admin</a>
                 <a href="configuracoes.html" class="nav-item"><i class="fa-solid fa-gear"></i> Configurações</a>
                 <a href="perfil.html" class="nav-item"><i class="fa-solid fa-user-pen"></i> Perfil</a>
             </nav>
             <div class="sidebar-footer">
-                <a href="#" id="btn-logout" class="nav-item text-danger"><i class="fa-solid fa-arrow-right-from-bracket"></i> Sair</a>
+                <a href="#" id="btn-logout" class="nav-item text-danger"><i
+                        class="fa-solid fa-arrow-right-from-bracket"></i> Sair</a>
             </div>
         </aside>
 
@@ -112,7 +119,7 @@
                                     </div>
                                 </div>
                             </div>
-                            
+
                             <div class="ponto-actions">
                                 <div class="time-block">
                                     <label>Entrada</label>
@@ -140,10 +147,12 @@
                                         <!-- Pares de pausa/retorno inseridos dinamicamente -->
                                     </div>
                                     <div style="display:flex; flex-wrap: wrap; gap:10px; margin-top:10px; width: 100%;">
-                                        <button class="btn btn-outline" id="btn-add-pausa" type="button" style="flex: 1 1 140px; padding: 0.75rem; border-radius: 8px; font-weight: 500;">
+                                        <button class="btn btn-outline" id="btn-add-pausa" type="button"
+                                            style="flex: 1 1 140px; padding: 0.75rem; border-radius: 8px; font-weight: 500;">
                                             <i class="fa-solid fa-plus"></i> Adicionar Pausa
                                         </button>
-                                        <button class="btn btn-danger" id="btn-remove-pausa" type="button" style="flex: 1 1 140px; background-color: var(--danger-color); color: white; border: none; padding: 0.75rem; border-radius: 8px; font-weight: 500; cursor: pointer;">
+                                        <button class="btn btn-danger" id="btn-remove-pausa" type="button"
+                                            style="flex: 1 1 140px; background-color: var(--danger-color); color: white; border: none; padding: 0.75rem; border-radius: 8px; font-weight: 500; cursor: pointer;">
                                             <i class="fa-solid fa-trash"></i> Excluir Pausa
                                         </button>
                                     </div>
@@ -156,11 +165,12 @@
                                 </div>
                             </div>
                             <div class="form-actions mt-20">
-                                <button class="btn btn-success btn-block" id="btn-save-ponto"><i class="fa-solid fa-floppy-disk"></i> Salvar Registro do Dia</button>
+                                <button class="btn btn-success btn-block" id="btn-save-ponto"><i
+                                        class="fa-solid fa-floppy-disk"></i> Salvar Registro do Dia</button>
                             </div>
                         </div>
                     </div>
-                    
+
                     <!-- Resultados do Dia -->
                     <div class="cards-grid mt-20" id="resultados-dia-cards" style="display: none;">
                         <!-- Populate via JS after calculation -->
@@ -180,5 +190,5 @@
     <script src="js/export.js"></script>
     <script src="js/app.js"></script>
 </body>
-</html>
 
+</html>
