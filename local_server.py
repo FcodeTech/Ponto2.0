@@ -90,7 +90,7 @@ def buscar_cotacao_precisa(ticker):
 
                 if dados['preco_atual'] > 0 and dados['dividend_yield'] > 0:
                     break
-        except Exception as e:
+        except Exception:
             pass
 
     # 2. Tenta Fundamentus (enriquece P/L, P/VP e complementa dados ausentes)
@@ -106,19 +106,16 @@ def buscar_cotacao_precisa(ticker):
                     m = re.search(r'>' + re.escape(label) + r'[\s\S]{1,200}?<span class="txt">([^<]+)</span>', content, re.IGNORECASE)
                 return m.group(1).strip() if m else None
 
-            # Preço se faltou
             if dados['preco_atual'] <= 0:
                 c = get_f('Cotação')
                 if c:
                     dados['preco_atual'] = float(c.replace('.', '').replace(',', '.'))
 
-            # DY se faltou
             if dados['dividend_yield'] <= 0:
                 d = get_f('Div. Yield')
                 if d:
                     dados['dividend_yield'] = float(d.replace('%', '').replace('.', '').replace(',', '.'))
 
-            # P/VP
             pvp_val = get_f('P/VP')
             if pvp_val and pvp_val != '-':
                 try:
@@ -126,7 +123,6 @@ def buscar_cotacao_precisa(ticker):
                 except:
                     pass
 
-            # P/L
             pl_val = get_f('P/L')
             if pl_val and pl_val != '-':
                 try:
@@ -134,19 +130,16 @@ def buscar_cotacao_precisa(ticker):
                 except:
                     pass
 
-            # Min 52 se faltou
             if not dados['min_52']:
                 m52 = get_f('Min 52 sem')
                 if m52:
                     dados['min_52'] = float(m52.replace('.', '').replace(',', '.'))
 
-            # Max 52 se faltou
             if not dados['max_52']:
                 mx52 = get_f('Max 52 sem')
                 if mx52:
                     dados['max_52'] = float(mx52.replace('.', '').replace(',', '.'))
 
-            # Nome se ainda padrão
             if dados['nome'] == ticker:
                 nm = get_f('Empresa') or get_f('Fundo')
                 if nm:
@@ -195,11 +188,22 @@ class CustomHandler(http.server.SimpleHTTPRequestHandler):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, directory=DIRECTORY, **kwargs)
 
+    def send_json(self, data, status=200):
+        payload = json.dumps(data, ensure_ascii=False).encode('utf-8')
+        self.send_response(status)
+        self.send_header('Content-Type', 'application/json; charset=utf-8')
+        self.send_header('Access-Control-Allow-Origin', '*')
+        self.send_header('Access-Control-Allow-Methods', 'GET, POST, DELETE, OPTIONS')
+        self.send_header('Access-Control-Allow-Headers', 'Content-Type, Authorization, apikey')
+        self.send_header('Content-Length', str(len(payload)))
+        self.end_headers()
+        self.wfile.write(payload)
+
     def do_OPTIONS(self):
         self.send_response(200)
         self.send_header('Access-Control-Allow-Origin', '*')
-        self.send_header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
-        self.send_header('Access-Control-Allow-Headers', 'Content-Type, Authorization')
+        self.send_header('Access-Control-Allow-Methods', 'GET, POST, DELETE, OPTIONS')
+        self.send_header('Access-Control-Allow-Headers', 'Content-Type, Authorization, apikey')
         self.end_headers()
 
     def do_GET(self):
@@ -212,23 +216,141 @@ class CustomHandler(http.server.SimpleHTTPRequestHandler):
     def do_POST(self):
         parsed = urllib.parse.urlparse(self.path)
         if parsed.path == '/api/atualizar':
-            self.handle_api(parsed.query)
+            content_length = int(self.headers.get('Content-Length', 0))
+            body_bytes = self.rfile.read(content_length) if content_length > 0 else b'{}'
+            try:
+                body = json.loads(body_bytes.decode('utf-8'))
+            except:
+                body = {}
+
+            action = body.get('action')
+            ticker = (body.get('ticker') or '').upper().strip()
+            motivo = body.get('motivo')
+
+            if action in ('quarantine', 'restore') and ticker:
+                self.handle_quarantine(action, ticker, motivo)
+            else:
+                self.handle_api(parsed.query)
         else:
             self.send_error(404, "Not Found")
+
+    def do_DELETE(self):
+        parsed = urllib.parse.urlparse(self.path)
+        if parsed.path == '/api/atualizar':
+            params = urllib.parse.parse_qs(parsed.query)
+            ticker = params.get('ticker', [''])[0].upper().strip()
+            if not ticker:
+                self.send_json({'sucesso': False, 'erro': 'Ticker não informado.'}, status=400)
+                return
+
+            headers = {
+                'apikey': SUPABASE_KEY,
+                'Authorization': f'Bearer {SUPABASE_KEY}',
+                'Content-Type': 'application/json'
+            }
+            try:
+                del_url = f"{SUPABASE_URL}/rest/v1/mp_ativos?ticker=eq.{urllib.parse.quote(ticker)}&tipo=neq.MEMORIA"
+                req_del = urllib.request.Request(del_url, headers=headers, method='DELETE')
+                with urllib.request.urlopen(req_del, timeout=6):
+                    pass
+                self.send_json({'sucesso': True, 'removido': ticker})
+            except Exception as e:
+                self.send_json({'sucesso': False, 'erro': str(e)}, status=500)
+        else:
+            self.send_error(404, "Not Found")
+
+    def handle_quarantine(self, action, ticker, motivo):
+        headers = {
+            'apikey': SUPABASE_KEY,
+            'Authorization': f'Bearer {SUPABASE_KEY}',
+            'Content-Type': 'application/json'
+        }
+        try:
+            get_url = f"{SUPABASE_URL}/rest/v1/mp_ativos?ticker=eq.{urllib.parse.quote(ticker)}&select=*"
+            req = urllib.request.Request(get_url, headers=headers)
+            with urllib.request.urlopen(req, timeout=6) as resp:
+                rows = json.loads(resp.read().decode('utf-8'))
+
+            if not rows:
+                self.send_json({'sucesso': False, 'erro': f'Ativo {ticker} não encontrado'}, status=404)
+                return
+
+            item_atual = rows[0]
+            tipo_base = item_atual.get('tipo', '').replace('QUARENTENA:', '')
+            nome_base = (item_atual.get('nome') or ticker).split(' :: ')[0].strip()
+
+            if action == 'quarantine':
+                novo_tipo = f"QUARENTENA:{tipo_base}"
+                texto_motivo = (motivo or 'Fundamentos ou Dividend Yield abaixo do esperado').strip()
+                novo_nome = f"{nome_base} :: {texto_motivo}"
+            else:
+                novo_tipo = tipo_base
+                novo_nome = nome_base
+
+            patch_url = f"{SUPABASE_URL}/rest/v1/mp_ativos?ticker=eq.{urllib.parse.quote(ticker)}"
+            patch_data = json.dumps({
+                'tipo': novo_tipo,
+                'nome': novo_nome,
+                'atualizado_em': datetime.datetime.now(datetime.timezone.utc).isoformat()
+            }).encode('utf-8')
+
+            req_patch = urllib.request.Request(patch_url, data=patch_data, headers=headers, method='PATCH')
+            with urllib.request.urlopen(req_patch, timeout=6):
+                pass
+
+            self.send_json({'sucesso': True, 'ticker': ticker, 'tipo': novo_tipo, 'nome': novo_nome})
+        except Exception as e:
+            self.send_json({'sucesso': False, 'erro': str(e)}, status=500)
 
     def handle_api(self, query_string):
         params = urllib.parse.parse_qs(query_string)
         ticker_unico = params.get('ticker', [''])[0].upper().strip()
-        tickers = [ticker_unico] if ticker_unico else ['BBAS3', 'PETR4', 'VALE3', 'HGLG11', 'MXRF11']
+        atualizar_todos = params.get('todos', [''])[0].lower() == 'true'
+
+        mapa_existentes = {}
+        headers_sb = {
+            'apikey': SUPABASE_KEY,
+            'Authorization': f'Bearer {SUPABASE_KEY}',
+            'Content-Type': 'application/json'
+        }
+        try:
+            req_all = urllib.request.Request(
+                f"{SUPABASE_URL}/rest/v1/mp_ativos?select=ticker,tipo,nome,preco_atual,dividend_yield&tipo=neq.MEMORIA",
+                headers=headers_sb
+            )
+            with urllib.request.urlopen(req_all, timeout=6) as r:
+                for row in json.loads(r.read().decode('utf-8')):
+                    mapa_existentes[row['ticker']] = row
+        except Exception as e:
+            print(f"[local_server] Aviso mapa_existentes: {e}")
+
+        if ticker_unico:
+            tickers = [ticker_unico]
+        elif atualizar_todos and mapa_existentes:
+            tickers = list(mapa_existentes.keys())
+        else:
+            tickers = ['BBAS3', 'PETR4', 'VALE3', 'HGLG11', 'MXRF11']
 
         resultados = []
         sb_payload = []
         for t in tickers:
             if t:
+                existente = mapa_existentes.get(t)
+                em_quarentena = existente and existente.get('tipo', '').startswith('QUARENTENA:')
                 cot = buscar_cotacao_precisa(t)
+                if not cot and existente and float(existente.get('preco_atual', 0)) > 0:
+                    cot = {
+                        'ticker': t,
+                        'tipo': existente.get('tipo', 'FII' if t.endswith('11') else 'Ação'),
+                        'nome': existente.get('nome', t),
+                        'preco_atual': float(existente.get('preco_atual', 0)),
+                        'dividend_yield': float(existente.get('dividend_yield', 0)),
+                        'atualizado_em': datetime.datetime.now(datetime.timezone.utc).isoformat()
+                    }
+
                 if cot:
                     resultados.append(cot)
-                    # Prepara item para mp_ativos persistindo metadados ricos em 'nome'
+                    tipo_final = existente['tipo'] if em_quarentena else ('FII' if t.endswith('11') else 'Ação')
                     meta_nome = json.dumps({
                         'n': cot['nome'],
                         'min': cot.get('min_52'),
@@ -237,9 +359,14 @@ class CustomHandler(http.server.SimpleHTTPRequestHandler):
                         'pl': cot.get('pl'),
                         'var': cot.get('variacao_12m')
                     }, ensure_ascii=False)
+
+                    if em_quarentena and ' :: ' in (existente.get('nome') or ''):
+                        motivo_salvo = existente['nome'].split(' :: ')[1]
+                        meta_nome = f"{meta_nome} :: {motivo_salvo}"
+
                     sb_payload.append({
                         'ticker': cot['ticker'],
-                        'tipo': cot['tipo'],
+                        'tipo': tipo_final,
                         'nome': meta_nome,
                         'preco_atual': cot['preco_atual'],
                         'dividend_yield': cot['dividend_yield'],
@@ -247,18 +374,12 @@ class CustomHandler(http.server.SimpleHTTPRequestHandler):
                     })
 
         if not resultados and ticker_unico:
-            payload = json.dumps({
+            self.send_json({
                 'sucesso': False,
                 'erro': f'Ativo "{ticker_unico}" não encontrado na B3. Verifique o código digitado.'
-            }).encode('utf-8')
-            self.send_response(404)
-            self.send_header('Content-Type', 'application/json; charset=utf-8')
-            self.send_header('Access-Control-Allow-Origin', '*')
-            self.end_headers()
-            self.wfile.write(payload)
+            }, status=404)
             return
 
-        # Sincroniza com Supabase mp_ativos
         if sb_payload:
             try:
                 sb_url = f"{SUPABASE_URL}/rest/v1/mp_ativos"
@@ -278,17 +399,10 @@ class CustomHandler(http.server.SimpleHTTPRequestHandler):
             except Exception as e:
                 print(f"[local_server] Supabase sync notice: {e}")
 
-        payload = json.dumps({
+        self.send_json({
             'sucesso': True,
             'atualizados': resultados
-        }).encode('utf-8')
-
-        self.send_response(200)
-        self.send_header('Content-Type', 'application/json; charset=utf-8')
-        self.send_header('Access-Control-Allow-Origin', '*')
-        self.send_header('Content-Length', str(len(payload)))
-        self.end_headers()
-        self.wfile.write(payload)
+        })
 
 if __name__ == '__main__':
     socketserver.ThreadingTCPServer.allow_reuse_address = True
