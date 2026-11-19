@@ -579,6 +579,176 @@ input:checked + .slider:before { transform: translateX(20px); }
 .stat-card.highlight-card h3, .stat-card.highlight-card .value { color: white; }
 .stat-card.highlight-card .card-icon { background: rgba(255,255,255,0.2); color: white; }
 
+/* ==========================================================================
+   CARDS CLT ESPECIAIS (13º SALÁRIO E FÉRIAS) - INSPIRAÇÃO MOCKUP PREMIUM FINTECH
+   ========================================================================== */
+.stat-card.stat-card-clt {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    justify-content: flex-start !important;
+    gap: 16px !important;
+    padding: 22px !important;
+    border-radius: 16px !important;
+    background-color: var(--card-bg) !important;
+    border: 1px solid var(--border-color) !important;
+    box-shadow: var(--shadow-sm) !important;
+    transition: transform var(--transition-speed), box-shadow var(--transition-speed) !important;
+}
+.stat-card.stat-card-clt:hover {
+    transform: translateY(-4px) !important;
+    box-shadow: var(--shadow-md) !important;
+}
+
+.clt-header-row {
+    display: flex !important;
+    align-items: flex-start !important;
+    gap: 16px !important;
+    width: 100% !important;
+}
+
+.clt-icon-box {
+    width: 56px !important;
+    height: 56px !important;
+    border-radius: 14px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-size: 1.65rem !important;
+    flex-shrink: 0 !important;
+}
+
+.clt-icon-13 {
+    background-color: rgba(245, 158, 11, 0.14) !important;
+    color: #f59e0b !important;
+}
+
+.clt-icon-ferias {
+    background-color: rgba(6, 182, 212, 0.14) !important;
+    color: #0891b2 !important;
+}
+[data-theme="dark"] .clt-icon-ferias {
+    color: #06b6d4 !important;
+}
+
+.clt-header-text {
+    flex: 1 !important;
+    min-width: 0 !important;
+    display: flex !important;
+    flex-direction: column !important;
+}
+
+.clt-card-title {
+    margin: 0 !important;
+    font-size: 1.05rem !important;
+    font-weight: 600 !important;
+    color: var(--text-muted) !important;
+    letter-spacing: -0.01em !important;
+}
+
+.clt-badge-container {
+    margin: 5px 0 3px 0 !important;
+}
+
+.clt-status-pill {
+    display: inline-flex !important;
+    align-items: center !important;
+    font-size: 0.75rem !important;
+    font-weight: 600 !important;
+    padding: 3px 12px !important;
+    border-radius: 9999px !important;
+    white-space: nowrap !important;
+    letter-spacing: 0.02em !important;
+}
+
+.clt-pill-13 {
+    background: rgba(245, 158, 11, 0.14) !important;
+    color: #d97706 !important;
+}
+[data-theme="dark"] .clt-pill-13 {
+    background: rgba(245, 158, 11, 0.2) !important;
+    color: #fbbf24 !important;
+}
+
+.clt-pill-ferias {
+    background: rgba(6, 182, 212, 0.14) !important;
+    color: #0891b2 !important;
+}
+[data-theme="dark"] .clt-pill-ferias {
+    background: rgba(6, 182, 212, 0.2) !important;
+    color: #22d3ee !important;
+}
+
+.clt-hero-value {
+    font-size: 1.85rem !important;
+    font-weight: 800 !important;
+    letter-spacing: -0.02em !important;
+    line-height: 1.15 !important;
+    margin-top: 4px !important;
+    display: block !important;
+}
+
+.clt-hero-13 {
+    color: #f59e0b !important;
+}
+
+.clt-hero-ferias {
+    color: #0891b2 !important;
+}
+[data-theme="dark"] .clt-hero-ferias {
+    color: #06b6d4 !important;
+}
+
+/* Corpo e Detalhes ocupando 100% de ponta a ponta */
+.clt-body-section {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 12px !important;
+    width: 100% !important;
+}
+
+.clt-base-calc-box {
+    padding: 10px 14px !important;
+    border-radius: 0 10px 10px 0 !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+}
+
+.clt-base-13 {
+    background: rgba(245, 158, 11, 0.04) !important;
+    border-left: 4px solid #f59e0b !important;
+}
+
+.clt-base-ferias {
+    background: rgba(6, 182, 212, 0.04) !important;
+    border-left: 4px solid #0891b2 !important;
+}
+[data-theme="dark"] .clt-base-ferias {
+    border-left-color: #06b6d4 !important;
+}
+
+.clt-parcelas-container {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 12px !important;
+    padding: 12px 16px !important;
+    border: 1px solid var(--border-color) !important;
+    border-radius: 12px !important;
+    background: rgba(125, 125, 125, 0.03) !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+}
+
+.clt-rodape-container {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 5px !important;
+    font-size: 0.8rem !important;
+    color: var(--text-muted) !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+}
+
 .card-icon {
     width: 50px;
     height: 50px;

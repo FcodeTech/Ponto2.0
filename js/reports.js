@@ -413,17 +413,17 @@ async function updateReportTotals() {
             if (decimoInfo.mediaExtras > 0) {
                 elExtrasRel.style.display = 'block';
                 elExtrasRel.innerHTML = `
-                    <div style="display: flex; justify-content: space-between; align-items: center; color: var(--text-muted); font-size: 0.74rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; color: var(--text-muted); font-size: 0.88rem;">
                         <span>Salário Base:</span>
-                        <strong style="color: var(--text-color);">${formatCurrency(u.baseSalary || 0)}</strong>
+                        <strong style="color: var(--text-color); font-size: 0.98rem; font-weight: 700;">${formatCurrency(u.baseSalary || 0)}</strong>
                     </div>
-                    <div style="display: flex; justify-content: space-between; align-items: center; color: #d97706; font-size: 0.74rem; margin-top: 2px;">
-                        <span><i class="fa-solid fa-clock-rotate-left" style="font-size: 0.8em;"></i> Média Horas Extras:</span>
-                        <strong>+ ${formatCurrency(decimoInfo.mediaExtras)}</strong>
+                    <div style="display: flex; justify-content: space-between; align-items: center; color: #f59e0b; font-size: 0.88rem; margin-top: 3px;">
+                        <span><i class="fa-solid fa-clock-rotate-left" style="font-size: 0.85em;"></i> Média Horas Extras:</span>
+                        <strong style="font-size: 0.98rem; font-weight: 700;">+ ${formatCurrency(decimoInfo.mediaExtras)}</strong>
                     </div>
-                    <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px dashed var(--border-color); margin-top: 4px; padding-top: 3px; font-size: 0.76rem; font-weight: 600;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px dashed var(--border-color); margin-top: 6px; padding-top: 5px; font-size: 0.92rem; font-weight: 700;">
                         <span style="color: var(--text-color);">Base de Cálculo:</span>
-                        <span style="color: #f59e0b;">${formatCurrency(decimoInfo.remuneracaoBase)}</span>
+                        <span style="color: #f59e0b; font-size: 1.05rem; font-weight: 800;">${formatCurrency(decimoInfo.remuneracaoBase)}</span>
                     </div>
                 `;
             } else {
@@ -435,14 +435,14 @@ async function updateReportTotals() {
         if (elParcelasRel) {
             elParcelasRel.innerHTML = `
                 <div>
-                    <span style="display: block; font-size: 0.67rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.03em; font-weight: 600;">1ª Parcela (50%)</span>
-                    <strong style="display: block; font-size: 0.83rem; color: var(--text-color); margin-top: 1px;">${formatCurrency(decimoInfo.primeiraParcela)}</strong>
-                    <span style="display: block; font-size: 0.67rem; color: var(--text-muted);">até 30/nov &bull; sem desc.</span>
+                    <span style="display: block; font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.04em; font-weight: 700;">1ª Parcela (50%)</span>
+                    <strong style="display: block; font-size: 1.25rem; font-weight: 800; color: var(--text-color); margin: 3px 0 2px 0;">${formatCurrency(decimoInfo.primeiraParcela)}</strong>
+                    <span style="display: block; font-size: 0.74rem; color: var(--text-muted);">até 30/nov &bull; sem desc.</span>
                 </div>
                 <div>
-                    <span style="display: block; font-size: 0.67rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.03em; font-weight: 600;">2ª Parc. Líquida</span>
-                    <strong style="display: block; font-size: 0.83rem; color: #10b981; margin-top: 1px;">${formatCurrency(decimoInfo.segundaParcela)}</strong>
-                    <span style="display: block; font-size: 0.67rem; color: var(--text-muted);">até 20/dez &bull; líq. a pagar</span>
+                    <span style="display: block; font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.04em; font-weight: 700;">2ª Parc. Líquida</span>
+                    <strong style="display: block; font-size: 1.25rem; font-weight: 800; color: #10b981; margin: 3px 0 2px 0;">${formatCurrency(decimoInfo.segundaParcela)}</strong>
+                    <span style="display: block; font-size: 0.74rem; color: var(--text-muted);">até 20/dez &bull; líq. a pagar</span>
                 </div>
             `;
         }
@@ -450,14 +450,14 @@ async function updateReportTotals() {
         const elRodapeRel = document.getElementById('rel-13-rodape');
         if (elRodapeRel) {
             const admTxt = decimoInfo.admissaoFormatada !== '—'
-                ? `<span><i class="fa-regular fa-calendar-check" style="font-size: 0.85em; opacity: 0.7;"></i> Adm: <strong>${decimoInfo.admissaoFormatada}</strong></span>`
-                : '<span>CLT Lei 4.090/62</span>';
+                ? `<div style="display: flex; align-items: center; gap: 6px;"><i class="fa-regular fa-calendar-check" style="opacity: 0.75;"></i> Adm: <strong style="color: var(--text-color);">${decimoInfo.admissaoFormatada}</strong></div>`
+                : '<div>CLT Lei 4.090/62</div>';
             const inssTxt = decimoInfo.inssDecimo > 0
-                ? ` <span style="font-size: 0.67rem; color: var(--danger-color, #dc3545);" title="Desconto INSS 13º">(INSS: -${formatCurrency(decimoInfo.inssDecimo)})</span>`
+                ? ` <span style="color: #ef4444; font-weight: 600;" title="Desconto INSS 13º">(INSS: -${formatCurrency(decimoInfo.inssDecimo)})</span>`
                 : '';
             elRodapeRel.innerHTML = `
                 ${admTxt}
-                <span>Total Anual (12/12): <strong style="color: var(--text-color);">${formatCurrency(decimoInfo.valorIntegralAno)}</strong>${inssTxt}</span>
+                <div>Total Anual (12/12): <strong style="color: var(--text-color);">${formatCurrency(decimoInfo.valorIntegralAno)}</strong>${inssTxt}</div>
             `;
         }
     } else {
@@ -516,17 +516,17 @@ async function updateReportTotals() {
             if (feriasInfo.mediaExtras > 0) {
                 elExtrasFeriasRel.style.display = 'block';
                 elExtrasFeriasRel.innerHTML = `
-                    <div style="display: flex; justify-content: space-between; align-items: center; color: var(--text-muted); font-size: 0.74rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; color: var(--text-muted); font-size: 0.88rem;">
                         <span>Salário Base:</span>
-                        <strong style="color: var(--text-color);">${formatCurrency(u.baseSalary || 0)}</strong>
+                        <strong style="color: var(--text-color); font-size: 0.98rem; font-weight: 700;">${formatCurrency(u.baseSalary || 0)}</strong>
                     </div>
-                    <div style="display: flex; justify-content: space-between; align-items: center; color: #0891b2; font-size: 0.74rem; margin-top: 2px;">
-                        <span><i class="fa-solid fa-clock-rotate-left" style="font-size: 0.8em;"></i> Média Horas Extras:</span>
-                        <strong>+ ${formatCurrency(feriasInfo.mediaExtras)}</strong>
+                    <div style="display: flex; justify-content: space-between; align-items: center; color: #0891b2; font-size: 0.88rem; margin-top: 3px;">
+                        <span><i class="fa-solid fa-clock-rotate-left" style="font-size: 0.85em;"></i> Média Horas Extras:</span>
+                        <strong style="font-size: 0.98rem; font-weight: 700;">+ ${formatCurrency(feriasInfo.mediaExtras)}</strong>
                     </div>
-                    <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px dashed var(--border-color); margin-top: 4px; padding-top: 3px; font-size: 0.76rem; font-weight: 600;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px dashed var(--border-color); margin-top: 6px; padding-top: 5px; font-size: 0.92rem; font-weight: 700;">
                         <span style="color: var(--text-color);">Base de Cálculo:</span>
-                        <span style="color: #0891b2;">${formatCurrency(feriasInfo.remuneracaoBase)}</span>
+                        <span style="color: #0891b2; font-size: 1.05rem; font-weight: 800;">${formatCurrency(feriasInfo.remuneracaoBase)}</span>
                     </div>
                 `;
             } else {
@@ -538,14 +538,14 @@ async function updateReportTotals() {
         if (elParcelasFeriasRel) {
             elParcelasFeriasRel.innerHTML = `
                 <div>
-                    <span style="display: block; font-size: 0.67rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.03em; font-weight: 600;">Férias (${feriasInfo.diasFerias} dias)</span>
-                    <strong style="display: block; font-size: 0.83rem; color: var(--text-color); margin-top: 1px;">${formatCurrency(feriasInfo.valorFerias)}</strong>
-                    <span style="display: block; font-size: 0.67rem; color: var(--text-muted);">remuneração base</span>
+                    <span style="display: block; font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.04em; font-weight: 700;">Férias (${feriasInfo.diasFerias} dias)</span>
+                    <strong style="display: block; font-size: 1.25rem; font-weight: 800; color: var(--text-color); margin: 3px 0 2px 0;">${formatCurrency(feriasInfo.valorFerias)}</strong>
+                    <span style="display: block; font-size: 0.74rem; color: var(--text-muted);">remuneração base</span>
                 </div>
                 <div>
-                    <span style="display: block; font-size: 0.67rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.03em; font-weight: 600;">1/3 Constitucional</span>
-                    <strong style="display: block; font-size: 0.83rem; color: #0891b2; margin-top: 1px;">+ ${formatCurrency(feriasInfo.tercoConstitucional)}</strong>
-                    <span style="display: block; font-size: 0.67rem; color: var(--text-muted);">art. 7º, XVII CF/88</span>
+                    <span style="display: block; font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.04em; font-weight: 700;">1/3 Constitucional</span>
+                    <strong style="display: block; font-size: 1.25rem; font-weight: 800; color: #0891b2; margin: 3px 0 2px 0;">+ ${formatCurrency(feriasInfo.tercoConstitucional)}</strong>
+                    <span style="display: block; font-size: 0.74rem; color: var(--text-muted);">art. 7º, XVII CF/88</span>
                 </div>
             `;
         }
@@ -553,14 +553,14 @@ async function updateReportTotals() {
         const elRodapeFeriasRel = document.getElementById('rel-ferias-rodape');
         if (elRodapeFeriasRel) {
             const admTxt = feriasInfo.admissaoFormatada !== '—'
-                ? `<span><i class="fa-regular fa-calendar-check" style="font-size: 0.85em; opacity: 0.7;"></i> Adm: <strong>${feriasInfo.admissaoFormatada}</strong></span>`
-                : '<span>CLT Art. 129 a 145</span>';
+                ? `<div style="display: flex; align-items: center; gap: 6px;"><i class="fa-regular fa-calendar-check" style="opacity: 0.75;"></i> Adm: <strong style="color: var(--text-color);">${feriasInfo.admissaoFormatada}</strong></div>`
+                : '<div>CLT Art. 129 a 145</div>';
             const inssTxt = feriasInfo.inssFerias > 0
-                ? ` <span style="font-size: 0.67rem; color: var(--danger-color, #dc3545);" title="Desconto INSS sobre Férias">(INSS: -${formatCurrency(feriasInfo.inssFerias)})</span>`
+                ? ` <span style="color: #ef4444; font-weight: 600;" title="Desconto INSS sobre Férias">(INSS: -${formatCurrency(feriasInfo.inssFerias)})</span>`
                 : '';
             elRodapeFeriasRel.innerHTML = `
                 ${admTxt}
-                <span>Total 30d (12/12): <strong style="color: var(--text-color);">${formatCurrency(feriasInfo.valorIntegralAno)}</strong>${inssTxt}</span>
+                <div>Total 30d (12/12): <strong style="color: var(--text-color);">${formatCurrency(feriasInfo.valorIntegralAno)}</strong>${inssTxt}</div>
             `;
         }
     } else {
