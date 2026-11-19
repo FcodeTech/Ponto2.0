@@ -37,6 +37,22 @@ async function applyGlobalSettings() {
         const themeSwitch = document.getElementById('checkbox-theme');
         if (themeSwitch) themeSwitch.checked = (theme === 'dark');
 
+        const financeFrame = document.getElementById('frame-app-finances');
+        if (financeFrame) {
+            const syncFinance = () => {
+                try {
+                    if (financeFrame.contentWindow) {
+                        financeFrame.contentWindow.postMessage({ type: 'SET_THEME', theme }, '*');
+                    }
+                    if (financeFrame.contentDocument) {
+                        financeFrame.contentDocument.documentElement.setAttribute('data-theme', theme);
+                    }
+                } catch (e) {}
+            };
+            syncFinance();
+            financeFrame.addEventListener('load', syncFinance);
+        }
+
         // ── Cor Principal ────────────────────────────────────
         if (settings.primaryColor) {
             document.documentElement.style.setProperty('--primary-color', settings.primaryColor);
@@ -222,6 +238,18 @@ if (themeSwitch) {
     themeSwitch.addEventListener('change', async (e) => {
         const theme = e.target.checked ? 'dark' : 'light';
         document.documentElement.setAttribute('data-theme', theme);
+        localStorage.setItem('user_theme', theme);
+
+        const financeFrame = document.getElementById('frame-app-finances');
+        if (financeFrame && financeFrame.contentWindow) {
+            try {
+                financeFrame.contentWindow.postMessage({ type: 'SET_THEME', theme }, '*');
+                if (financeFrame.contentDocument) {
+                    financeFrame.contentDocument.documentElement.setAttribute('data-theme', theme);
+                }
+            } catch (err) {}
+        }
+
         try {
             await db.settings.update('global', { theme });
         } catch (err) { console.error(err); }

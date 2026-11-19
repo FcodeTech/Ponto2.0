@@ -1,12 +1,28 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-BR" data-theme="dark">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <meta name="theme-color" content="#070b14">
   <title>FC Finanças • Cotações, Dividendos &amp; Analista IA</title>
+  <script>
+    // Inicialização ultra-rápida de tema sem flash
+    (function() {
+      let t = 'dark';
+      try {
+        const stored = localStorage.getItem('user_theme');
+        if (stored === 'light' || stored === 'dark') {
+          t = stored;
+        } else if (window.parent && window.parent !== window) {
+          const pt = window.parent.document.documentElement.getAttribute('data-theme');
+          if (pt === 'light' || pt === 'dark') t = pt;
+        }
+      } catch (e) {}
+      document.documentElement.setAttribute('data-theme', t);
+    })();
+  </script>
   <style>
-    :root {
+    :root, [data-theme="dark"] {
       --bg-base: #070b14;
       --bg-elevated: #0f1626;
       --bg-card: #131c31;
@@ -27,11 +43,42 @@
       --amber: #f59e0b;
       --amber-bg: rgba(245, 158, 11, 0.14);
       --red: #f87171;
+      --topbar-bg: rgba(7, 11, 20, 0.88);
+      --bottombar-bg: rgba(11, 16, 29, 0.94);
+      --card-shadow: 0 8px 24px rgba(0, 0, 0, 0.28);
+      --btn-accent-text: #04101f;
       --radius-xl: 20px;
       --radius-lg: 16px;
       --radius-md: 12px;
       --radius-sm: 10px;
       --nav-height: 66px;
+    }
+
+    [data-theme="light"] {
+      --bg-base: #f1f5f9;
+      --bg-elevated: #ffffff;
+      --bg-card: #ffffff;
+      --bg-card-hover: #f8fafc;
+      --bg-input: #f8fafc;
+      --border: rgba(148, 163, 184, 0.35);
+      --border-strong: rgba(148, 163, 184, 0.55);
+      --text-primary: #0f172a;
+      --text-secondary: #475569;
+      --text-muted: #64748b;
+      --accent: #0284c7;
+      --accent-glow: rgba(2, 132, 199, 0.12);
+      --ai-primary: #9333ea;
+      --ai-secondary: #4f46e5;
+      --ai-glow: rgba(147, 51, 234, 0.12);
+      --green: #059669;
+      --green-bg: rgba(16, 185, 129, 0.12);
+      --amber: #d97706;
+      --amber-bg: rgba(245, 158, 11, 0.12);
+      --red: #e11d48;
+      --topbar-bg: rgba(255, 255, 255, 0.92);
+      --bottombar-bg: rgba(255, 255, 255, 0.95);
+      --card-shadow: 0 4px 16px rgba(15, 23, 42, 0.08);
+      --btn-accent-text: #ffffff;
     }
 
     * {
@@ -57,6 +104,14 @@
       line-height: 1.5;
       padding-bottom: calc(var(--nav-height) + env(safe-area-inset-bottom) + 1.25rem);
       -webkit-font-smoothing: antialiased;
+      transition: background-color 0.25s ease, color 0.25s ease;
+    }
+
+    [data-theme="light"] body {
+      background-color: var(--bg-base);
+      background-image:
+        radial-gradient(circle at 50% 0%, rgba(2, 132, 199, 0.07) 0%, transparent 48%),
+        radial-gradient(circle at 100% 15%, rgba(147, 51, 234, 0.05) 0%, transparent 45%);
     }
 
     ::-webkit-scrollbar { width: 5px; height: 5px; }
@@ -68,11 +123,16 @@
       position: sticky;
       top: 0;
       z-index: 40;
-      background: rgba(7, 11, 20, 0.88);
+      background: var(--topbar-bg);
       backdrop-filter: blur(16px);
       -webkit-backdrop-filter: blur(16px);
       border-bottom: 1px solid var(--border);
       padding: 0.85rem 1rem;
+      transition: background-color 0.25s ease, border-color 0.25s ease;
+    }
+
+    [data-theme="light"] .topbar {
+      box-shadow: 0 2px 10px rgba(15, 23, 42, 0.04);
     }
 
     .topbar-inner {
@@ -401,7 +461,7 @@
 
     .btn-accent {
       background: var(--accent);
-      color: #04101f;
+      color: var(--btn-accent-text);
     }
 
     .btn-ai {
@@ -795,12 +855,13 @@
       z-index: 50;
       height: calc(var(--nav-height) + env(safe-area-inset-bottom));
       padding-bottom: env(safe-area-inset-bottom);
-      background: rgba(11, 16, 29, 0.94);
+      background: var(--bottombar-bg);
       backdrop-filter: blur(18px);
       -webkit-backdrop-filter: blur(18px);
       border-top: 1px solid var(--border);
       display: grid;
       grid-template-columns: 1fr 1fr;
+      transition: background-color 0.25s ease, border-color 0.25s ease;
     }
 
     .nav-tab {
@@ -840,6 +901,93 @@
       border-radius: var(--radius-lg);
       color: var(--text-secondary);
       font-size: 0.88rem;
+    }
+
+    /* ================= AJUSTES FINOS PARA TEMA CLARO ================= */
+    [data-theme="light"] .asset-card {
+      box-shadow: var(--card-shadow);
+      border-color: var(--border);
+    }
+    [data-theme="light"] .asset-card:hover {
+      box-shadow: 0 10px 25px rgba(15, 23, 42, 0.1);
+      border-color: var(--accent);
+    }
+    [data-theme="light"] .kpi-card {
+      box-shadow: var(--card-shadow);
+    }
+    [data-theme="light"] .api-card {
+      box-shadow: var(--card-shadow);
+      border-color: rgba(147, 51, 234, 0.25);
+    }
+    [data-theme="light"] .ai-container {
+      box-shadow: 0 8px 28px rgba(15, 23, 42, 0.08);
+      border-color: rgba(147, 51, 234, 0.25);
+    }
+    [data-theme="light"] .badge-pro-free {
+      color: var(--ai-primary);
+      background: var(--ai-glow);
+      border-color: rgba(147, 51, 234, 0.3);
+    }
+    [data-theme="light"] .api-status-badge.online {
+      color: #059669;
+      background: rgba(16, 185, 129, 0.12);
+      border-color: rgba(16, 185, 129, 0.28);
+    }
+    [data-theme="light"] .m-dy-tag {
+      color: #059669;
+      background: rgba(16, 185, 129, 0.12);
+      border-color: rgba(16, 185, 129, 0.28);
+      box-shadow: 0 0 10px rgba(16, 185, 129, 0.08);
+    }
+    [data-theme="light"] .badge-var.var-pos {
+      color: #059669;
+      background: rgba(16, 185, 129, 0.12);
+      border-color: rgba(16, 185, 129, 0.28);
+    }
+    [data-theme="light"] .badge-var.var-neg {
+      color: #dc2626;
+      background: rgba(239, 68, 68, 0.12);
+      border-color: rgba(239, 68, 68, 0.28);
+    }
+    [data-theme="light"] .ind-val.pvp-desconto {
+      color: #059669;
+    }
+    [data-theme="light"] .refresh-btn {
+      background: rgba(0, 0, 0, 0.04);
+      color: var(--text-secondary);
+    }
+    [data-theme="light"] .refresh-btn:hover {
+      background: rgba(2, 132, 199, 0.12);
+      color: var(--accent);
+    }
+    [data-theme="light"] .tab-filter.active {
+      background: #ffffff;
+      color: var(--text-primary);
+      box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);
+    }
+    [data-theme="light"] .msg-ai {
+      color: var(--text-primary);
+      background: #ffffff;
+    }
+    [data-theme="light"] .msg-body strong {
+      color: var(--text-primary);
+    }
+    [data-theme="light"] .chip-prompt {
+      background: #ffffff;
+      color: var(--text-secondary);
+    }
+    [data-theme="light"] .chip-prompt.primary {
+      color: var(--ai-primary);
+      background: rgba(147, 51, 234, 0.08);
+      border-color: rgba(147, 51, 234, 0.3);
+    }
+    [data-theme="light"] .ai-pill {
+      color: var(--ai-primary);
+      background: var(--ai-glow);
+      border-color: rgba(147, 51, 234, 0.3);
+    }
+    [data-theme="light"] .nav-tab.active.ai-tab {
+      color: var(--ai-primary);
     }
 
     /* ================= BREAKPOINT MOBILE (<640px) ================= */
@@ -976,7 +1124,13 @@
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
           Voltar ao Ponto
         </a>
-        <span style="font-size: 0.72rem; color: var(--text-muted); font-weight: 500;">Sistema Financeiro Independente</span>
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span style="font-size: 0.72rem; color: var(--text-muted); font-weight: 500;">Sistema Financeiro Independente</span>
+          <button id="btn-finance-theme" onclick="alternarTema()" title="Alternar Tema Claro / Escuro" style="background: var(--bg-card); border: 1px solid var(--border); color: var(--text-secondary); width: 30px; height: 30px; border-radius: 8px; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s;">
+            <svg id="theme-icon-sun" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+            <svg id="theme-icon-moon" style="display:none;" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+          </button>
+        </div>
       </div>
       <div class="brand">
         <div class="brand-row">
@@ -1128,6 +1282,63 @@
     let analistaAutonomoAtivo = true;
     let modeloSelecionadoGemini = 'gemini-3.8-flash';
     const EMAIL_VINCULADO_FREDSON = 'fredsoncitty@gmail.com';
+
+    // ================= SINCRONIZAÇÃO DE TEMA (CLARO / ESCURO) =================
+    function aplicarTema(theme, salvar = true) {
+      if (theme !== 'light' && theme !== 'dark') theme = 'dark';
+      document.documentElement.setAttribute('data-theme', theme);
+      if (salvar) {
+        try { localStorage.setItem('user_theme', theme); } catch (e) {}
+      }
+
+      const sunIcon = document.getElementById('theme-icon-sun');
+      const moonIcon = document.getElementById('theme-icon-moon');
+      const btnTheme = document.getElementById('btn-finance-theme');
+      if (sunIcon && moonIcon) {
+        if (theme === 'dark') {
+          sunIcon.style.display = 'block';
+          moonIcon.style.display = 'none';
+        } else {
+          sunIcon.style.display = 'none';
+          moonIcon.style.display = 'block';
+        }
+      }
+      if (btnTheme) {
+        btnTheme.title = theme === 'dark' ? 'Mudar para tema claro' : 'Mudar para tema escuro';
+      }
+
+      const metaTheme = document.querySelector('meta[name="theme-color"]');
+      if (metaTheme) metaTheme.content = theme === 'dark' ? '#070b14' : '#f1f5f9';
+    }
+
+    function alternarTema() {
+      const atual = document.documentElement.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
+      aplicarTema(atual, true);
+      try {
+        if (window.parent && window.parent !== window) {
+          window.parent.postMessage({ type: 'FINANCE_THEME_CHANGED', theme: atual }, '*');
+          const parentSwitch = window.parent.document.getElementById('checkbox-theme');
+          if (parentSwitch) {
+            parentSwitch.checked = (atual === 'dark');
+            parentSwitch.dispatchEvent(new Event('change'));
+          }
+        }
+      } catch (e) {}
+    }
+
+    // Ouvir mensagens de sincronização do Ponto 2.0 pai
+    window.addEventListener('message', (e) => {
+      if (e.data && (e.data.type === 'SET_THEME' || e.data.type === 'THEME_CHANGE')) {
+        aplicarTema(e.data.theme, false);
+      }
+    });
+
+    // Ouvir alteração no localStorage de outras abas
+    window.addEventListener('storage', (e) => {
+      if (e.key === 'user_theme' && e.newValue) {
+        aplicarTema(e.newValue, false);
+      }
+    });
 
     // ================= DESCOMPACTAÇÃO DE METADADOS RICOS DO ATIVO =================
     function extrairInfoAtivo(item) {
@@ -2160,6 +2371,8 @@ Em que mais posso aprofundar sua análise financeira hoje?`;
       const btnVoltar = document.getElementById('btn-voltar-topo');
       if (btnVoltar) btnVoltar.style.display = 'none';
     }
+    const temaInicial = document.documentElement.getAttribute('data-theme') || localStorage.getItem('user_theme') || 'dark';
+    aplicarTema(temaInicial, false);
     inicializarChaveGemini();
     sincronizarTabelaUnica();
   </script>
