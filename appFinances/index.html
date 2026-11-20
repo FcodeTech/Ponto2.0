@@ -4031,7 +4031,8 @@
         AI_EXPANDED: 'fc_ai_expandido',
         CHAT_HISTORY: 'fc_chat_historico',
         SUBSTITUTES: 'mp_substitutos_sugeridos',
-        MEMORY_CACHE: 'mp_gemini_memoria_cache'
+        MEMORY_CACHE: 'mp_gemini_memoria_cache',
+        LAST_DAILY_UPDATE: 'fc_ultima_atualizacao_diaria'
       },
       get(key, defaultValue = null) {
         try {
@@ -7830,6 +7831,38 @@ Comportamento de consultor sênior de investimentos, técnico porém didático, 
       // 9. Restaurar Aba Ativa (Mercado, Quarentena ou Analista IA)
       const abaSalva = FCSettings.get(FCSettings.KEYS.ACTIVE_TAB, 'mercado');
       alternarAba(abaSalva);
+
+      // 10. Atualização Diária Automática Exclusiva do FC Finanças (1x por dia ao abrir)
+      verificarEExecutarAtualizacaoDiaria();
+    }
+
+    // Rotina isolada: atualiza automaticamente a carteira uma vez por dia ao abrir o app
+    async function verificarEExecutarAtualizacaoDiaria() {
+      try {
+        const hoje = new Date().toLocaleDateString('pt-BR');
+        const ultimaAtualizacao = FCSettings.get(FCSettings.KEYS.LAST_DAILY_UPDATE, null);
+
+        if (ultimaAtualizacao !== hoje) {
+          console.log(`[FC Finanças] Nova sessão diária (${hoje}). Executando atualização automática da carteira...`);
+          notificarSalvo('Atualizando cotações do dia automaticamente...');
+
+          const atualizados = await atualizarTodaCarteiraApi();
+
+          FCSettings.set(FCSettings.KEYS.LAST_DAILY_UPDATE, hoje);
+          FCSettings.set('fc_ultima_atualizacao_hora', new Date().toLocaleTimeString('pt-BR'));
+
+          if (atualizados && atualizados.length > 0) {
+            notificarSalvo(`✅ Cotações do dia atualizadas! (${atualizados.length} ativos)`);
+            console.log(`[FC Finanças] Atualização diária concluída: ${atualizados.length} ativos sincronizados.`);
+          } else {
+            notificarSalvo('✅ Dados da carteira sincronizados para hoje!');
+          }
+        } else {
+          console.log(`[FC Finanças] Carteira já atualizada hoje (${hoje}). Próxima atualização automática amanhã.`);
+        }
+      } catch (errDiario) {
+        console.warn('[FC Finanças] Aviso na rotina de atualização diária automática:', errDiario);
+      }
     }
 
     // Dispara a inicialização integrada com persistência total
