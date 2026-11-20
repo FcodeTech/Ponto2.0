@@ -1927,6 +1927,7 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
+      gap: 0.5rem;
       padding-bottom: 0.75rem;
       margin-bottom: 0.75rem;
       border-bottom: 1px solid var(--border);
@@ -1935,10 +1936,26 @@
     .ai-heading {
       display: flex;
       align-items: center;
-      gap: 0.55rem;
-      font-size: 0.98rem;
+      gap: 0.5rem;
+      min-width: 0;
+      flex-wrap: nowrap;
+    }
+
+    .ai-title-brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .ai-title-text {
+      font-size: 0.94rem;
       font-weight: 800;
+      letter-spacing: -0.015em;
       color: var(--text-primary);
+      white-space: nowrap;
+      user-select: none;
     }
 
     .ai-avatar-icon {
@@ -1956,18 +1973,59 @@
     .ai-top-actions {
       display: inline-flex;
       align-items: center;
-      gap: 0.4rem;
+      gap: 0.35rem;
+      flex-shrink: 0;
+    }
+
+    .ai-action-btn {
+      width: 28px !important;
+      height: 28px !important;
+      min-width: 28px !important;
+      font-size: 0.88rem !important;
+      display: inline-flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      border-radius: 7px !important;
+      padding: 0 !important;
     }
 
     .ai-pill {
-      font-size: 0.68rem;
-      padding: 0.18rem 0.55rem;
+      font-size: 0.70rem;
+      padding: 0.2rem 0.55rem;
       border-radius: 99px;
       background: var(--ai-glow);
       color: #d8b4fe;
       border: 1px solid rgba(168, 85, 247, 0.35);
       font-weight: 700;
-      letter-spacing: 0.02em;
+      letter-spacing: 0.01em;
+      white-space: nowrap;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.32rem;
+      flex-shrink: 0;
+      line-height: 1.25;
+      text-decoration: none;
+    }
+
+    .memoria-icon {
+      font-size: 0.85rem;
+      line-height: 1;
+    }
+
+    .memoria-text-long {
+      display: inline;
+      white-space: nowrap;
+    }
+
+    .memoria-text-short {
+      display: none;
+      white-space: nowrap;
+    }
+
+    .memoria-count-num {
+      font-weight: 800;
+      opacity: 0.95;
+      white-space: nowrap;
     }
 
     .chips-scroller {
@@ -2663,9 +2721,87 @@
         flex-direction: column;
       }
 
+      .ai-top {
+        gap: 0.4rem;
+        padding-bottom: 0.65rem;
+        margin-bottom: 0.65rem;
+      }
+
+      .ai-heading {
+        gap: 0.4rem;
+      }
+
+      .ai-title-brand {
+        gap: 0.35rem;
+      }
+
+      .ai-avatar-icon {
+        width: 24px;
+        height: 24px;
+        border-radius: 6px;
+      }
+
+      .ai-title-text {
+        font-size: 0.88rem;
+      }
+
+      .ai-pill {
+        font-size: 0.68rem;
+        padding: 0.18rem 0.48rem;
+        gap: 0.25rem;
+      }
+
+      .ai-action-btn {
+        width: 26px !important;
+        height: 26px !important;
+        min-width: 26px !important;
+      }
+
       .chat-feed {
         flex: 1;
         min-height: 280px;
+      }
+    }
+
+    @media (max-width: 420px) {
+      .ai-top {
+        gap: 0.35rem;
+      }
+
+      .ai-heading {
+        gap: 0.35rem;
+      }
+
+      .ai-title-brand {
+        gap: 0.3rem;
+      }
+
+      .ai-title-text {
+        font-size: 0.84rem;
+      }
+
+      .memoria-text-long {
+        display: none !important;
+      }
+
+      .memoria-text-short {
+        display: inline !important;
+      }
+
+      .ai-pill {
+        font-size: 0.66rem;
+        padding: 0.16rem 0.42rem;
+      }
+    }
+
+    @media (max-width: 330px) {
+      .ai-top {
+        flex-wrap: wrap;
+        gap: 0.45rem;
+      }
+      .ai-heading {
+        width: 100%;
+        justify-content: space-between;
       }
     }
 
@@ -3437,19 +3573,26 @@
       <div class="ai-container">
         <div class="ai-top">
           <div class="ai-heading">
-            <div class="ai-avatar-icon">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
-              </svg>
+            <div class="ai-title-brand">
+              <div class="ai-avatar-icon">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                </svg>
+              </div>
+              <span class="ai-title-text">Analista IA</span>
             </div>
-            <span>Analista IA</span>
-            <span id="memoria-badge" class="ai-pill ai-pill-clickable" onclick="abrirModalMemoria()" title="Clique para abrir o Cérebro Cognitivo e gerenciar os aprendizados da IA">🧠 Memória Ativa (0)</span>
+            <span id="memoria-badge" class="ai-pill ai-pill-clickable" onclick="abrirModalMemoria()" title="Clique para abrir o Cérebro Cognitivo e gerenciar os aprendizados da IA">
+              <span class="memoria-icon">🧠</span>
+              <span class="memoria-text-long">Memória Ativa</span>
+              <span class="memoria-text-short">Memória</span>
+              <span class="memoria-count-num">(0)</span>
+            </span>
           </div>
           <div class="ai-top-actions">
-            <button class="refresh-btn" id="btn-expand-ai" title="Expandir área de trabalho" onclick="alternarExpansaoAi(this)">
+            <button class="refresh-btn ai-action-btn" id="btn-expand-ai" title="Expandir área de trabalho" onclick="alternarExpansaoAi(this)">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 3 21 3 21 9"></polyline><polyline points="9 21 3 21 3 15"></polyline><line x1="21" y1="3" x2="14" y2="10"></line><line x1="3" y1="21" x2="10" y2="14"></line></svg>
             </button>
-            <button class="refresh-btn" title="Limpar conversa" onclick="limparChat()">↺</button>
+            <button class="refresh-btn ai-action-btn" title="Limpar conversa" onclick="limparChat()">↺</button>
           </div>
         </div>
 
@@ -3908,7 +4051,7 @@
       const badge = document.getElementById('memoria-badge');
       if (badge) {
         const total = memoriaEvolutiva.length;
-        badge.textContent = `🧠 Memória Ativa (${total})`;
+        badge.innerHTML = `<span class="memoria-icon">🧠</span> <span class="memoria-text-long">Memória Ativa</span><span class="memoria-text-short">Memória</span> <span class="memoria-count-num">(${total})</span>`;
         badge.title = `${total} aprendizados e diretrizes salvos na tabela ${TABELA_UNICA}. Clique para abrir o Cérebro Cognitivo.`;
       }
       const modal = document.getElementById('modal-memoria');
