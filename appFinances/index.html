@@ -523,6 +523,32 @@
         display: block !important;
         animation: fadeUp 0.22s ease;
       }
+
+      /* No mobile e tablet (< 880px), o card Google AI Studio só é exibido na aba Analista IA, ficando oculto em Mercado e Quarentena */
+      body:not([data-tab-ativa="ia"]) .api-section,
+      body:not([data-tab-ativa="ia"]) #api-section-bloco {
+        display: none !important;
+      }
+
+      body[data-tab-ativa="ia"] .api-section,
+      body[data-tab-ativa="ia"] #api-section-bloco {
+        display: block !important;
+        animation: fadeUp 0.22s ease;
+      }
+    }
+
+    /* Regra reforçada para Celulares e Tablets (até 1024px) */
+    @media (max-width: 1024px) {
+      body:not([data-tab-ativa="ia"]) .api-section,
+      body:not([data-tab-ativa="ia"]) #api-section-bloco {
+        display: none !important;
+      }
+
+      body[data-tab-ativa="ia"] .api-section,
+      body[data-tab-ativa="ia"] #api-section-bloco {
+        display: block !important;
+        animation: fadeUp 0.22s ease;
+      }
     }
 
     /* ================= KPIs RESPONSIVOS ================= */
@@ -3574,7 +3600,7 @@
     }
   </style>
 </head>
-<body>
+<body data-tab-ativa="mercado">
 
   <!-- Header com Logo Centralizada no Mobile -->
   <header class="topbar">
@@ -3590,7 +3616,7 @@
   </header>
 
   <!-- Bloco da Chave API posicionado abaixo da Logo -->
-  <section class="api-section">
+  <section class="api-section" id="api-section-bloco">
     <div class="api-card">
       <div class="api-card-header">
         <div class="api-brand-title">
@@ -3598,13 +3624,13 @@
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
           </div>
           <div class="api-title-group">
-            <span class="api-title-main">Google AI Studio</span>
+            <span class="api-title-main">Finanças IA</span>
             <span class="api-title-sub">Motor Analista Gemini</span>
           </div>
         </div>
         <div class="api-badges-row">
           <span id="badge-pro-free" class="badge-pro-free" title="Compatível com Gemini Pro e Free">⚡ Pro &amp; Free</span>
-          <span id="api-badge" class="api-status-badge online" title="Chave de API do Google AI Studio configurada e ativa">
+          <span id="api-badge" class="api-status-badge online" title="Chave de API do Finanças IA configurada e ativa">
             <span class="status-dot"></span>
             <span id="api-status-text">Configurada</span>
           </span>
@@ -5087,6 +5113,22 @@
     function alternarAba(aba) {
       abaAtivaAtual = aba || 'mercado';
       FCSettings.set(FCSettings.KEYS.ACTIVE_TAB, abaAtivaAtual);
+      document.body.setAttribute('data-tab-ativa', abaAtivaAtual);
+
+      // Controle direto no DOM do card Google AI Studio para Mobile e Tablets (<= 1024px)
+      const isMobileOuTablet = window.innerWidth <= 1024;
+      const apiSec = document.getElementById('api-section-bloco') || document.querySelector('.api-section');
+      if (apiSec) {
+        if (isMobileOuTablet) {
+          if (abaAtivaAtual === 'ia') {
+            apiSec.style.setProperty('display', 'block', 'important');
+          } else {
+            apiSec.style.setProperty('display', 'none', 'important');
+          }
+        } else {
+          apiSec.style.removeProperty('display');
+        }
+      }
       const panelMercado = document.getElementById('panel-mercado');
       const panelQuarentena = document.getElementById('panel-quarentena');
       const panelIa = document.getElementById('panel-ia');
@@ -5182,6 +5224,20 @@
     }
 
     window.addEventListener('resize', () => {
+      const isMobileOuTablet = window.innerWidth <= 1024;
+      const apiSec = document.getElementById('api-section-bloco') || document.querySelector('.api-section');
+      if (apiSec) {
+        if (isMobileOuTablet) {
+          if (abaAtivaAtual === 'ia') {
+            apiSec.style.setProperty('display', 'block', 'important');
+          } else {
+            apiSec.style.setProperty('display', 'none', 'important');
+          }
+        } else {
+          apiSec.style.removeProperty('display');
+        }
+      }
+
       const isDesktop = window.innerWidth >= 880;
       const panelIa = document.getElementById('panel-ia');
       const panelMercado = document.getElementById('panel-mercado');
@@ -5326,7 +5382,7 @@
       if (badge && statusText) {
         badge.className = 'api-status-badge online';
         statusText.textContent = 'Configurada';
-        badge.title = `Chave Google AI Studio configurada (${planoVinculadoGemini}). Modelo ativo: ${modeloSelecionadoGemini}`;
+        badge.title = `Chave Finanças IA configurada (${planoVinculadoGemini}). Modelo ativo: ${modeloSelecionadoGemini}`;
       }
 
       if (chaveSalva) {
@@ -5350,7 +5406,7 @@
 
       if (!chave) {
         if (mostrarAlerta) {
-          alert('Por favor, informe ou cole sua chave de API do Google AI Studio no campo indicado antes de conectar.');
+          alert('Por favor, informe ou cole sua chave de API do Finanças IA no campo indicado antes de conectar.');
         }
         return false;
       }
@@ -5419,7 +5475,7 @@
         }
 
         if (mostrarAlerta) {
-          alert(`✅ Google AI Studio Configurado com Sucesso!\n\nStatus: (Configurada)\nPlano: (${planoVinculadoGemini})\nModelo Ativo: ${modeloFuncional}\n\nO Gemini Analista está 100% pronto para auditar sua carteira e tirar dúvidas.`);
+          alert(`✅ Finanças IA Configurado com Sucesso!\n\nStatus: (Configurada)\nPlano: (${planoVinculadoGemini})\nModelo Ativo: ${modeloFuncional}\n\nO Gemini Analista está 100% pronto para auditar sua carteira e tirar dúvidas.`);
         }
         if (btn) {
           btn.disabled = false;
@@ -5451,7 +5507,7 @@
           if (mostrarAlerta) {
             alert(`✅ Chave Google Gemini Registrada!\n\nStatus: (Configurada)\nPlano: (${planoVinculadoGemini})\nConta Vinculada: ${emailVinculadoGemini}\n\nSua chave foi salva e o Analista Inteligente está pronto para uso na sua carteira.`);
           }
-          notificarSalvo(`Chave Google AI Studio (${planoVinculadoGemini}) configurada!`);
+          notificarSalvo(`Chave Finanças IA (${planoVinculadoGemini}) configurada!`);
         }
 
         if (btn) {
@@ -7722,6 +7778,10 @@ Comportamento de consultor sênior de investimentos, técnico porém didático, 
       // 1. Tema visual
       const temaInicial = document.documentElement.getAttribute('data-theme') || FCSettings.get(FCSettings.KEYS.THEME, 'dark');
       aplicarTema(temaInicial, false);
+
+      // 1.1 Sincroniza imediatamente a aba ativa para aplicar ocultação/exibição do card sem atraso
+      const abaSalvaImediata = FCSettings.get(FCSettings.KEYS.ACTIVE_TAB, 'mercado');
+      alternarAba(abaSalvaImediata);
 
       // 2. Chave Google AI Studio e credenciais
       inicializarChaveGemini();
