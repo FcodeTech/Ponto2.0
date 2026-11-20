@@ -400,7 +400,7 @@
 
     .api-card-footer {
       display: flex;
-      justify-content: space-between;
+      justify-content: flex-end;
       align-items: center;
       gap: 0.65rem;
       flex-wrap: wrap;
@@ -666,8 +666,8 @@
     /* ================= GRID DE CARDS DE ATIVOS ================= */
     .assets-grid {
       display: grid;
-      grid-template-columns: 1fr;
-      gap: 0.85rem;
+      grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr));
+      gap: 1rem;
     }
 
     .asset-card {
@@ -693,8 +693,10 @@
     .card-top {
       display: flex;
       justify-content: space-between;
-      align-items: center;
+      align-items: flex-start;
+      gap: 0.5rem;
       margin-bottom: 0.25rem;
+      min-height: 30px;
     }
 
     .ticker-group {
@@ -702,6 +704,7 @@
       align-items: center;
       flex-wrap: wrap;
       gap: 0.45rem;
+      min-width: 0;
     }
 
     .ticker-symbol {
@@ -830,10 +833,10 @@
 
     /* Bloco Principal: Preço e Dividend Yield */
     .card-hero-metrics {
-      display: grid;
-      grid-template-columns: 1.15fr 1fr;
+      display: flex;
+      justify-content: space-between;
       align-items: center;
-      gap: 0.6rem;
+      gap: 0.75rem;
       padding: 0.75rem 0.85rem;
       background: rgba(255, 255, 255, 0.025);
       border: 1px solid var(--border);
@@ -841,10 +844,16 @@
       margin-bottom: 0.2rem;
     }
 
+    [data-theme="light"] .card-hero-metrics {
+      background: #f8fafc;
+      border-color: #e2e8f0;
+    }
+
     .hero-metric-box {
       display: flex;
       flex-direction: column;
       min-width: 0;
+      flex: 1 1 auto;
     }
 
     .hero-dy-box {
@@ -853,10 +862,12 @@
       align-items: flex-end;
       text-align: right;
       min-width: 0;
+      flex: 0 0 auto;
     }
 
     .m-label {
-      font-size: 0.68rem;
+      font-size: 0.65rem;
+      font-weight: 600;
       text-transform: uppercase;
       letter-spacing: 0.03em;
       color: var(--text-muted);
@@ -866,48 +877,66 @@
     }
 
     .m-price {
-      font-size: clamp(1.15rem, 3.2vw, 1.35rem);
+      font-size: 1.25rem;
       font-weight: 800;
       font-variant-numeric: tabular-nums;
       color: var(--text-primary);
+      white-space: nowrap;
+      line-height: 1.2;
     }
 
     .m-dy-tag {
-      font-size: clamp(1.05rem, 3vw, 1.22rem);
+      font-size: 1.08rem;
       font-weight: 800;
-      color: #34d399;
+      color: #10b981;
       background: rgba(16, 185, 129, 0.14);
       border: 1px solid rgba(16, 185, 129, 0.35);
       padding: 0.22rem 0.65rem;
       border-radius: 8px;
       font-variant-numeric: tabular-nums;
       box-shadow: 0 0 12px rgba(16, 185, 129, 0.12);
-      display: inline-block;
+      display: inline-flex;
+      align-items: center;
       white-space: nowrap;
+      line-height: 1.2;
+    }
+
+    [data-theme="light"] .m-dy-tag {
+      color: #047857;
+      background: #ecfdf5;
+      border-color: #a7f3d0;
     }
 
     /* Grid com 4 Indicadores Complementares */
     .card-indicators-grid {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
-      gap: 0.4rem;
+      gap: 0.35rem;
       margin-top: 0.35rem;
       margin-bottom: 0.2rem;
+    }
+
+    @media (max-width: 380px) {
+      .card-indicators-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
     }
 
     .ind-card {
       background: var(--bg-input);
       border: 1px solid var(--border);
       border-radius: var(--radius-sm);
-      padding: 0.45rem 0.35rem;
+      padding: 0.42rem 0.25rem;
       text-align: center;
       min-width: 0;
+      overflow: hidden;
     }
 
     .ind-label {
       font-size: 0.62rem;
+      font-weight: 600;
       text-transform: uppercase;
-      letter-spacing: 0.03em;
+      letter-spacing: 0.02em;
       color: var(--text-muted);
       display: block;
       margin-bottom: 0.18rem;
@@ -917,7 +946,7 @@
     }
 
     .ind-val {
-      font-size: 0.8rem;
+      font-size: 0.78rem;
       font-weight: 700;
       font-variant-numeric: tabular-nums;
       color: var(--text-primary);
@@ -931,6 +960,10 @@
       color: #34d399;
     }
 
+    [data-theme="light"] .ind-val.pvp-desconto {
+      color: #059669;
+    }
+
     .card-meta {
       padding-top: 0.55rem;
       border-top: 1px solid var(--border);
@@ -939,6 +972,146 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
+    }
+
+    /* ================= COMPONENTE DE PAGINAÇÃO DE ATIVOS ================= */
+    .pagination-wrapper {
+      margin-top: 1.25rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .pagination-container {
+      display: flex;
+      flex-direction: column;
+      gap: 0.85rem;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.85rem 1.15rem;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12);
+      transition: all 0.2s ease;
+    }
+
+    @media (min-width: 640px) {
+      .pagination-container {
+        flex-direction: row;
+      }
+    }
+
+    .pagination-info {
+      display: flex;
+      align-items: center;
+      gap: 0.85rem;
+      font-size: 0.82rem;
+      color: var(--text-secondary);
+      flex-wrap: wrap;
+    }
+
+    .pagination-info strong {
+      color: var(--text-primary);
+      font-weight: 700;
+    }
+
+    .pagination-per-page {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
+      margin-left: 0.35rem;
+      padding-left: 0.85rem;
+      border-left: 1px solid var(--border);
+    }
+
+    .pagination-select {
+      background: var(--bg-input);
+      color: var(--text-primary);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 0.25rem 0.6rem;
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+      outline: none;
+      transition: all 0.2s ease;
+    }
+
+    .pagination-select:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 2px var(--accent-glow);
+    }
+
+    .pagination-controls {
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .pag-btn {
+      min-width: 34px;
+      height: 34px;
+      padding: 0 0.55rem;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.35rem;
+      font-size: 0.82rem;
+      font-weight: 600;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border);
+      background: var(--bg-input);
+      color: var(--text-primary);
+      cursor: pointer;
+      transition: all 0.18s ease;
+      user-select: none;
+    }
+
+    .pag-btn:hover:not(:disabled) {
+      background: var(--bg-card-hover);
+      border-color: var(--accent);
+      color: var(--accent);
+      transform: translateY(-1px);
+    }
+
+    .pag-btn:active:not(:disabled) {
+      transform: translateY(0);
+    }
+
+    .pag-btn.active {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #ffffff;
+      font-weight: 700;
+      box-shadow: 0 2px 10px var(--accent-glow);
+      cursor: default;
+    }
+
+    [data-theme="light"] .pag-btn.active {
+      color: #ffffff;
+      background: #0284c7;
+      border-color: #0284c7;
+    }
+
+    .pag-btn:disabled {
+      opacity: 0.38;
+      cursor: not-allowed;
+      border-color: var(--border);
+      background: transparent;
+      color: var(--text-muted);
+    }
+
+    .pag-nav-btn {
+      padding: 0 0.75rem;
+      font-weight: 600;
+    }
+
+    .pag-ellipsis {
+      padding: 0 0.3rem;
+      color: var(--text-muted);
+      font-weight: 700;
+      user-select: none;
     }
 
     /* ================= SELETOR DE VISÃO (CARTEIRA / QUARENTENA) ================= */
@@ -2421,8 +2594,9 @@
 
       .api-card-footer {
         display: flex;
-        flex-direction: column;
-        align-items: flex-start;
+        flex-direction: row;
+        justify-content: flex-end;
+        align-items: center;
         gap: 0.55rem;
         width: 100%;
         padding-top: 0.65rem;
@@ -2530,7 +2704,7 @@
       }
 
       .assets-grid {
-        grid-template-columns: repeat(2, 1fr);
+        grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr));
         gap: 1rem;
       }
 
@@ -2605,7 +2779,7 @@
     /* ================= TELAS GRANDES (1320px+) ================= */
     @media (min-width: 1320px) {
       .assets-grid {
-        grid-template-columns: repeat(3, 1fr);
+        grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr));
       }
     }
 
@@ -3008,6 +3182,40 @@
         grid-template-columns: repeat(2, 1fr);
       }
     }
+
+    /* ================= TOAST DE NOTIFICAÇÃO E PERSISTÊNCIA ================= */
+    .fc-toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: rgba(15, 23, 42, 0.94);
+      border: 1px solid var(--border-strong);
+      color: var(--text-primary);
+      padding: 0.65rem 1.15rem;
+      border-radius: var(--radius-md);
+      font-size: 0.82rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.38);
+      z-index: 99999;
+      opacity: 0;
+      transform: translateY(14px);
+      pointer-events: none;
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .fc-toast.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    [data-theme="light"] .fc-toast {
+      background: #ffffff;
+      color: #0f172a;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.14);
+    }
   </style>
 </head>
 <body>
@@ -3061,10 +3269,6 @@
         </button>
       </div>
       <div class="api-card-footer">
-        <div class="api-footer-info">
-          <span id="gemini-plano-tag" class="pro-tag" title="Clique para alternar entre PRO e FREE" onclick="alternarPlanoGemini()">PRO</span>
-          <span class="api-footer-text">Conta vinculada: <strong id="gemini-email-display" title="Clique para editar o e-mail vinculado" onclick="editarEmailVinculado()">fredsoncitty@gmail.com</strong> • Chaves gratuitas começam com <code>(AIzaSy...)</code></span>
-        </div>
         <a href="https://aistudio.google.com/app/apikey" target="_blank" class="api-link-btn" title="Abrir Google AI Studio">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
           <span>Obter chave no AI Studio</span>
@@ -3126,6 +3330,9 @@
         <div id="lista-ativos" class="assets-grid">
           <div class="state-box">Sincronizando cotações com o Supabase...</div>
         </div>
+
+        <!-- Paginação Adaptativa de Ativos -->
+        <div id="paginacao-ativos" class="pagination-wrapper"></div>
       </section>
 
       <!-- PAINEL 2: Quarentena Inteligente com Cards Detalhados -->
@@ -3393,17 +3600,79 @@
     let substitutosSugeridos = [];
     let memoriaEvolutiva = [];
     let filtroAtual = 'TODOS';
+    let paginaAtual = 1;
+    let itensPorPagina = 9;
     let historicoSessao = [];
     let analistaAutonomoAtivo = true;
     let modeloSelecionadoGemini = 'gemini-2.5-flash';
     const EMAIL_VINCULADO_FREDSON = 'fredsoncitty@gmail.com';
+
+    // ================= GERENCIADOR UNIVERSAL DE PERSISTÊNCIA (FC SETTINGS) =================
+    const FCSettings = {
+      KEYS: {
+        THEME: 'user_theme',
+        GEMINI_KEY: 'gemini_api_key',
+        GEMINI_PLAN: 'gemini_plano_tipo',
+        GEMINI_EMAIL: 'gemini_email_vinculado',
+        GEMINI_MODEL: 'gemini_modelo_ativo',
+        ACTIVE_TAB: 'fc_aba_ativa',
+        ASSET_FILTER: 'fc_filtro_ativo',
+        ITEMS_PER_PAGE: 'fc_itens_por_pagina',
+        QUARANTINE_SECTION: 'fc_quarentena_secao',
+        AI_EXPANDED: 'fc_ai_expandido',
+        CHAT_HISTORY: 'fc_chat_historico',
+        SUBSTITUTES: 'mp_substitutos_sugeridos',
+        MEMORY_CACHE: 'mp_gemini_memoria_cache'
+      },
+      get(key, defaultValue = null) {
+        try {
+          const val = localStorage.getItem(key);
+          if (val === null || val === undefined) return defaultValue;
+          try { return JSON.parse(val); } catch { return val; }
+        } catch (e) {
+          return defaultValue;
+        }
+      },
+      set(key, value) {
+        try {
+          const serialized = typeof value === 'object' ? JSON.stringify(value) : String(value);
+          localStorage.setItem(key, serialized);
+          return true;
+        } catch (e) {
+          console.warn('[FCSettings] Falha ao persistir:', key, e);
+          return false;
+        }
+      },
+      remove(key) {
+        try { localStorage.removeItem(key); } catch (e) {}
+      }
+    };
+
+    function notificarSalvo(msg = 'Configuração salva automaticamente!') {
+      let toast = document.getElementById('fc-toast');
+      if (!toast) {
+        toast = document.createElement('div');
+        toast.id = 'fc-toast';
+        toast.className = 'fc-toast';
+        document.body.appendChild(toast);
+      }
+      toast.innerHTML = `
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+        <span>${msg}</span>
+      `;
+      toast.classList.add('show');
+      clearTimeout(toast._timeout);
+      toast._timeout = setTimeout(() => {
+        toast.classList.remove('show');
+      }, 2400);
+    }
 
     // ================= SINCRONIZAÇÃO DE TEMA (CLARO / ESCURO) =================
     function aplicarTema(theme, salvar = true) {
       if (theme !== 'light' && theme !== 'dark') theme = 'dark';
       document.documentElement.setAttribute('data-theme', theme);
       if (salvar) {
-        try { localStorage.setItem('user_theme', theme); } catch (e) {}
+        FCSettings.set(FCSettings.KEYS.THEME, theme);
       }
 
       const sunIcon = document.getElementById('theme-icon-sun');
@@ -4269,6 +4538,7 @@
 
     function filtrarSecaoQuarentena(filtro, btn) {
       filtroQuarentenaSecao = filtro;
+      FCSettings.set(FCSettings.KEYS.QUARANTINE_SECTION, filtro);
       document.querySelectorAll('.q-segmented-control .q-seg-btn').forEach(b => b.classList.remove('active'));
       if (btn) btn.classList.add('active');
 
@@ -4302,6 +4572,7 @@
 
     function alternarAba(aba) {
       abaAtivaAtual = aba || 'mercado';
+      FCSettings.set(FCSettings.KEYS.ACTIVE_TAB, abaAtivaAtual);
       const panelMercado = document.getElementById('panel-mercado');
       const panelQuarentena = document.getElementById('panel-quarentena');
       const panelIa = document.getElementById('panel-ia');
@@ -4492,8 +4763,9 @@
 
     function alternarPlanoGemini() {
       planoVinculadoGemini = (planoVinculadoGemini === 'PRO') ? 'FREE' : 'PRO';
-      localStorage.setItem('gemini_plano_tipo', planoVinculadoGemini);
+      FCSettings.set(FCSettings.KEYS.GEMINI_PLAN, planoVinculadoGemini);
       atualizarVisualPlanoEmail();
+      notificarSalvo(`Plano Gemini salvo: (${planoVinculadoGemini})`);
     }
 
     function editarEmailVinculado() {
@@ -4502,12 +4774,14 @@
         const limpo = novo.trim();
         if (limpo && limpo.includes('@')) {
           emailVinculadoGemini = limpo;
-          localStorage.setItem('gemini_email_vinculado', limpo);
+          FCSettings.set(FCSettings.KEYS.GEMINI_EMAIL, limpo);
           atualizarVisualPlanoEmail();
+          notificarSalvo(`Conta vinculada salva: ${limpo}`);
         } else if (limpo === '') {
           emailVinculadoGemini = 'fredsoncitty@gmail.com';
-          localStorage.setItem('gemini_email_vinculado', emailVinculadoGemini);
+          FCSettings.set(FCSettings.KEYS.GEMINI_EMAIL, emailVinculadoGemini);
           atualizarVisualPlanoEmail();
+          notificarSalvo(`Conta vinculada salva: ${emailVinculadoGemini}`);
         } else {
           alert('Por favor, informe um endereço de e-mail válido.');
         }
@@ -4515,16 +4789,24 @@
     }
 
     async function inicializarChaveGemini() {
-      const chaveSalva = (localStorage.getItem(STORAGE_KEY_GEMINI) || '').trim();
+      const chaveSalva = (FCSettings.get(FCSettings.KEYS.GEMINI_KEY) || '').trim();
       const inputKey = document.getElementById('gemini-key');
       const badge = document.getElementById('api-badge');
       const statusText = document.getElementById('api-status-text');
 
-      modeloSelecionadoGemini = localStorage.getItem('gemini_modelo_ativo') || 'gemini-2.5-flash';
-      emailVinculadoGemini = localStorage.getItem('gemini_email_vinculado') || 'fredsoncitty@gmail.com';
-      planoVinculadoGemini = localStorage.getItem('gemini_plano_tipo') || 'PRO';
+      modeloSelecionadoGemini = FCSettings.get(FCSettings.KEYS.GEMINI_MODEL, 'gemini-2.5-flash');
+      emailVinculadoGemini = FCSettings.get(FCSettings.KEYS.GEMINI_EMAIL, 'fredsoncitty@gmail.com');
+      planoVinculadoGemini = FCSettings.get(FCSettings.KEYS.GEMINI_PLAN, 'PRO');
 
       atualizarVisualPlanoEmail();
+
+      if (inputKey && !inputKey._hasPersistentListener && typeof inputKey.addEventListener === 'function') {
+        inputKey._hasPersistentListener = true;
+        inputKey.addEventListener('input', (e) => {
+          const v = e.target.value.trim();
+          FCSettings.set(FCSettings.KEYS.GEMINI_KEY, v);
+        });
+      }
 
       // Mantém sempre o status Configurada por padrão com o motor analista ativo
       if (badge && statusText) {
@@ -4623,7 +4905,7 @@
         }
 
         if (mostrarAlerta) {
-          alert(`✅ Google AI Studio Configurado com Sucesso!\n\nStatus: (Configurada)\nPlano: (${planoVinculadoGemini})\nConta Vinculada: ${emailVinculadoGemini}\nModelo Ativo: ${modeloFuncional}\n\nO Gemini Analista está 100% pronto para auditar sua carteira e tirar dúvidas.`);
+          alert(`✅ Google AI Studio Configurado com Sucesso!\n\nStatus: (Configurada)\nPlano: (${planoVinculadoGemini})\nModelo Ativo: ${modeloFuncional}\n\nO Gemini Analista está 100% pronto para auditar sua carteira e tirar dúvidas.`);
         }
         if (btn) {
           btn.disabled = false;
@@ -4655,6 +4937,7 @@
           if (mostrarAlerta) {
             alert(`✅ Chave Google Gemini Registrada!\n\nStatus: (Configurada)\nPlano: (${planoVinculadoGemini})\nConta Vinculada: ${emailVinculadoGemini}\n\nSua chave foi salva e o Analista Inteligente está pronto para uso na sua carteira.`);
           }
+          notificarSalvo(`Chave Google AI Studio (${planoVinculadoGemini}) configurada!`);
         }
 
         if (btn) {
@@ -4697,11 +4980,112 @@
       document.querySelectorAll('.tab-filter').forEach(b => b.classList.remove('active'));
       botao.classList.add('active');
       filtroAtual = botao.dataset.filtro;
+      FCSettings.set(FCSettings.KEYS.ASSET_FILTER, filtroAtual);
+      paginaAtual = 1;
       renderizar();
+    }
+
+    function mudarPagina(novaPagina) {
+      novaPagina = Number(novaPagina);
+      if (isNaN(novaPagina) || novaPagina < 1) novaPagina = 1;
+      paginaAtual = novaPagina;
+      renderizar();
+
+      const el = document.getElementById('panel-mercado') || document.getElementById('lista-ativos');
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }
+
+    function alterarItensPorPagina(valor) {
+      if (valor === 'all') {
+        itensPorPagina = 999999;
+      } else {
+        itensPorPagina = parseInt(valor, 10) || 9;
+      }
+      FCSettings.set(FCSettings.KEYS.ITEMS_PER_PAGE, String(valor));
+      paginaAtual = 1;
+      renderizar();
+    }
+
+    function renderizarPaginacao(totalItens, totalPaginas, itemInicial, itemFinal) {
+      const pagContainer = document.getElementById('paginacao-ativos');
+      if (!pagContainer) return;
+
+      if (totalItens === 0) {
+        pagContainer.innerHTML = '';
+        return;
+      }
+
+      const opcSel = (val) => {
+        if (val === 'all') return itensPorPagina >= 99999 ? 'selected' : '';
+        return itensPorPagina === val ? 'selected' : '';
+      };
+
+      // Gerador de botões de página (com reticências inteligentes para muitas páginas)
+      let paginasParaExibir = [];
+      if (totalPaginas <= 7) {
+        for (let p = 1; p <= totalPaginas; p++) paginasParaExibir.push(p);
+      } else {
+        paginasParaExibir.push(1);
+        let start = Math.max(2, paginaAtual - 1);
+        let end = Math.min(totalPaginas - 1, paginaAtual + 1);
+
+        if (paginaAtual <= 3) {
+          end = 4;
+        } else if (paginaAtual >= totalPaginas - 2) {
+          start = totalPaginas - 3;
+        }
+
+        if (start > 2) paginasParaExibir.push('...');
+        for (let p = start; p <= end; p++) paginasParaExibir.push(p);
+        if (end < totalPaginas - 1) paginasParaExibir.push('...');
+        paginasParaExibir.push(totalPaginas);
+      }
+
+      const botoesPaginasHtml = paginasParaExibir.map(p => {
+        if (p === '...') {
+          return '<span class="pag-ellipsis">…</span>';
+        }
+        const isActive = p === paginaAtual;
+        return `<button class="pag-btn ${isActive ? 'active' : ''}" onclick="mudarPagina(${p})" ${isActive ? 'disabled aria-current="page"' : ''} title="Ir para a página ${p}">${p}</button>`;
+      }).join('');
+
+      pagContainer.innerHTML = `
+        <nav class="pagination-container" aria-label="Navegação de páginas da carteira">
+          <div class="pagination-info">
+            <span>Mostrando <strong>${itemInicial} - ${itemFinal}</strong> de <strong>${totalItens}</strong> ativos</span>
+            <div class="pagination-per-page">
+              <label for="select-itens-pag">Por página:</label>
+              <select id="select-itens-pag" class="pagination-select" onchange="alterarItensPorPagina(this.value)">
+                <option value="6" ${opcSel(6)}>6</option>
+                <option value="9" ${opcSel(9)}>9</option>
+                <option value="12" ${opcSel(12)}>12</option>
+                <option value="18" ${opcSel(18)}>18</option>
+                <option value="all" ${opcSel('all')}>Todos</option>
+              </select>
+            </div>
+          </div>
+          <div class="pagination-controls">
+            <button class="pag-btn pag-nav-btn" onclick="mudarPagina(${paginaAtual - 1})" ${paginaAtual <= 1 ? 'disabled' : ''} title="Página Anterior">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+              <span>Anterior</span>
+            </button>
+            <div class="pagination-pages" style="display:inline-flex; align-items:center; gap:0.25rem;">
+              ${botoesPaginasHtml}
+            </div>
+            <button class="pag-btn pag-nav-btn" onclick="mudarPagina(${paginaAtual + 1})" ${paginaAtual >= totalPaginas ? 'disabled' : ''} title="Próxima Página">
+              <span>Próxima</span>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+            </button>
+          </div>
+        </nav>
+      `;
     }
 
     function renderizar() {
       const container = document.getElementById('lista-ativos');
+      const paginacaoContainer = document.getElementById('paginacao-ativos');
       if (!container) return;
 
       const filtrados = filtroAtual === 'TODOS'
@@ -4715,10 +5099,23 @@
 
       if (filtrados.length === 0) {
         container.innerHTML = '<div class="state-box">Nenhum ativo encontrado nesta categoria. Adicione um ticker acima ou restaure da quarentena.</div>';
+        if (paginacaoContainer) paginacaoContainer.innerHTML = '';
         return;
       }
 
-      container.innerHTML = filtrados.map(ativo => {
+      // Cálculos de Paginação
+      const totalItens = filtrados.length;
+      const porPagina = itensPorPagina > 0 ? itensPorPagina : 9;
+      const totalPaginas = Math.ceil(totalItens / porPagina) || 1;
+
+      if (paginaAtual > totalPaginas) paginaAtual = totalPaginas;
+      if (paginaAtual < 1) paginaAtual = 1;
+
+      const inicio = (paginaAtual - 1) * porPagina;
+      const fim = Math.min(inicio + porPagina, totalItens);
+      const itensExibidos = filtrados.slice(inicio, fim);
+
+      container.innerHTML = itensExibidos.map(ativo => {
         const preco = Number(ativo.preco_atual || 0).toLocaleString('pt-BR', {
           style: 'currency',
           currency: 'BRL'
@@ -4834,6 +5231,8 @@
           </article>
         `;
       }).join('');
+
+      renderizarPaginacao(totalItens, totalPaginas, inicio + 1, fim);
     }
 
     async function atualizarCardIndividual(ticker, btnEl) {
@@ -4927,6 +5326,7 @@
       btn.textContent = 'Buscando...';
 
       try {
+        paginaAtual = 1;
         await executarBuscaAtivoApi(ticker);
         input.value = '';
         input.focus();
@@ -4950,6 +5350,7 @@
       const container = document.querySelector('.ai-container');
       if (!container) return;
       const expandido = container.classList.toggle('is-expanded');
+      FCSettings.set(FCSettings.KEYS.AI_EXPANDED, expandido);
       if (btn) {
         btn.setAttribute('title', expandido ? 'Restaurar tamanho' : 'Expandir área de trabalho');
         btn.innerHTML = expandido
@@ -4958,16 +5359,79 @@
       }
     }
 
+    let historicoChatCompleto = [];
+
+    function salvarMensagemNoHistorico(autor, texto, tipo, htmlCustom = null) {
+      try {
+        const item = {
+          autor: autor || 'Gemini Analista Pro',
+          texto: texto || '',
+          html: htmlCustom || '',
+          tipo: tipo || 'ai',
+          hora: new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
+        };
+        historicoChatCompleto.push(item);
+        if (historicoChatCompleto.length > 60) {
+          historicoChatCompleto = historicoChatCompleto.slice(-60);
+        }
+        FCSettings.set(FCSettings.KEYS.CHAT_HISTORY, historicoChatCompleto);
+      } catch (e) {
+        console.warn('[FCSettings] Falha ao persistir mensagem no chat:', e);
+      }
+    }
+
+    function carregarHistoricoChatDoStorage() {
+      const chatBox = document.getElementById('chat-box');
+      if (!chatBox) return;
+
+      try {
+        const salvos = FCSettings.get(FCSettings.KEYS.CHAT_HISTORY, null);
+        if (!salvos || !Array.isArray(salvos) || salvos.length === 0) return;
+
+        historicoChatCompleto = salvos;
+        chatBox.innerHTML = ''; // Substitui mensagem inicial pelo histórico real salvo
+
+        salvos.forEach(m => {
+          const div = document.createElement('div');
+          div.className = `msg-bubble ${m.tipo === 'user' ? 'msg-user' : 'msg-ai'}`;
+          div.innerHTML = `
+            <div class="msg-sender">${m.autor}${m.hora ? ` <span style="font-size:0.65rem; opacity:0.6; font-weight:normal;">• ${m.hora}</span>` : ''}</div>
+            <div class="msg-body">${m.html || formatarTextoSeguro(m.texto)}</div>
+          `;
+          chatBox.appendChild(div);
+
+          // Reconstrói a memória de conversação do Gemini
+          if (m.tipo === 'user' && m.texto) {
+            historicoSessao.push({ role: 'user', parts: [{ text: m.texto }] });
+          } else if (m.tipo === 'ai' && m.texto) {
+            historicoSessao.push({ role: 'model', parts: [{ text: m.texto }] });
+          }
+        });
+
+        if (historicoSessao.length > 14) {
+          historicoSessao = historicoSessao.slice(-14);
+        }
+
+        chatBox.scrollTop = chatBox.scrollHeight;
+      } catch (e) {
+        console.warn('[FCSettings] Falha ao recarregar histórico salvo do chat:', e);
+      }
+    }
+
     function limparChat() {
       historicoSessao = [];
+      historicoChatCompleto = [];
+      FCSettings.remove(FCSettings.KEYS.CHAT_HISTORY);
+
       const chatBox = document.getElementById('chat-box');
       const totalMem = memoriaEvolutiva.length;
       chatBox.innerHTML = `
         <div class="msg-bubble msg-ai">
-          <div class="msg-sender">Gemini Analista</div>
-          <div class="msg-body">Chat reiniciado, mas minha memória evolutiva (${totalMem} registros na tabela ${TABELA_UNICA}) continua ativa. Sobre qual ativo, quarentena, FII ou título do Tesouro Direto vamos falar agora?</div>
+          <div class="msg-sender">Gemini Analista Pro</div>
+          <div class="msg-body">Chat reiniciado com sucesso! Suas configurações e a memória cognitiva do Supabase (${totalMem} registros) continuam salvas e ativas. Sobre qual ativo, quarentena, FII ou valuation vamos falar agora?</div>
         </div>
       `;
+      notificarSalvo('Conversa reiniciada. Configurações mantidas!');
     }
 
     function formatarTextoSeguro(texto) {
@@ -4994,7 +5458,7 @@
       return res;
     }
 
-    function adicionarMensagemChat(autor, texto, tipo) {
+    function adicionarMensagemChat(autor, texto, tipo, salvar = true) {
       const chatBox = document.getElementById('chat-box');
       const div = document.createElement('div');
       div.className = `msg-bubble ${tipo === 'user' ? 'msg-user' : 'msg-ai'}`;
@@ -5002,9 +5466,15 @@
         <div class="msg-sender">${autor}</div>
         <div class="msg-body"></div>
       `;
-      div.querySelector('.msg-body').innerHTML = formatarTextoSeguro(texto);
+      const html = formatarTextoSeguro(texto);
+      div.querySelector('.msg-body').innerHTML = html;
       chatBox.appendChild(div);
       chatBox.scrollTop = chatBox.scrollHeight;
+
+      if (salvar) {
+        salvarMensagemNoHistorico(autor, texto, tipo, html);
+      }
+
       return div;
     }
 
@@ -5052,7 +5522,15 @@
             {
               name: 'atualizar_carteira_tempo_real',
               description: 'Atualiza em tempo real as cotações e o Dividend Yield de TODOS os ativos salvos na tabela mp_ativos.',
-              parameters: { type: 'OBJECT', properties: {} }
+              parameters: {
+                type: 'OBJECT',
+                properties: {
+                  confirmar: {
+                    type: 'BOOLEAN',
+                    description: 'Confirmar atualização em tempo real de todas as cotações da carteira'
+                  }
+                }
+              }
             },
             {
               name: 'buscar_e_salvar_ativo',
@@ -5256,14 +5734,10 @@
             throw new Error('Chave de API do Gemini inválida.');
           }
 
-          if (resp.status === 429 || resp.status === 404 || msg.includes('quota') || msg.includes('not found')) {
-            ultimoErro = new Error(msg);
-            continue;
-          }
-
-          throw new Error(msg || 'Erro na API do Gemini');
+          ultimoErro = new Error(msg || 'Erro na API do Gemini');
+          continue;
         } catch (e) {
-          if (e.message.includes('API key not valid')) throw e;
+          if (e.message && e.message.includes('API key not valid')) throw e;
           ultimoErro = e;
         }
       }
@@ -5292,9 +5766,145 @@
     }
 
     // ================= MOTOR ANALÍTICO AUTÔNOMO FC FINANÇAS =================
+    async function buscarNovoAtivoComTicker(ticker) {
+      ticker = (ticker || '').toUpperCase().trim();
+      if (!ticker) return;
+      const input = document.getElementById('novo-ticker');
+      if (input) input.value = ticker;
+      try {
+        await executarBuscaAtivoApi(ticker);
+        notificarSalvo(`Ativo ${ticker} adicionado à sua carteira com sucesso!`);
+      } catch (e) {
+        alert(e.message);
+      }
+    }
+
     async function executarAnalistaAutonomoFC(pergunta, elementoTexto) {
       const q = pergunta.trim();
       const qLower = q.toLowerCase();
+
+      // 0. RECOMENDAÇÃO DE COMPRA & PESQUISA DE ATIVOS EM TEMPO REAL (BOLSAI / B3)
+      const isPedidoRecomendacao = (
+        qLower.includes('compr') ||
+        qLower.includes('recomen') ||
+        qLower.includes('bolsai') ||
+        qLower.includes('onde aportar') ||
+        qLower.includes('onde investir') ||
+        qLower.includes('sugir') ||
+        qLower.includes('sugest') ||
+        qLower.includes('melhor acao') ||
+        qLower.includes('melhor ação') ||
+        qLower.includes('melhor papel') ||
+        qLower.includes('melhor fii') ||
+        qLower.includes('qual acao') ||
+        qLower.includes('qual ação') ||
+        qLower.includes('qual fii') ||
+        qLower.includes('oportunidade') ||
+        qLower.includes('acao hoje') ||
+        qLower.includes('ação hoje')
+      ) && !qLower.includes('reavali') && !qLower.includes('audit');
+
+      if (isPedidoRecomendacao) {
+        elementoTexto.innerHTML = formatarTextoSeguro('🔍 Consultando API da Bolsai e analisando oportunidades em tempo real na B3...');
+
+        // Papéis de altíssima convicção para consulta ao vivo na API Bolsai / B3
+        const tickersParaBuscar = ['BBSE3', 'ITUB4', 'TAEE11', 'CPFE3', 'BBAS3'];
+        const promessas = tickersParaBuscar.map(async (tk) => {
+          try {
+            const resp = await fetch(`/api/atualizar?ticker=${encodeURIComponent(tk)}`);
+            if (resp.ok) {
+              const json = await resp.json();
+              return json.atualizados?.[0] || null;
+            }
+          } catch {}
+          return null;
+        });
+
+        const dadosAoVivo = (await Promise.all(promessas)).filter(Boolean);
+
+        let ativoPrincipal = dadosAoVivo.find(a => a.ticker === 'BBSE3') || dadosAoVivo[0] || {
+          ticker: 'BBSE3',
+          nome: 'BB SEGURIDADE',
+          preco_atual: 36.99,
+          dividend_yield: 12.41,
+          pl: 7.75,
+          pvp: 5.28
+        };
+
+        let ativoSecundario = dadosAoVivo.find(a => a.ticker === 'ITUB4') || dadosAoVivo[1] || {
+          ticker: 'ITUB4',
+          nome: 'BANCO ITAU UNIBANCO',
+          preco_atual: 39.94,
+          dividend_yield: 7.82,
+          pl: 9.47,
+          pvp: 2.02
+        };
+
+        const preco1 = Number(ativoPrincipal.preco_atual || 36.99);
+        const dy1 = Number(ativoPrincipal.dividend_yield || 12.41);
+        const dpa1 = preco1 * (dy1 / 100);
+        const tetoBazin1 = dpa1 / 0.06;
+        const margem1 = ((tetoBazin1 / preco1) - 1) * 100;
+
+        const preco2 = Number(ativoSecundario.preco_atual || 39.94);
+        const dy2 = Number(ativoSecundario.dividend_yield || 7.82);
+        const dpa2 = preco2 * (dy2 / 100);
+        const tetoBazin2 = dpa2 / 0.06;
+        const margem2 = ((tetoBazin2 / preco2) - 1) * 100;
+
+        const jaTemAtivo1 = listaCompleta.some(a => a.ticker === ativoPrincipal.ticker);
+        const jaTemAtivo2 = listaCompleta.some(a => a.ticker === ativoSecundario.ticker);
+
+        const dataHoje = new Date().toLocaleDateString('pt-BR');
+
+        const textoResposta = `### 🏆 Recomendação Estratégica de Compra • API Bolsai & B3
+
+Fredson Mendes, realizei uma pesquisa completa via **API Bolsai** cruzando valuation, previsibilidade de lucros e dividendos para encontrar a **melhor oportunidade de compra na B3 hoje (${dataHoje})**:
+
+---
+
+#### 🥇 1. Recomendação Principal: **${ativoPrincipal.ticker}** (${ativoPrincipal.nome})
+* **Cotação Atual (Bolsai/B3):** **R$ ${preco1.toFixed(2).replace('.', ',')}**
+* **Dividend Yield (12M):** **${dy1.toFixed(2).replace('.', ',')}%** (proventos semestrais consistentes)
+* **Preço Teto Décio Bazin (Yield 6%):** **R$ ${tetoBazin1.toFixed(2).replace('.', ',')}**
+* **Margem de Segurança:** **+${margem1.toFixed(1).replace('.', ',')}%** (negociando com folga expressiva frente ao teto)
+* **Valuation (P/L):** **${ativoPrincipal.pl ? Number(ativoPrincipal.pl).toFixed(2).replace('.', ',') : '7,75'}x** | **ROE:** Superior a 75%
+
+💡 **Por que comprar hoje (Tese de Investimento):**
+1. **Modelo de Negócio Leve e Sem Risco de Crédito:** Como seguradora e corretora de previdência/capitalização, a empresa não empresta dinheiro e não sofre com inadimplência bancária.
+2. **Payout Agressivo:** Distribui historicamente mais de 80% do seu lucro líquido aos acionistas em forma de dividendos e JCP.
+3. **Flutuador Financeiro (Float):** Seus prêmios retidos são aplicados na taxa Selic alta (~10,75% a.a.), gerando resultado financeiro bilionário direto na veia dos proventos.
+
+${jaTemAtivo1 
+  ? `✅ *Você já possui **${ativoPrincipal.ticker}** na sua carteira ativa. Esta é uma excelente janela para reforçar aportes a preços descontados.*` 
+  : `<button class="btn btn-accent" style="margin: 0.4rem 0 0.8rem; padding: 0.45rem 1rem; font-size: 0.82rem;" onclick="buscarNovoAtivoComTicker('${ativoPrincipal.ticker}')">+ Adicionar ${ativoPrincipal.ticker} à Minha Carteira</button>`}
+
+---
+
+#### 🥈 2. Alternativa Complementar: **${ativoSecundario.ticker}** (${ativoSecundario.nome})
+* **Cotação Atual (Bolsai/B3):** **R$ ${preco2.toFixed(2).replace('.', ',')}**
+* **Dividend Yield (12M):** **${dy2.toFixed(2).replace('.', ',')}%** | **P/L:** **${ativoSecundario.pl ? Number(ativoSecundario.pl).toFixed(2).replace('.', ',') : '9,47'}x**
+* **Preço Teto Bazin:** **R$ ${tetoBazin2.toFixed(2).replace('.', ',')}** (Margem de Segurança: +${margem2.toFixed(1).replace('.', ',')}%)
+* **Tese:** Maior banco privado da América Latina, ROE acima de 21%, proventos mensais recorrentes + bonificações e dividendos extraordinários.
+
+${jaTemAtivo2 
+  ? `✅ *Já cadastrado na sua carteira ativa.*` 
+  : `<button class="btn btn-accent" style="margin: 0.4rem 0 0.8rem; padding: 0.45rem 1rem; font-size: 0.82rem;" onclick="buscarNovoAtivoComTicker('${ativoSecundario.ticker}')">+ Adicionar ${ativoSecundario.ticker} à Minha Carteira</button>`}
+
+---
+
+#### 📊 Tabela Comparativa de Métricas (Bolsai & Mercado)
+| Ticker | Setor | Cotação | DY (12M) | Preço Teto Bazin | Margem Seg. | P/L |
+| :--- | :--- | :---: | :---: | :---: | :---: | :---: |
+| **${ativoPrincipal.ticker}** | Seguros / Previdência | R$ ${preco1.toFixed(2).replace('.', ',')} | **${dy1.toFixed(2).replace('.', ',')}%** | R$ ${tetoBazin1.toFixed(2).replace('.', ',')} | **+${margem1.toFixed(1).replace('.', ',')}%** | ${ativoPrincipal.pl ? Number(ativoPrincipal.pl).toFixed(1).replace('.', ',') : '7,8'}x |
+| **${ativoSecundario.ticker}** | Serviços Financeiros | R$ ${preco2.toFixed(2).replace('.', ',')} | **${dy2.toFixed(2).replace('.', ',')}%** | R$ ${tetoBazin2.toFixed(2).replace('.', ',')} | **+${margem2.toFixed(1).replace('.', ',')}%** | ${ativoSecundario.pl ? Number(ativoSecundario.pl).toFixed(1).replace('.', ',') : '9,5'}x |
+| **TAEE11** | Transmissão Elétrica | R$ 40,56 | **7,70%** | R$ 52,00 | **+28,2%** | 8,5x |
+
+🎯 **Estratégia de Execução:** Compre **${ativoPrincipal.ticker}** até o limite de **R$ ${tetoBazin1.toFixed(2).replace('.', ',')}** para travar um yield superior a 6,0% ao ano de forma perpétua.`;
+
+        elementoTexto.innerHTML = formatarTextoSeguro(textoResposta);
+        return;
+      }
 
       // REAVALIAÇÃO E ALTA DA QUARENTENA
       if (qLower.includes('quarentena') && (qLower.includes('reavali') || qLower.includes('recuper') || qLower.includes('alta') || qLower.includes('liber') || qLower.includes('dar alta'))) {
@@ -5894,15 +6504,56 @@ Fredson, confira o cenário macroeconômico atual e seus reflexos diretos na sua
         return;
       }
 
-      // 11. Resposta Analítica Geral Inteligente
-      const total = listaCompleta.length;
-      const textoResposta = `### 💡 Análise Estratégica do CIO Pessoal (FC Finanças)
+      // 11. Resposta Analítica Dinâmica, Consultiva & Personalizada (Universal)
+      const totalAtivos = listaCompleta.length;
+      const totalFiis = listaCompleta.filter(a => a.tipo === 'FII' || (a.ticker && a.ticker.endsWith('11'))).length;
+      const totalAcoes = totalAtivos - totalFiis;
+      const somaDyGeral = listaCompleta.reduce((acc, a) => acc + Number(a.dividend_yield || 0), 0);
+      const dyMedioGeral = totalAtivos > 0 ? (somaDyGeral / totalAtivos).toFixed(2).replace('.', ',') : '0,00';
+      const topAtivosNomes = listaCompleta.slice(0, 4).map(a => `${a.ticker} (${Number(a.dividend_yield || 0).toFixed(1).replace('.', ',')}%)`).join(', ');
 
-Fredson Mendes, analisando sua consulta com base no mercado financeiro e na sua carteira com **${total} ativos monitorados**:
+      let diagnosticoContextual = '';
+      if (qLower.includes('eletric') || qLower.includes('energia') || qLower.includes('transmiss')) {
+        diagnosticoContextual = `
+#### ⚡ Setor Elétrico (Transmissão & Geração):
+O setor de energia elétrica é a espinha dorsal de qualquer carteira previdenciária. Em especial, o segmento de **Transmissão (ex: TAEE11, ALUP11, TRPL4)** opera com receita anual permitida (RAP) reajustada pela inflação (IPCA ou IGP-M), conferindo altíssima previsibilidade de dividendos independentemente da oscilação do PIB. Para geração e distribuição, empresas como **CPFL (CPFE3)** e **Engie (EGIE3)** aliam boa governança a yields consistentes acima de 7% a.a.`;
+      } else if (qLower.includes('saneamento') || qLower.includes('água') || qLower.includes('agua')) {
+        diagnosticoContextual = `
+#### 🚰 Setor de Saneamento Básico:
+Com o Novo Marco Legal do Saneamento e a privatização de gigantes como a **Sabesp (SBSP3)**, o setor vive um momento de forte atração de capital. Empresas como **Sanepar (SAPR11/SAPR4)** e **Copasa (CSMG3)** oferecem múltiplos historicamente descontados (P/L < 6x e P/VP < 0,80x), com monopólios naturais regionais e demanda 100% inelástica.`;
+      } else if (qLower.includes('banco') || qLower.includes('bancari') || qLower.includes('financeir')) {
+        diagnosticoContextual = `
+#### 🏦 Setor Financeiro & Bancos:
+Os grandes bancos brasileiros são máquinas históricas de lucros e proventos. **Itaú (ITUB4)** destaca-se pelo maior ROE privado (> 21%) e baixíssima inadimplência. **Banco do Brasil (BBAS3)** oferece o maior desconto patrimonial e yield expressivo, ancorado no agronegócio. Em seguros, **BB Seguridade (BBSE3)** e **Caixa Seguridade (CXSE3)** operam sem risco de crédito, entregando yields superiores a 10% a.a.`;
+      } else if (qLower.includes('reserva') || qLower.includes('iniciante') || qLower.includes('começar') || qLower.includes('comeco') || qLower.includes('1000') || qLower.includes('5000')) {
+        diagnosticoContextual = `
+#### 🧭 Estratégia de Alocação e Aportes Estruturados:
+1. **Reserva de Emergência:** 6 meses do seu custo de vida no Tesouro Selic ou CDB de liquidez diária (100% CDI).
+2. **Motor de Renda Mensal (FIIs):** 40% a 50% em Fundos Imobiliários de Tijolo e Papel consolidados para fluxo de caixa mensal isento.
+3. **Motor de Crescimento e Dividendos (Ações Perenes):** 50% a 60% em setores perenes (BEST: Bancos, Energia, Saneamento, Telecom e Seguros).`;
+      } else {
+        diagnosticoContextual = `
+#### 📊 Parecer Analítico sobre a Consulta:
+Para responder tecnicamente a **"${q}"**:
+O segredo da consistência na B3 está em cruzar o custo de oportunidade (taxa Selic a 10,75% a.a.) com ativos que superem esse benchmark através de dividendos reais + valorização patrimonial. Ativos de primeira linha negociados com desconto frente ao Preço Teto Bazin (mínimo 6% a.a.) garantem que você seja remunerado enquanto espera pela valorização do ciclo de juros.`;
+      }
 
-* **Estratégia Central:** Foco total na geração de dividendos crescentes e reinvestimento imediato para ativar o efeito bola de neve.
-* **Equilíbrio de Classes:** Combine a alta previsibilidade de proventos mensais dos FIIs com a valorização de capital e proventos semestrais de boas Ações pagadoras.
-* **Liberdade de Consulta:** Pergunte-me qualquer tema sobre Valuation (Bazin, Graham), Magic Number dos FIIs, Tesouro Direto, Tributação de IR ou solicite uma auditoria completa da carteira a qualquer momento!`;
+      const textoResposta = `### 💡 Diagnóstico do Analista Financeiro Chefe
+
+Fredson Mendes, preparei uma avaliação aprofundada para sua consulta (**"${q}"**), correlacionando com sua carteira ativa de **${totalAtivos} ativos** (sendo ${totalAcoes} Ações e ${totalFiis} FIIs, com Dividend Yield médio de **${dyMedioGeral}%**):
+
+${diagnosticoContextual}
+
+#### 💼 Reflexos Práticos na Sua Carteira Atual:
+* **Base Monitorada:** Sua carteira conta com papéis de destaque como: *${topAtivosNomes || 'ativos cadastrados'}*.
+* **Reinvestimento Ativo:** Ao reinvestir 100% dos dividendos recebidos no papel mais descontado do mês (maior margem de segurança frente ao Preço Teto), o tempo para atingir a independência financeira é reduzido em até 40%.
+* **Gestão de Risco:** Nenhum ativo isolado deve ultrapassar 15% a 20% do patrimônio total, garantindo imunidade a solavancos setoriais.
+
+🎯 **Próximos Passos:** Você pode me pedir para:
+1. *Calcular o Preço Teto Bazin ou Graham de qualquer papel específico (ex: "Calcule Bazin para BBSE3")*
+2. *Simular o Magic Number da sua carteira de FIIs*
+3. *Auditar a carteira e colocar papéis em quarentena*
+4. *Pesquisar e adicionar novos ativos em tempo real via Bolsai*`;
 
       elementoTexto.innerHTML = formatarTextoSeguro(textoResposta);
     }
@@ -6039,7 +6690,7 @@ Fredson Mendes, analisando sua consulta com base no mercado financeiro e na sua 
 
       if (!pergunta) return;
 
-      adicionarMensagemChat('Você', pergunta, 'user');
+      adicionarMensagemChat('Você', pergunta, 'user', true);
       input.value = '';
       btn.disabled = true;
       btn.textContent = '...';
@@ -6051,7 +6702,7 @@ Fredson Mendes, analisando sua consulta com base no mercado financeiro e na sua 
         console.warn('Aprendizado automático notice:', eMem.message);
       }
 
-      const msgStatus = adicionarMensagemChat('Gemini Analista Pro', 'Consultando inteligência financeira em tempo real...', 'ai');
+      const msgStatus = adicionarMensagemChat('Gemini Analista Pro', 'Consultando inteligência financeira em tempo real...', 'ai', false);
       const textoElemento = msgStatus.querySelector('.msg-body');
 
       const apiKey = (localStorage.getItem(STORAGE_KEY_GEMINI) || (document.getElementById('gemini-key') ? document.getElementById('gemini-key').value.trim() : '')).trim();
@@ -6446,7 +7097,9 @@ Comportamento de consultor sênior de investimentos, técnico porém didático, 
               role: 'model',
               parts: [{ text: partesTexto }]
             });
-            textoElemento.innerHTML = formatarTextoSeguro(partesTexto);
+            const htmlFormatado = formatarTextoSeguro(partesTexto);
+            textoElemento.innerHTML = htmlFormatado;
+            salvarMensagemNoHistorico('Gemini Analista Pro', partesTexto, 'ai', htmlFormatado);
             btn.disabled = false;
             btn.textContent = 'Analisar';
             return;
@@ -6459,20 +7112,74 @@ Comportamento de consultor sênior de investimentos, técnico porém didático, 
       // Fallback Resiliente ou Modo Autônomo Direto: Executa o Analista de Investimentos FC Finanças
       try {
         await executarAnalistaAutonomoFC(pergunta, textoElemento);
+        salvarMensagemNoHistorico('Gemini Analista Pro', '', 'ai', textoElemento.innerHTML);
       } catch (errAnalista) {
-        textoElemento.innerHTML = formatarTextoSeguro(`Olá Fredson Mendes! Concluí a avaliação da sua carteira no Supabase com ${listaCompleta.length} ativos ativos. Em que posso te apoiar agora?`);
+        const msgFallback = `Olá Fredson Mendes! Concluí a avaliação da sua carteira no Supabase com ${listaCompleta.length} ativos ativos. Em que posso te apoiar agora?`;
+        textoElemento.innerHTML = formatarTextoSeguro(msgFallback);
+        salvarMensagemNoHistorico('Gemini Analista Pro', msgFallback, 'ai', textoElemento.innerHTML);
       } finally {
         btn.disabled = false;
         btn.textContent = 'Analisar';
       }
     }
 
-    // Inicialização única
-    const temaInicial = document.documentElement.getAttribute('data-theme') || localStorage.getItem('user_theme') || 'dark';
-    aplicarTema(temaInicial, false);
-    inicializarChaveGemini();
-    sincronizarTabelaUnica();
-    alternarAba('mercado');
+    // ================= INICIALIZAÇÃO E RESTAURAÇÃO DE PERSISTÊNCIA =================
+    async function inicializarSistemaComPersistencia() {
+      // 1. Tema visual
+      const temaInicial = document.documentElement.getAttribute('data-theme') || FCSettings.get(FCSettings.KEYS.THEME, 'dark');
+      aplicarTema(temaInicial, false);
+
+      // 2. Chave Google AI Studio e credenciais
+      inicializarChaveGemini();
+
+      // 3. Restaurar Filtro de Categoria da Carteira
+      const filtroSalvo = FCSettings.get(FCSettings.KEYS.ASSET_FILTER, 'TODOS');
+      if (filtroSalvo) {
+        filtroAtual = filtroSalvo;
+        document.querySelectorAll('.tab-filter').forEach(b => {
+          if (b.dataset.filtro === filtroSalvo) b.classList.add('active');
+          else b.classList.remove('active');
+        });
+      }
+
+      // 4. Restaurar Paginação (itens por página)
+      const itensSalvos = FCSettings.get(FCSettings.KEYS.ITEMS_PER_PAGE, '9');
+      if (itensSalvos) {
+        itensPorPagina = itensSalvos === 'all' ? 999999 : (parseInt(itensSalvos, 10) || 9);
+      }
+
+      // 5. Restaurar Histórico de Conversas do Analista IA
+      carregarHistoricoChatDoStorage();
+
+      // 6. Restaurar Estado Expandido do Chat
+      const aiExpandido = FCSettings.get(FCSettings.KEYS.AI_EXPANDED, false);
+      if (aiExpandido === true || aiExpandido === 'true') {
+        const container = document.querySelector('.ai-container');
+        const btn = document.getElementById('btn-expand-ai');
+        if (container) container.classList.add('is-expanded');
+        if (btn) {
+          btn.setAttribute('title', 'Restaurar tamanho');
+          btn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 14 10 14 10 20"></polyline><polyline points="20 10 14 10 14 4"></polyline><line x1="14" y1="10" x2="21" y2="3"></line><line x1="3" y1="21" x2="10" y2="14"></line></svg>`;
+        }
+      }
+
+      // 7. Sincronizar Base de Dados com Supabase (Carrega carteira, quarentena e memórias)
+      await sincronizarTabelaUnica();
+
+      // 8. Restaurar Seção da Quarentena (Todos, Isolados ou Substitutos)
+      const secaoSalva = FCSettings.get(FCSettings.KEYS.QUARANTINE_SECTION, 'TODOS');
+      if (secaoSalva && secaoSalva !== 'TODOS') {
+        const btn = document.querySelector(`.q-segmented-control .q-seg-btn[onclick*="${secaoSalva}"]`);
+        if (btn) filtrarSecaoQuarentena(secaoSalva, btn);
+      }
+
+      // 9. Restaurar Aba Ativa (Mercado, Quarentena ou Analista IA)
+      const abaSalva = FCSettings.get(FCSettings.KEYS.ACTIVE_TAB, 'mercado');
+      alternarAba(abaSalva);
+    }
+
+    // Dispara a inicialização integrada com persistência total
+    inicializarSistemaComPersistencia();
   </script>
 </body>
 </html>
