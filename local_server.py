@@ -342,7 +342,12 @@ class CustomHandler(http.server.SimpleHTTPRequestHandler):
                 return
 
             item_atual = rows[0]
-            tipo_base = item_atual.get('tipo', '').replace('QUARENTENA:', '')
+            tipo_base = item_atual.get('tipo', '') or ''
+            while tipo_base.startswith('QUARENTENA:'):
+                tipo_base = tipo_base[len('QUARENTENA:'):].strip()
+            if not tipo_base:
+                tipo_base = 'FII' if ticker.endswith('11') else 'Ação'
+
             nome_base = (item_atual.get('nome') or ticker).split(' :: ')[0].strip()
 
             if action == 'quarantine':

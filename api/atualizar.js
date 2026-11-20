@@ -1,6 +1,6 @@
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, DELETE, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
   res.setHeader('Content-Type', 'application/json; charset=utf-8');
 
@@ -10,6 +10,98 @@ export default async function handler(req, res) {
 
   const SUPABASE_URL = process.env.SUPABASE_URL || 'https://zwcvaqxdfurmexyuxtvv.supabase.co';
   const SUPABASE_KEY = process.env.SUPABASE_SERVICE_KEY || process.env.SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp3Y3ZhcXhkZnVybWV4eXV4dHZ2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM4NzI3ODUsImV4cCI6MjA5OTQ0ODc4NX0.lKmjdZznodxT6QPZ8QyZOTpc_DrRROAyjKA1muPtS-Y';
+
+  // Parser seguro do corpo da requisição (JSON)
+  let body = req.body;
+  if (typeof body === 'string') {
+    try { body = JSON.parse(body); } catch {}
+  }
+  body = body || {};
+
+  const action = body.action;
+  const actionTicker = (body.ticker || '').toUpperCase().trim();
+  const motivo = body.motivo;
+
+  // 1. Tratamento de Quarentena e Restauração (Alta)
+  if (action === 'quarantine' || action === 'restore') {
+    if (!actionTicker) {
+      return res.status(400).json({ sucesso: false, erro: 'Ticker não informado para quarentena.' });
+    }
+
+    try {
+      const respGet = await fetch(`${SUPABASE_URL}/rest/v1/mp_ativos?ticker=eq.${encodeURIComponent(actionTicker)}&select=*`, {
+        headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` }
+      });
+      const rows = respGet.ok ? await respGet.json() : [];
+
+      if (!rows || rows.length === 0) {
+        return res.status(404).json({ sucesso: false, erro: `Ativo ${actionTicker} não encontrado no banco de dados.` });
+      }
+
+      const itemAtual = rows[0];
+      let tipoBase = (itemAtual.tipo || '').replace(/^(QUARENTENA:)+/, '').trim();
+      if (!tipoBase) tipoBase = actionTicker.endsWith('11') ? 'FII' : 'Ação';
+
+      const partesNome = (itemAtual.nome || actionTicker).split(' :: ');
+      const nomeBase = partesNome[0].trim();
+
+      let novoTipo = tipoBase;
+      let novoNome = nomeBase;
+
+      if (action === 'quarantine') {
+        novoTipo = `QUARENTENA:${tipoBase}`;
+        const textoMotivo = (motivo || 'Fundamentos ou Dividend Yield abaixo do esperado').trim();
+        novoNome = `${nomeBase} :: ${textoMotivo}`;
+      }
+
+      const respPatch = await fetch(`${SUPABASE_URL}/rest/v1/mp_ativos?ticker=eq.${encodeURIComponent(actionTicker)}`, {
+        method: 'PATCH',
+        headers: {
+          'apikey': SUPABASE_KEY,
+          'Authorization': `Bearer ${SUPABASE_KEY}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          tipo: novoTipo,
+          nome: novoNome,
+          atualizado_em: new Date().toISOString()
+        })
+      });
+
+      if (!respPatch.ok) {
+        return res.status(500).json({ sucesso: false, erro: 'Falha ao atualizar quarentena no Supabase.' });
+      }
+
+      return res.status(200).json({
+        sucesso: true,
+        ticker: actionTicker,
+        tipo: novoTipo,
+        nome: novoNome
+      });
+    } catch (eQuar) {
+      return res.status(500).json({ sucesso: false, erro: eQuar.message });
+    }
+  }
+
+  // 2. Tratamento de Exclusão Definitiva (DELETE)
+  if (req.method === 'DELETE') {
+    const delTicker = (req.query?.ticker || '').toUpperCase().trim();
+    if (!delTicker) {
+      return res.status(400).json({ sucesso: false, erro: 'Ticker não informado para exclusão.' });
+    }
+    try {
+      const respDel = await fetch(`${SUPABASE_URL}/rest/v1/mp_ativos?ticker=eq.${encodeURIComponent(delTicker)}&tipo=neq.MEMORIA`, {
+        method: 'DELETE',
+        headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` }
+      });
+      if (!respDel.ok) {
+        return res.status(500).json({ sucesso: false, erro: 'Falha ao excluir no Supabase.' });
+      }
+      return res.status(200).json({ sucesso: true, removido: delTicker });
+    } catch (eDel) {
+      return res.status(500).json({ sucesso: false, erro: eDel.message });
+    }
+  }
 
   const tickerUnico = req.query?.ticker?.toUpperCase()?.trim();
   const tickers = tickerUnico ? [tickerUnico] : ['BBAS3', 'PETR4', 'VALE3', 'HGLG11', 'MXRF11'];

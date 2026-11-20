@@ -821,6 +821,32 @@
       pointer-events: none;
     }
 
+    .quarantine-card-btn {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--border);
+      color: var(--text-secondary);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      padding: 0;
+    }
+
+    .quarantine-card-btn:hover {
+      background: rgba(245, 158, 11, 0.16);
+      color: #f59e0b;
+      border-color: rgba(245, 158, 11, 0.42);
+      transform: scale(1.08);
+    }
+
+    .quarantine-card-btn svg {
+      pointer-events: none;
+    }
+
     .asset-desc {
       font-size: 0.8rem;
       color: var(--text-secondary);
@@ -2286,6 +2312,7 @@
       border-color: var(--accent);
     }
     [data-theme="light"] .refresh-btn,
+    [data-theme="light"] .quarantine-card-btn,
     [data-theme="light"] .delete-card-btn {
       background: #f1f5f9;
       border-color: rgba(148, 163, 184, 0.35);
@@ -2295,6 +2322,11 @@
       background: rgba(2, 132, 199, 0.12);
       color: #0284c7;
       border-color: rgba(2, 132, 199, 0.3);
+    }
+    [data-theme="light"] .quarantine-card-btn:hover {
+      background: rgba(217, 119, 6, 0.12);
+      color: #d97706;
+      border-color: rgba(217, 119, 6, 0.35);
     }
     [data-theme="light"] .delete-card-btn:hover {
       background: rgba(225, 29, 72, 0.12);
@@ -4461,6 +4493,12 @@
     // ================= OPERAÇÕES DE QUARENTENA & SUBSTITUTOS =================
     async function moverParaQuarentenaApi(ticker, motivo) {
       ticker = (ticker || '').toUpperCase().trim();
+      if (!ticker) throw new Error('Ticker não informado para quarentena.');
+
+      const textoMotivo = (motivo || 'Fundamentos enfraquecidos ou Dividend Yield em alerta').trim();
+      let atualizado = false;
+
+      // 1. Tenta endpoint do backend (/api/atualizar)
       try {
         const resp = await fetch('/api/atualizar', {
           method: 'POST',
@@ -4468,56 +4506,137 @@
           body: JSON.stringify({
             action: 'quarantine',
             ticker: ticker,
-            motivo: motivo
+            motivo: textoMotivo
           })
         });
         if (resp.ok) {
           const dados = await resp.json();
-          if (dados.sucesso) return dados;
+          if (dados && dados.sucesso && (dados.tipo || '').startsWith('QUARENTENA:')) {
+            atualizado = true;
+          }
         }
       } catch (errApi) {
         console.warn('Endpoint /api/atualizar falhou, aplicando fallback direto ao Supabase:', errApi.message);
       }
 
-      // Fallback direto ao Supabase (garante execução mesmo sem endpoint serverless local)
-      const respAtual = await fetch(`${SUPABASE_URL}/rest/v1/${TABELA_UNICA}?ticker=eq.${encodeURIComponent(ticker)}&select=*`, {
-        headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': `Bearer ${SUPABASE_ANON_KEY}` }
-      });
-      const rows = respAtual.ok ? await respAtual.json() : [];
-      if (rows && rows[0]) {
-        const itemAtual = rows[0];
-        const tipoBase = itemAtual.tipo.replace(/^QUARENTENA:/, '');
-        const nomeBase = (itemAtual.nome || ticker).split(' :: ')[0].trim();
-        const novoTipo = `QUARENTENA:${tipoBase}`;
-        const textoMotivo = (motivo || 'Fundamentos ou Dividend Yield abaixo do esperado').trim();
-        const novoNome = `${nomeBase} :: ${textoMotivo}`;
-
-        const respPatch = await fetch(`${SUPABASE_URL}/rest/v1/${TABELA_UNICA}?ticker=eq.${encodeURIComponent(ticker)}`, {
-          method: 'PATCH',
-          headers: {
-            'apikey': SUPABASE_ANON_KEY,
-            'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            tipo: novoTipo,
-            nome: novoNome,
-            atualizado_em: new Date().toISOString()
-          })
+      // 2. Fallback direto ao Supabase (garante execução em qualquer ambiente)
+      if (!atualizado) {
+        const respAtual = await fetch(`${SUPABASE_URL}/rest/v1/${TABELA_UNICA}?ticker=ilike.${encodeURIComponent(ticker)}&select=*`, {
+          headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': `Bearer ${SUPABASE_ANON_KEY}` }
         });
+        const rows = respAtual.ok ? await respAtual.json() : [];
 
-        if (!respPatch.ok) {
-          throw new Error('Erro ao atualizar quarentena no Supabase');
+        if (rows && rows.length > 0) {
+          const itemAtual = rows[0];
+          let tipoBase = (itemAtual.tipo || '').replace(/^(QUARENTENA:)+/, '').trim();
+          if (!tipoBase) tipoBase = ticker.endsWith('11') ? 'FII' : 'Ação';
+
+          const nomeBase = (itemAtual.nome || ticker).split(' :: ')[0].trim();
+          const novoTipo = `QUARENTENA:${tipoBase}`;
+          const novoNome = `${nomeBase} :: ${textoMotivo}`;
+
+          const respPatch = await fetch(`${SUPABASE_URL}/rest/v1/${TABELA_UNICA}?ticker=eq.${encodeURIComponent(itemAtual.ticker)}`, {
+            method: 'PATCH',
+            headers: {
+              'apikey': SUPABASE_ANON_KEY,
+              'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              tipo: novoTipo,
+              nome: novoNome,
+              atualizado_em: new Date().toISOString()
+            })
+          });
+
+          if (!respPatch.ok) {
+            throw new Error(`Erro ao atualizar quarentena de ${ticker} no Supabase.`);
+          }
+        } else {
+          // Se o ativo não estiver cadastrado no Supabase, insere diretamente já na quarentena
+          const itemLocal = listaCompleta.find(a => a.ticker === ticker);
+          const tipoBase = itemLocal ? itemLocal.tipo : (ticker.endsWith('11') ? 'FII' : 'Ação');
+          const nomeBase = itemLocal ? (itemLocal.nome || ticker) : ticker;
+          const novoTipo = `QUARENTENA:${tipoBase}`;
+          const novoNome = `${nomeBase} :: ${textoMotivo}`;
+
+          const respInsert = await fetch(`${SUPABASE_URL}/rest/v1/${TABELA_UNICA}`, {
+            method: 'POST',
+            headers: {
+              'apikey': SUPABASE_ANON_KEY,
+              'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+              'Content-Type': 'application/json',
+              'Prefer': 'resolution=merge-duplicates'
+            },
+            body: JSON.stringify([{
+              ticker: ticker,
+              tipo: novoTipo,
+              nome: novoNome,
+              preco_atual: itemLocal?.preco_atual || 0,
+              dividend_yield: itemLocal?.dividend_yield || 0,
+              atualizado_em: new Date().toISOString()
+            }])
+          });
+
+          if (!respInsert.ok) {
+            throw new Error(`Erro ao registrar ${ticker} na Quarentena do Supabase.`);
+          }
         }
-        return { sucesso: true, ticker: ticker, tipo: novoTipo };
       }
 
-      throw new Error(`Ativo ${ticker} não encontrado para quarentena.`);
+      // 3. Atualização otimista das listas em memória para sincronização instantânea
+      const idxAtivo = listaCompleta.findIndex(a => a.ticker === ticker);
+      if (idxAtivo >= 0) {
+        const [movido] = listaCompleta.splice(idxAtivo, 1);
+        movido.tipo = `QUARENTENA:${(movido.tipo || '').replace(/^(QUARENTENA:)+/, '')}`;
+        movido.nome = `${(movido.nome || ticker).split(' :: ')[0].trim()} :: ${textoMotivo}`;
+        if (!listaQuarentena.some(q => q.ticker === ticker)) {
+          listaQuarentena.push(movido);
+        }
+      }
+
+      return { sucesso: true, ticker: ticker };
+    }
+
+    async function solicitarMoverParaQuarentena(ticker, btnEl) {
+      ticker = (ticker || '').toUpperCase().trim();
+      if (!ticker) return;
+
+      const motivo = prompt(
+        `🛡️ Mover ${ticker} para a Quarentena Preventiva?\n\nInforme o motivo do isolamento (ou confirme o diagnóstico padrão):`,
+        'Fundamentos enfraquecidos ou Dividend Yield em alerta'
+      );
+
+      if (motivo === null) return; // Cancelado pelo usuário
+
+      if (btnEl) {
+        btnEl.disabled = true;
+        btnEl.style.opacity = '0.5';
+      }
+
+      try {
+        const textoMotivo = motivo.trim() || 'Fundamentos ou Dividend Yield abaixo do esperado';
+        await moverParaQuarentenaApi(ticker, textoMotivo);
+        await salvarAprendizado(`[AUDITORIA] Ativo ${ticker} isolado manualmente na Quarentena: "${textoMotivo}"`);
+        await sincronizarTabelaUnica();
+        if (typeof notificarSalvo === 'function') {
+          notificarSalvo(`🛡️ ${ticker} isolado na Quarentena com sucesso!`);
+        }
+      } catch (err) {
+        alert(`Erro ao mover ${ticker} para quarentena: ${err.message}`);
+      } finally {
+        if (btnEl) {
+          btnEl.disabled = false;
+          btnEl.style.opacity = '1';
+        }
+      }
     }
 
     async function restaurarDaQuarentena(ticker, btnEl) {
       if (btnEl) btnEl.disabled = true;
       ticker = (ticker || '').toUpperCase().trim();
+      if (!ticker) return;
+
       try {
         let restaurado = false;
         try {
@@ -4529,21 +4648,26 @@
               ticker: ticker
             })
           });
-          const dados = await resp.json();
-          if (resp.ok && dados.sucesso) restaurado = true;
+          if (resp.ok) {
+            const dados = await resp.json();
+            if (dados && dados.sucesso && !(dados.tipo || '').startsWith('QUARENTENA:')) {
+              restaurado = true;
+            }
+          }
         } catch (e) {}
 
         if (!restaurado) {
-          const respAtual = await fetch(`${SUPABASE_URL}/rest/v1/${TABELA_UNICA}?ticker=eq.${encodeURIComponent(ticker)}&select=*`, {
+          const respAtual = await fetch(`${SUPABASE_URL}/rest/v1/${TABELA_UNICA}?ticker=ilike.${encodeURIComponent(ticker)}&select=*`, {
             headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': `Bearer ${SUPABASE_ANON_KEY}` }
           });
           const rows = respAtual.ok ? await respAtual.json() : [];
           if (rows && rows[0]) {
             const itemAtual = rows[0];
-            const tipoBase = itemAtual.tipo.replace(/^QUARENTENA:/, '');
+            let tipoBase = (itemAtual.tipo || '').replace(/^(QUARENTENA:)+/, '').trim();
+            if (!tipoBase) tipoBase = ticker.endsWith('11') ? 'FII' : 'Ação';
             const nomeBase = (itemAtual.nome || ticker).split(' :: ')[0].trim();
 
-            await fetch(`${SUPABASE_URL}/rest/v1/${TABELA_UNICA}?ticker=eq.${encodeURIComponent(ticker)}`, {
+            await fetch(`${SUPABASE_URL}/rest/v1/${TABELA_UNICA}?ticker=eq.${encodeURIComponent(itemAtual.ticker)}`, {
               method: 'PATCH',
               headers: {
                 'apikey': SUPABASE_ANON_KEY,
@@ -4558,9 +4682,25 @@
             });
           }
         }
+
+        // Atualiza arrays locais imediatamente
+        const idxQ = listaQuarentena.findIndex(q => q.ticker === ticker);
+        if (idxQ >= 0) {
+          const [liberado] = listaQuarentena.splice(idxQ, 1);
+          liberado.tipo = (liberado.tipo || '').replace(/^(QUARENTENA:)+/, '').trim() || (ticker.endsWith('11') ? 'FII' : 'Ação');
+          liberado.nome = (liberado.nome || ticker).split(' :: ')[0].trim();
+          if (!listaCompleta.some(a => a.ticker === ticker)) {
+            listaCompleta.push(liberado);
+          }
+        }
+
+        await salvarAprendizado(`[AUDITORIA] Ativo ${ticker} reintegrado à carteira ativa com alta concedida.`);
         await sincronizarTabelaUnica();
+        if (typeof notificarSalvo === 'function') {
+          notificarSalvo(`🎉 ${ticker} liberado com alta para a Carteira Ativa!`);
+        }
       } catch (e) {
-        alert(e.message);
+        alert(`Erro ao restaurar ${ticker}: ${e.message}`);
       } finally {
         if (btnEl) btnEl.disabled = false;
       }
@@ -5554,6 +5694,11 @@
                   ${varBadgeHtml}
                 </div>
                 <div class="card-actions-top">
+                  <button class="quarantine-card-btn" title="Mover ${ativo.ticker} para Quarentena Preventiva" onclick="solicitarMoverParaQuarentena('${ativo.ticker}', this)">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                    </svg>
+                  </button>
                   <button class="refresh-btn" title="Atualizar ${ativo.ticker}" onclick="atualizarCardIndividual('${ativo.ticker}', this)">↻</button>
                   <button class="delete-card-btn" title="Excluir ${ativo.ticker} da carteira" onclick="excluirDefinitivo('${ativo.ticker}', this)">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -6301,8 +6446,59 @@ ${jaTemAtivo2
         return;
       }
 
+      // MANDAR ATIVO ESPECÍFICO PARA A QUARENTENA
+      const matchMandarQuar = qLower.match(/(?:mand(?:ar|e)|coloc(?:ar|e)|mov(?:er|a)|envi(?:ar|e)|isol(?:ar|e))\s+(?:o\s+|a\s+|o\s+papel\s+|o\s+ativo\s+)?([a-z0-9]{4,6})\s+(?:pr?a|para\s+(?:a\s+)?|em\s+)?quarentena/i)
+        || qLower.match(/quarentena\s+(?:d[oe]\s+|para\s+)?([a-z0-9]{4,6})/i)
+        || qLower.match(/(?:mand(?:ar|e)|coloc(?:ar|e)|mov(?:er|a))\s+([a-z0-9]{4,6})\s+na\s+quarentena/i);
+
+      if (matchMandarQuar && matchMandarQuar[1]) {
+        const tkAlvo = matchMandarQuar[1].toUpperCase().trim();
+        const ativoAlvo = listaCompleta.find(a => a.ticker === tkAlvo);
+
+        if (ativoAlvo) {
+          elementoTexto.innerHTML = formatarTextoSeguro(`Isolando **${tkAlvo}** na Lista de Quarentena Preventiva e gerando diagnóstico...`);
+          const motivoQuar = `Isolado na quarentena preventiva para acompanhamento de proventos e fundamentos.`;
+          await moverParaQuarentenaApi(tkAlvo, motivoQuar);
+          await salvarAprendizado(`[AUDITORIA] Ativo ${tkAlvo} isolado na Quarentena preventiva.`);
+
+          // Prepara substitutos de alta qualidade
+          const isFii = ativoAlvo.tipo === 'FII' || tkAlvo.endsWith('11');
+          const subs = isFii ? [
+            { ticker: 'HGLG11', tipo: 'FII', dy_estimado: '9,5%', justificativa: 'FII logístico líder de mercado, vacância mínima e gestão de ponta.' },
+            { ticker: 'MXRF11', tipo: 'FII', dy_estimado: '13,8%', justificativa: 'Maior base de cotistas da B3, dividendos mensais estáveis e alta liquidez.' }
+          ] : [
+            { ticker: 'ITUB4', tipo: 'Ação', dy_estimado: '8,5%', justificativa: 'Maior banco privado, ROE > 21%, lucros recordes e dividendos mensais.' },
+            { ticker: 'BBSE3', tipo: 'Ação', dy_estimado: '10,5%', justificativa: 'Seguros e previdência com payout elevado e proventos semestrais consistentes.' }
+          ];
+          salvarSubstitutos(subs);
+          await sincronizarTabelaUnica();
+
+          const respTexto = `### 🛡️ Ativo ${tkAlvo} Movido para a Quarentena com Sucesso!
+
+Fredson Mendes, o ativo **${tkAlvo}** (${ativoAlvo.nome_exibicao || ativoAlvo.nome || tkAlvo}) foi isolado da sua Carteira Ativa e transferido para a **Lista de Quarentena Preventiva**:
+
+* **Ticker:** ${tkAlvo} (${ativoAlvo.tipo})
+* **Cotação Atual:** R$ ${Number(ativoAlvo.preco_atual || 0).toFixed(2).replace('.', ',')}
+* **Dividend Yield (12M):** ${Number(ativoAlvo.dividend_yield || 0).toFixed(2).replace('.', ',')}%
+* **Diagnóstico de Isolamento:** ${motivoQuar}
+
+---
+
+#### ✧ Opções de Substituição Imediata (Ativos Recomendados):
+1. **${subs[0].ticker} (${subs[0].tipo})** — DY estimado **~${subs[0].dy_estimado}**
+   * ${subs[0].justificativa}
+2. **${subs[1].ticker} (${subs[1].tipo})** — DY estimado **~${subs[1].dy_estimado}**
+   * ${subs[1].justificativa}
+
+> **Nota do Analista:** Você pode acompanhar a recuperação de **${tkAlvo}** a qualquer momento na aba **Quarentena**, solicitar reavaliação com IA ou conceder alta com 1 clique assim que os fundamentos restabelecerem!`;
+
+          elementoTexto.innerHTML = formatarTextoSeguro(respTexto);
+          return;
+        }
+      }
+
       // AUDITORIA COMPLETA OBRIGATÓRIA DA CARTEIRA (AÇÕES + FIIs)
-      if (qLower.includes('audit') || qLower.includes('quarentena') || qLower.includes('reprovad') || qLower.includes('substitu')) {
+      if (qLower.includes('audit') || qLower.includes('auditar') || qLower.includes('reprovad') || qLower.includes('substitu') || qLower.includes('auditoria') || (qLower.includes('quarentena') && !matchMandarQuar)) {
         elementoTexto.innerHTML = formatarTextoSeguro('Auditando 100% da sua carteira (todas as Ações e todos os FIIs) em tempo real...');
 
         const ativosAtivos = [...listaCompleta];
@@ -7188,27 +7384,46 @@ Comportamento de consultor sênior de investimentos, técnico porém didático, 
                 const substitutos = chamada.args?.substitutos || [];
 
                 textoElemento.innerHTML = formatarTextoSeguro(
-                  `Movendo ${paraQuarentena.length} papel(is) reprovado(s) para a Lista de Quarentena e preparando substitutos...`
+                  `Movendo ${paraQuarentena.length} papel(is) para a Lista de Quarentena e preparando substitutos...`
                 );
 
                 const movidos = [];
                 const erros = [];
 
                 for (const item of paraQuarentena) {
+                  const tk = (typeof item === 'string' ? item : (item.ticker || item.papel || item.codigo || '')).toUpperCase().trim();
+                  const mot = typeof item === 'string'
+                    ? 'Isolado preventivamente pelo Analista IA para monitoramento de proventos e fundamentos.'
+                    : (item.motivo || item.justificativa || 'Fundamentos ou Dividend Yield fracos');
+                  if (!tk) continue;
                   try {
-                    await moverParaQuarentenaApi(item.ticker, item.motivo);
-                    movidos.push(item.ticker.toUpperCase());
+                    await moverParaQuarentenaApi(tk, mot);
+                    movidos.push(tk);
                   } catch (e) {
-                    erros.push(`${item.ticker}: ${e.message}`);
+                    erros.push(`${tk}: ${e.message}`);
                   }
                 }
 
-                if (substitutos.length > 0) {
-                  salvarSubstitutos(substitutos);
+                const subsNormalizados = (Array.isArray(substitutos) ? substitutos : []).map(s => {
+                  if (typeof s === 'string') {
+                    const tk = s.toUpperCase().trim();
+                    const isFii = tk.endsWith('11');
+                    return {
+                      ticker: tk,
+                      tipo: isFii ? 'FII' : 'Ação',
+                      dy_estimado: 'Alto',
+                      justificativa: 'Ativo de excelência selecionado pelo Analista IA para substituição estratégica.'
+                    };
+                  }
+                  return s;
+                });
+
+                if (subsNormalizados.length > 0) {
+                  salvarSubstitutos(subsNormalizados);
                 }
 
                 if (movidos.length > 0) {
-                  await salvarAprendizado(`[AUDITORIA] Papéis reprovados e movidos para quarentena: ${movidos.join(', ')}`);
+                  await salvarAprendizado(`[AUDITORIA] Papéis isolados na Quarentena: ${movidos.join(', ')}`);
                 }
 
                 await sincronizarTabelaUnica();
@@ -7216,7 +7431,7 @@ Comportamento de consultor sênior de investimentos, técnico porém didático, 
                   sucesso: true,
                   movidos_para_quarentena: movidos,
                   erros: erros,
-                  substitutos_registrados: substitutos.length
+                  substitutos_registrados: subsNormalizados.length
                 };
 
               } else if (chamada.name === 'liberar_da_quarentena') {
@@ -7229,12 +7444,17 @@ Comportamento de consultor sênior de investimentos, técnico porém didático, 
                 const erros = [];
 
                 for (const item of liberados) {
+                  const tk = (typeof item === 'string' ? item : (item.ticker || item.papel || item.codigo || '')).toUpperCase().trim();
+                  const mot = typeof item === 'string'
+                    ? 'Recuperação comprovada de fundamentos e proventos.'
+                    : (item.motivo_alta || item.motivo || 'Alta médica concedida pela IA');
+                  if (!tk) continue;
                   try {
-                    await restaurarDaQuarentena(item.ticker, null);
-                    restaurados.push(item.ticker.toUpperCase());
-                    await salvarAprendizado(`[AUDITORIA] [ALTA DA QUARENTENA] ${item.ticker}: ${item.motivo_alta}`);
+                    await restaurarDaQuarentena(tk, null);
+                    restaurados.push(tk);
+                    await salvarAprendizado(`[AUDITORIA] [ALTA DA QUARENTENA] ${tk}: ${mot}`);
                   } catch (e) {
-                    erros.push(`${item.ticker}: ${e.message}`);
+                    erros.push(`${tk}: ${e.message}`);
                   }
                 }
 
